@@ -80,7 +80,7 @@ export default function SentimentosScreen() {
             activeOpacity={0.8}
           >
             <View style={styles.iconContainer}>
-              <SentimentIcon name={item.name} size={32} />
+              <SentimentIcon sentimentId={item.id} size={32} />
             </View>
             <Text style={styles.cardTitle}>{item.name}</Text>
           </TouchableOpacity>

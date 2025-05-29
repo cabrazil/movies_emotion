@@ -1,56 +1,43 @@
 import { View } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
-import { colors } from '../theme';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { colors } from "../theme";
 
-type SentimentIconProps = {
-  name: string;
+interface SentimentIconProps {
+  sentimentId: number;
   size?: number;
-};
+}
 
-export function SentimentIcon({ name, size = 24 }: SentimentIconProps) {
-  const getIconName = () => {
-    // Normaliza o nome do sentimento para comparação
-    const normalizedName = name.toLowerCase();
-    
-    if (normalizedName.includes('feliz') || normalizedName.includes('alegre')) {
-      return 'sentiment-very-satisfied';
+export function SentimentIcon({ sentimentId, size = 24 }: SentimentIconProps) {
+  const getIconAndColor = () => {
+    switch (sentimentId) {
+      case 13: // Feliz / Alegre
+        return { name: 'sunny', color: colors.yellow, type: 'Ionicons' };
+      case 14: // Triste / Melancólico(a)
+        return { name: 'weather-rainy', color: colors.gray, type: 'MaterialCommunityIcons' };
+      case 15: // Calmo(a) / Relaxado(a)
+        return { name: 'waves', color: colors.blue, type: 'MaterialCommunityIcons' };
+      case 16: // Ansioso(a) / Nervoso(a)
+        return { name: 'flash', color: colors.red, type: 'Ionicons' };
+      case 17: // Animado(a) / Entusiasmado(a)
+        return { name: 'bulb', color: colors.orange, type: 'Ionicons' };
+      case 18: // Cansado(a) / Desmotivado(a)
+        return { name: 'battery-low', color: colors.red, type: 'MaterialCommunityIcons' };
+      case 19: // Neutro / Indiferente
+        return { name: 'swap-horizontal', color: colors.gray, type: 'Ionicons' };
+      default:
+        return { name: 'swap-horizontal', color: colors.gray, type: 'Ionicons' };
     }
-    
-    if (normalizedName.includes('triste') || normalizedName.includes('melancólico')) {
-      return 'sentiment-very-dissatisfied';
-    }
-    
-    if (normalizedName.includes('calmo') || normalizedName.includes('relaxado')) {
-      return 'sentiment-satisfied';
-    }
-    
-    if (normalizedName.includes('ansioso') || normalizedName.includes('nervoso')) {
-      return 'sentiment-dissatisfied';
-    }
-    
-    if (normalizedName.includes('animado') || normalizedName.includes('entusiasmado')) {
-      return 'sentiment-very-satisfied';
-    }
-    
-    if (normalizedName.includes('cansado') || normalizedName.includes('desmotivado')) {
-      return 'sentiment-dissatisfied';
-    }
-    
-    if (normalizedName.includes('neutro') || normalizedName.includes('indiferente')) {
-      return 'sentiment-neutral';
-    }
-    
-    // Ícone padrão para qualquer outro sentimento
-    return 'sentiment-neutral';
   };
+
+  const { name, color, type } = getIconAndColor();
 
   return (
     <View style={{ width: size, height: size }}>
-      <MaterialIcons
-        name={getIconName()}
-        size={size}
-        color={colors.primary.main}
-      />
+      {type === 'Ionicons' ? (
+        <Ionicons name={name as any} size={size} color={color} />
+      ) : (
+        <MaterialCommunityIcons name={name as any} size={size} color={color} />
+      )}
     </View>
   );
 } 

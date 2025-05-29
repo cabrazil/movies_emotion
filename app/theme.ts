@@ -25,7 +25,14 @@ export const colors = {
     error: '#FF6B6B',      // Vermelho suave
     success: '#4CAF50',    // Verde suave
     warning: '#FFB74D',    // Laranja suave
-  }
+  },
+  
+  // Cores dos ícones de sentimentos
+  yellow: '#FFD700',
+  gray: '#808080',
+  blue: '#1E90FF',
+  red: '#FF4444',
+  orange: '#FFA500',
 };
 
 export const typography = {
