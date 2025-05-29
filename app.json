@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "hello_expo",
-    "slug": "hello_expo",
+    "name": "movies_emotion",
+    "slug": "movies_emotion",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
