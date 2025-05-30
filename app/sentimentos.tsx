@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, FlatList, Dimensions, Activit
 import { useRouter } from 'expo-router';
 import { colors, typography, spacing, borderRadius, shadows } from './theme';
 import { SentimentIcon } from './components/SentimentIcon';
+import { API_ENDPOINTS } from './config';
 
 type Sentiment = {
   id: number;
@@ -27,7 +28,7 @@ export default function SentimentosScreen() {
 
   const fetchSentiments = async () => {
     try {
-      const response = await fetch('https://ccab-187-255-43-93.ngrok-free.app/main-sentiments/summary');
+      const response = await fetch(API_ENDPOINTS.mainSentiments.summary);
       if (!response.ok) {
         throw new Error('Erro ao carregar sentimentos');
       }

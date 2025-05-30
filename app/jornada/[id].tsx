@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView, Image, Pressable } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { API_ENDPOINTS } from '../config';
 import { colors, typography, spacing, borderRadius, shadows } from '../theme';
+import { Ionicons } from '@expo/vector-icons';
 
 interface Movie {
   id: string;
@@ -10,6 +11,10 @@ interface Movie {
   thumbnail?: string;
   year?: number;
   director?: string;
+  vote_average?: number;
+  certification?: string;
+  genres?: string[];
+  runtime?: number;
 }
 
 interface MovieSuggestion {
@@ -109,17 +114,71 @@ export default function JornadaScreen() {
           <Text style={styles.errorText}>Nenhum filme sugerido para este caminho.</Text>
         )}
         {suggestedMovies.map((ms, idx) => (
-          <View key={ms.movie.id + idx} style={styles.movieCard}>
-            {ms.movie.thumbnail && (
-              <Image source={{ uri: ms.movie.thumbnail }} style={styles.thumbnail} resizeMode="cover" />
-            )}
-            <Text style={styles.movieTitle}>{ms.movie.title}</Text>
-            <View style={styles.movieTextContent}>
-              <Text style={styles.movieReason}>{ms.reason}</Text>
-              {ms.movie.year && <Text style={styles.movieInfo}>Ano: {ms.movie.year}</Text>}
-              {ms.movie.director && <Text style={styles.movieInfo}>Diretor: {ms.movie.director}</Text>}
+          <Pressable
+            key={ms.movie.id + idx}
+            style={({ pressed }) => [
+              styles.movieCard,
+              pressed && styles.movieCardPressed
+            ]}
+            onPress={() => {
+              console.log('Navegando para filme:', {
+                id: ms.movie.id,
+                reason: ms.reason
+              });
+              router.push({
+                pathname: '/filme/[id]',
+                params: { 
+                  id: ms.movie.id,
+                  reason: ms.reason
+                }
+              });
+            }}
+          >
+            <View style={styles.movieContent}>
+              {ms.movie.thumbnail && (
+                <Image source={{ uri: ms.movie.thumbnail }} style={styles.thumbnail} resizeMode="cover" />
+              )}
+              <View style={styles.movieInfo}>
+                <Text style={styles.movieTitle} numberOfLines={2}>{ms.movie.title}</Text>
+                <View style={styles.movieDetails}>
+                  {ms.movie.vote_average !== undefined && ms.movie.vote_average !== null && (
+                    <View style={styles.ratingContainer}>
+                      <Ionicons name="star" size={16} color={colors.yellow} />
+                      <Text style={styles.ratingText}>
+                        {typeof ms.movie.vote_average === 'number' 
+                          ? ms.movie.vote_average.toFixed(1)
+                          : ms.movie.vote_average}
+                      </Text>
+                    </View>
+                  )}
+                  {ms.movie.runtime && (
+                    <View style={styles.runtimeContainer}>
+                      <Ionicons name="time-outline" size={16} color={colors.text.secondary} />
+                      <Text style={styles.runtimeText}>
+                        {ms.movie.runtime} min
+                      </Text>
+                    </View>
+                  )}
+                  {ms.movie.certification && (
+                    <View style={styles.certificationContainer}>
+                      <Text style={styles.certificationText}>{ms.movie.certification}</Text>
+                    </View>
+                  )}
+                </View>
+                {ms.movie.genres && ms.movie.genres.length > 0 && (
+                  <Text style={styles.genresText} numberOfLines={1}>
+                    {ms.movie.genres.join(' • ')}
+                  </Text>
+                )}
+                <View style={styles.reasonContainer}>
+                  <Text style={styles.reasonText} numberOfLines={2}>
+                    {ms.reason}
+                  </Text>
+                  <Ionicons name="chevron-forward" size={20} color={colors.text.secondary} />
+                </View>
+              </View>
             </View>
-          </View>
+          </Pressable>
         ))}
       </ScrollView>
     );
@@ -145,7 +204,6 @@ const styles = StyleSheet.create({
   container: {
     padding: spacing.lg,
     backgroundColor: colors.background.primary,
-    alignItems: 'center',
   },
   center: {
     flex: 1,
@@ -192,40 +250,87 @@ const styles = StyleSheet.create({
     width: '100%',
     backgroundColor: colors.background.card,
     borderRadius: borderRadius.lg,
-    padding: spacing.md,
     marginBottom: spacing.md,
-    alignItems: 'flex-start',
+    overflow: 'hidden',
     ...shadows.sm,
   },
+  movieContent: {
+    flexDirection: 'row',
+    padding: spacing.sm,
+  },
   thumbnail: {
-    width: '100%',
-    height: 200,
-    borderRadius: borderRadius.md,
-    marginBottom: spacing.md,
-    backgroundColor: colors.background.secondary,
-  },
-  movieTitle: {
-    fontSize: typography.fontSize.h3,
-    fontWeight: typography.fontWeight.medium,
-    color: colors.primary.main,
-    marginBottom: spacing.sm,
-    textAlign: 'left',
-    lineHeight: typography.fontSize.h3 * typography.lineHeight.tight,
-  },
-  movieTextContent: {
-    width: '100%',
-    alignItems: 'flex-start',
-  },
-  movieReason: {
-    fontSize: typography.fontSize.bodySmall,
-    color: colors.text.secondary,
-    marginBottom: spacing.sm,
-    textAlign: 'left',
-    lineHeight: typography.fontSize.bodySmall * typography.lineHeight.relaxed,
+    width: 80,
+    height: 120,
+    borderRadius: borderRadius.sm,
   },
   movieInfo: {
+    flex: 1,
+    marginLeft: spacing.sm,
+    justifyContent: 'space-between',
+  },
+  movieTitle: {
+    fontSize: typography.fontSize.h4,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.text.primary,
+    marginBottom: spacing.xs,
+  },
+  movieDetails: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.xs,
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: spacing.sm,
+  },
+  ratingText: {
     fontSize: typography.fontSize.small,
-    color: colors.text.light,
-    lineHeight: typography.fontSize.small * typography.lineHeight.normal,
+    color: colors.text.secondary,
+    marginLeft: 4,
+  },
+  certificationContainer: {
+    backgroundColor: colors.background.primary,
+    paddingHorizontal: spacing.xs,
+    paddingVertical: 2,
+    borderRadius: borderRadius.sm,
+  },
+  certificationText: {
+    fontSize: typography.fontSize.small,
+    color: colors.text.secondary,
+    fontWeight: typography.fontWeight.medium,
+  },
+  genresText: {
+    fontSize: typography.fontSize.small,
+    color: colors.text.secondary,
+  },
+  runtimeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: spacing.sm,
+  },
+  runtimeText: {
+    fontSize: typography.fontSize.small,
+    color: colors.text.secondary,
+    marginLeft: 4,
+  },
+  movieCardPressed: {
+    opacity: 0.7,
+    transform: [{ scale: 0.98 }],
+  },
+  reasonContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing.xs,
+    paddingTop: spacing.xs,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  reasonText: {
+    flex: 1,
+    fontSize: typography.fontSize.small,
+    color: colors.text.secondary,
+    fontStyle: 'italic',
+    marginRight: spacing.xs,
   },
 }); 
