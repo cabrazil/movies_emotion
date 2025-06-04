@@ -143,19 +143,6 @@ export default function MovieDetailsScreen() {
           </View>
         )}
 
-        {movie.streamingPlatforms && movie.streamingPlatforms.length > 0 && (
-          <View style={styles.streamingContainer}>
-            <Text style={styles.streamingTitle}>Disponível em:</Text>
-            <View style={styles.streamingPlatforms}>
-              {movie.streamingPlatforms.map((platform) => (
-                <View key={platform} style={styles.platformTag}>
-                  <Text style={styles.platformText}>{platform}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
-
         {reason && (
           <View style={styles.reasonContainer}>
             <Text style={styles.reasonTitle}>Por que assistir?</Text>
@@ -167,6 +154,19 @@ export default function MovieDetailsScreen() {
           <View style={styles.descriptionContainer}>
             <Text style={styles.descriptionTitle}>Sinopse</Text>
             <Text style={styles.descriptionText}>{movie.description}</Text>
+          </View>
+        )}
+
+        {movie.streamingPlatforms && movie.streamingPlatforms.length > 0 && (
+          <View style={styles.streamingContainer}>
+            <Text style={styles.streamingTitle}>Disponível em:</Text>
+            <View style={styles.streamingPlatforms}>
+              {movie.streamingPlatforms.map((platform) => (
+                <View key={platform} style={styles.platformTag}>
+                  <Text style={styles.platformText}>{platform}</Text>
+                </View>
+              ))}
+            </View>
           </View>
         )}
 

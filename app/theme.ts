@@ -18,6 +18,7 @@ export const colors = {
     primary: '#1F1F1F',    // Cinza escuro quase preto
     secondary: '#666666',  // Cinza médio
     light: '#888888',      // Cinza claro
+    inverse: '#FFFFFF',    // Branco para texto sobre fundo colorido
   },
   
   // Cores de estado
@@ -33,6 +34,8 @@ export const colors = {
   blue: '#1E90FF',
   red: '#FF4444',
   orange: '#FFA500',
+  green: '#4CAF50',
+  teal:  '#60B2A3',
 };
 
 export const typography = {

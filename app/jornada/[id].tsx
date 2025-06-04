@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView, Image, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView, Image, Pressable, Dimensions } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { API_ENDPOINTS } from '../config';
 import { colors, typography, spacing, borderRadius, shadows } from '../theme';
@@ -36,6 +36,11 @@ interface JourneyStep {
   options: JourneyOption[];
   stepId?: string;
 }
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const CARD_MARGIN = spacing.xs;
+const CARD_WIDTH = (SCREEN_WIDTH - (2 * spacing.md) - CARD_MARGIN) / 2;
+const CARD_HEIGHT = 45;
 
 export default function JornadaScreen() {
   const { id } = useLocalSearchParams();
@@ -87,6 +92,38 @@ export default function JornadaScreen() {
     } else {
       alert('Próxima etapa não encontrada.');
     }
+  };
+
+  const renderOptions = () => {
+    if (!step) return null;
+    
+    if (step.id === 38) {
+      // Layout em duas colunas para gêneros
+      return (
+        <View style={styles.genreGrid}>
+          {step.options.map(option => (
+            <TouchableOpacity
+              key={option.id}
+              style={styles.genreOption}
+              onPress={() => handleOption(option)}
+            >
+              <Text style={styles.genreOptionText} numberOfLines={1}>{option.text}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      );
+    }
+
+    // Layout padrão para outras opções
+    return step.options.map(option => (
+      <TouchableOpacity
+        key={option.id}
+        style={styles.option}
+        onPress={() => handleOption(option)}
+      >
+        <Text style={styles.optionText}>{option.text}</Text>
+      </TouchableOpacity>
+    ));
   };
 
   if (loading) {
@@ -185,24 +222,21 @@ export default function JornadaScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.question}>{step.question}</Text>
-      {step.options.map(option => (
-        <TouchableOpacity
-          key={option.id}
-          style={styles.option}
-          onPress={() => handleOption(option)}
-        >
-          <Text style={styles.optionText}>{option.text}</Text>
-        </TouchableOpacity>
-      ))}
+    <ScrollView 
+      contentContainerStyle={[
+        styles.container,
+        step?.id === 38 && styles.genreContainer
+      ]}
+    >
+      <Text style={styles.question}>{step?.question}</Text>
+      {renderOptions()}
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: spacing.lg,
+    padding: spacing.md,
     backgroundColor: colors.background.primary,
   },
   center: {
@@ -324,7 +358,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
     paddingTop: spacing.xs,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: colors.background.secondary,
   },
   reasonText: {
     flex: 1,
@@ -332,5 +366,32 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
     fontStyle: 'italic',
     marginRight: spacing.xs,
+  },
+  genreContainer: {
+    paddingTop: spacing.md,
+  },
+  genreGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginTop: spacing.xs,
+  },
+  genreOption: {
+    width: CARD_WIDTH,
+    height: CARD_HEIGHT,
+    backgroundColor: colors.primary.main,
+    borderRadius: borderRadius.sm,
+    padding: spacing.xs,
+    marginBottom: CARD_MARGIN,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...shadows.sm,
+  },
+  genreOptionText: {
+    color: colors.background.card,
+    fontSize: typography.fontSize.small,
+    fontWeight: typography.fontWeight.medium,
+    textAlign: 'center',
+    lineHeight: typography.fontSize.small * typography.lineHeight.normal,
   },
 }); 

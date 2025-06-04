@@ -5,12 +5,14 @@ import { colors, typography, spacing, borderRadius, shadows } from './theme';
 import { SentimentIcon } from './components/SentimentIcon';
 import { API_ENDPOINTS } from './config';
 
-type Sentiment = {
+interface Sentiment {
   id: number;
   name: string;
   description: string;
   keywords: string[];
-};
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 const CARD_MARGIN = 8;
 const CARD_WIDTH = (Dimensions.get('window').width - 3 * CARD_MARGIN) / 2;
@@ -61,6 +63,26 @@ export default function SentimentosScreen() {
     return (
       <View style={styles.center}>
         <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity 
+          style={styles.retryButton}
+          onPress={fetchSentiments}
+        >
+          <Text style={styles.retryButtonText}>Tentar novamente</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  if (sentiments.length === 0) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.emptyText}>Nenhum sentimento encontrado</Text>
+        <TouchableOpacity 
+          style={styles.retryButton}
+          onPress={fetchSentiments}
+        >
+          <Text style={styles.retryButtonText}>Tentar novamente</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -154,5 +176,23 @@ const styles = StyleSheet.create({
     color: colors.state.error,
     fontSize: typography.fontSize.body,
     lineHeight: typography.fontSize.body * typography.lineHeight.normal,
+    marginBottom: spacing.md,
+  },
+  emptyText: {
+    color: colors.text.secondary,
+    fontSize: typography.fontSize.body,
+    lineHeight: typography.fontSize.body * typography.lineHeight.normal,
+    marginBottom: spacing.md,
+  },
+  retryButton: {
+    backgroundColor: colors.primary.main,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.md,
+  },
+  retryButtonText: {
+    color: colors.text.inverse,
+    fontSize: typography.fontSize.body,
+    fontWeight: typography.fontWeight.medium,
   },
 }); 

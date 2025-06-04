@@ -2,30 +2,39 @@ import { View } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from "../theme";
 
+type IconType = 'Ionicons' | 'MaterialCommunityIcons';
+type IconName = keyof typeof Ionicons.glyphMap | keyof typeof MaterialCommunityIcons.glyphMap;
+
 interface SentimentIconProps {
   sentimentId: number;
   size?: number;
 }
 
+interface IconConfig {
+  name: IconName;
+  color: string;
+  type: IconType;
+}
+
 export function SentimentIcon({ sentimentId, size = 24 }: SentimentIconProps) {
-  const getIconAndColor = () => {
+  const getIconAndColor = (): IconConfig => {
     switch (sentimentId) {
       case 13: // Feliz / Alegre
-        return { name: 'sunny', color: colors.yellow, type: 'Ionicons' };
+        return { name: 'sunny-outline', color: colors.teal, type: 'Ionicons' };
       case 14: // Triste / Melancólico(a)
-        return { name: 'weather-rainy', color: colors.gray, type: 'MaterialCommunityIcons' };
+        return { name: 'weather-rainy', color: colors.teal, type: 'MaterialCommunityIcons' };
       case 15: // Calmo(a) / Relaxado(a)
-        return { name: 'waves', color: colors.blue, type: 'MaterialCommunityIcons' };
+        return { name: 'waves', color: colors.teal, type: 'MaterialCommunityIcons' };
       case 16: // Ansioso(a) / Nervoso(a)
-        return { name: 'flash', color: colors.red, type: 'Ionicons' };
+        return { name: 'flash-outline', color: colors.teal, type: 'Ionicons' };
       case 17: // Animado(a) / Entusiasmado(a)
-        return { name: 'bulb', color: colors.orange, type: 'Ionicons' };
+        return { name: 'bulb-outline', color: colors.teal, type: 'Ionicons' };
       case 18: // Cansado(a) / Desmotivado(a)
-        return { name: 'battery-low', color: colors.red, type: 'MaterialCommunityIcons' };
+        return { name: 'battery-low', color: colors.teal, type: 'MaterialCommunityIcons' };
       case 19: // Neutro / Indiferente
-        return { name: 'swap-horizontal', color: colors.gray, type: 'Ionicons' };
+        return { name: 'swap-horizontal-outline', color: colors.teal, type: 'Ionicons' };
       default:
-        return { name: 'swap-horizontal', color: colors.gray, type: 'Ionicons' };
+        return { name: 'help-circle-outline', color: colors.teal, type: 'Ionicons' };
     }
   };
 
@@ -34,9 +43,9 @@ export function SentimentIcon({ sentimentId, size = 24 }: SentimentIconProps) {
   return (
     <View style={{ width: size, height: size }}>
       {type === 'Ionicons' ? (
-        <Ionicons name={name as any} size={size} color={color} />
+        <Ionicons name={name} size={size} color={color} />
       ) : (
-        <MaterialCommunityIcons name={name as any} size={size} color={color} />
+        <MaterialCommunityIcons name={name} size={size} color={color} />
       )}
     </View>
   );
