@@ -47,12 +47,7 @@ export interface JourneyOption {
   movieSuggestions?: MovieSuggestion[];
 }
 
-export interface JourneyStep {
-  id: number;
-  question: string;
-  options: JourneyOption[];
-  stepId?: string;
-}
+
 
 export interface PersonalizedJourneyStep {
   id: number;

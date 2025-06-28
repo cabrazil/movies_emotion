@@ -50,13 +50,7 @@ export default function IntencoesScreen() {
     });
   };
 
-  const handleSkipIntention = () => {
-    // Usar jornada tradicional
-    router.push({
-      pathname: '/jornada/[id]',
-      params: { id: id.toString() }
-    });
-  };
+
 
   const getIntentionLabel = (type: string): string => {
     const labels = {
