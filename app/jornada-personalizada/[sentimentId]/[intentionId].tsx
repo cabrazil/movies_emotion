@@ -1,56 +1,29 @@
 import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView, Image, Pressable, Dimensions } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { API_ENDPOINTS } from '../config';
-import { colors, typography, spacing, borderRadius, shadows } from '../theme';
+import { API_ENDPOINTS } from '../../config';
+import { colors, typography, spacing, borderRadius, shadows } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
-import { Movie, MovieSuggestion, JourneyOption, JourneyStep } from '../types';
-import { NavigationFooter } from '../components/NavigationFooter';
+import { PersonalizedJourneyResponse, PersonalizedJourneyStep, JourneyOption, MovieSuggestion } from '../../types';
+import { NavigationFooter } from '../../components/NavigationFooter';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_MARGIN = spacing.xs;
 const CARD_WIDTH = (SCREEN_WIDTH - (2 * spacing.md) - CARD_MARGIN) / 2;
 const CARD_HEIGHT = 45;
 
-export default function JornadaScreen() {
-  const { id } = useLocalSearchParams();
+export default function JornadaPersonalizadaScreen() {
+  const { sentimentId, intentionId } = useLocalSearchParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [step, setStep] = useState<JourneyStep | null>(null);
-  const [allSteps, setAllSteps] = useState<JourneyStep[]>([]);
+  const [step, setStep] = useState<PersonalizedJourneyStep | null>(null);
+  const [allSteps, setAllSteps] = useState<PersonalizedJourneyStep[]>([]);
   const [currentStepId, setCurrentStepId] = useState<string | null>(null);
   const [suggestedMovies, setSuggestedMovies] = useState<MovieSuggestion[] | null>(null);
   const [allMovies, setAllMovies] = useState<MovieSuggestion[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [moviesPerPage] = useState(3);
   const router = useRouter();
-
-  useEffect(() => {
-    const fetchJourney = async () => {
-      try {
-        const res = await fetch(`${API_ENDPOINTS.mainSentiments.detail(id.toString())}`);
-        if (!res.ok) {
-          throw new Error('Erro ao carregar jornada');
-        }
-        const data = await res.json();
-        const steps = data.journeyFlow?.steps || [];
-        setAllSteps(steps);
-        if (steps.length > 0) {
-          setStep(steps[0]);
-          setCurrentStepId(steps[0].stepId || steps[0].id?.toString());
-        } else {
-          throw new Error('Nenhum passo encontrado na jornada');
-        }
-        setLoading(false);
-      } catch (err: unknown) {
-        console.error('Erro detalhado:', err);
-        setError(`Erro ao carregar jornada: ${err instanceof Error ? err.message : 'Erro desconhecido'}`);
-        setLoading(false);
-      }
-    };
-
-    fetchJourney();
-  }, [id]);
 
   const loadMoreMovies = () => {
     const nextPage = currentPage + 1;
@@ -74,28 +47,93 @@ export default function JornadaScreen() {
     return { currentlyShowing, total };
   };
 
+  useEffect(() => {
+    const fetchPersonalizedJourney = async () => {
+      try {
+        console.log('🚀 Carregando jornada personalizada:', { sentimentId, intentionId });
+        
+        const res = await fetch(API_ENDPOINTS.personalizedJourney.get(sentimentId.toString(), intentionId.toString()));
+        if (!res.ok) {
+          throw new Error('Erro ao carregar jornada personalizada');
+        }
+        
+        const data: PersonalizedJourneyResponse = await res.json();
+        console.log('📊 Dados da jornada recebidos:', {
+          totalSteps: data.steps.length,
+          firstStep: data.steps[0]?.stepId,
+          stepIds: data.steps.map(s => s.stepId)
+        });
+        
+
+        
+        setAllSteps(data.steps);
+        
+        if (data.steps.length > 0) {
+          // Buscar o primeiro step (menor order ou primeiro disponível)
+          const firstStep = data.steps.sort((a, b) => a.order - b.order)[0];
+          console.log('🎯 Primeiro step selecionado:', firstStep.stepId);
+          setStep(firstStep);
+          setCurrentStepId(firstStep.stepId);
+        } else {
+          throw new Error('Nenhum passo encontrado na jornada personalizada');
+        }
+        
+        setLoading(false);
+      } catch (err: unknown) {
+        console.error('❌ Erro detalhado:', err);
+        setError(`Erro ao carregar jornada personalizada: ${err instanceof Error ? err.message : 'Erro desconhecido'}`);
+        setLoading(false);
+      }
+    };
+
+    fetchPersonalizedJourney();
+  }, [sentimentId, intentionId]);
+
   const handleOption = (option: JourneyOption) => {
+    console.log('🎯 Opção selecionada:', {
+      optionId: option.id,
+      text: option.text,
+      nextStepId: option.nextStepId,
+      isEndState: option.isEndState,
+      hasMovieSuggestions: option.movieSuggestions?.length || 0
+    });
+
     if (option.isEndState) {
       const movies = option.movieSuggestions || [];
+      console.log('🎬 Estado final alcançado, filmes sugeridos:', movies.length);
       setAllMovies(movies);
       setCurrentPage(0);
       setSuggestedMovies(movies.slice(0, moviesPerPage));
       return;
     }
+
+    if (!option.nextStepId) {
+      console.error('❌ NextStepId não encontrado para opção não-final');
+      alert('Erro: próximo passo não definido.');
+      return;
+    }
+
+    // Buscar próximo step
     const next = allSteps.find(s => s.stepId === option.nextStepId || s.id?.toString() === option.nextStepId);
+    
     if (next) {
+      console.log('✅ Próximo step encontrado:', next.stepId);
       setStep(next);
-      setCurrentStepId(next.stepId || next.id?.toString());
+      setCurrentStepId(next.stepId);
     } else {
-      alert('Próxima etapa não encontrada.');
+      console.error('❌ Próximo step não encontrado:', {
+        nextStepId: option.nextStepId,
+        availableSteps: allSteps.map(s => ({ id: s.id, stepId: s.stepId }))
+      });
+      alert(`Erro ao avançar: próximo passo '${option.nextStepId}' não encontrado`);
     }
   };
 
   const renderOptions = () => {
     if (!step) return null;
     
+    // Layout em duas colunas para gêneros (step 38)
     if (step.id === 38) {
-      // Layout em duas colunas para gêneros
       return (
         <View style={styles.genreGrid}>
           {step.options.map(option => (
@@ -127,7 +165,7 @@ export default function JornadaScreen() {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color={colors.primary.main} />
-        <Text style={styles.loadingText}>Carregando jornada...</Text>
+        <Text style={styles.loadingText}>Carregando jornada personalizada...</Text>
       </View>
     );
   }
@@ -135,20 +173,26 @@ export default function JornadaScreen() {
   if (error || !step) {
     return (
       <View style={styles.center}>
-        <Text style={styles.errorText}>{error || 'Jornada não encontrada'}</Text>
+        <Text style={styles.errorText}>{error || 'Jornada personalizada não encontrada'}</Text>
+        <TouchableOpacity
+          style={styles.retryButton}
+          onPress={() => router.back()}
+        >
+          <Text style={styles.retryButtonText}>Voltar</Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
   if (suggestedMovies) {
     return (
-      <View style={styles.fullContainer}>
+      <View style={styles.container}>
         <ScrollView contentContainerStyle={styles.movieResultsContainer}>
           {/* Header melhorado */}
           <View style={styles.resultsHeader}>
             <View style={styles.journeyIndicator}>
               <Ionicons name="sparkles" size={20} color={colors.primary.main} />
-              <Text style={styles.journeyText}>Baseado na sua jornada emocional</Text>
+              <Text style={styles.journeyText}>Baseado na sua jornada emocional personalizada</Text>
             </View>
             <Text style={styles.resultsTitle}>Filmes selecionados especialmente para você</Text>
             {allMovies.length > 3 && (
@@ -247,29 +291,56 @@ export default function JornadaScreen() {
   }
 
   return (
-    <View style={styles.fullContainer}>
+    <View style={styles.container}>
       <ScrollView 
         contentContainerStyle={[
-          styles.container,
+          styles.scrollContainer,
           step?.id === 38 && styles.genreContainer
         ]}
       >
         <Text style={styles.question}>{step?.question}</Text>
+        
+        {/* Badge de contexto */}
+        {step?.contextualHint && (
+          <View style={styles.contextBadges}>
+            <View style={styles.sentimentBadge}>
+              <Text style={styles.badgeText}>
+                {step.contextualHint}
+              </Text>
+            </View>
+          </View>
+        )}
+        
         {renderOptions()}
       </ScrollView>
-      <NavigationFooter backLabel="Voltar" />
+      <NavigationFooter backLabel="Trocar Intenção" />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  fullContainer: {
+  container: {
     flex: 1,
     backgroundColor: colors.background.primary,
   },
-  container: {
+  header: {
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.sm,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backButtonText: {
+    fontSize: typography.fontSize.body,
+    color: colors.primary.main,
+    marginLeft: spacing.xs,
+    fontWeight: typography.fontWeight.medium,
+  },
+  scrollContainer: {
     padding: spacing.md,
-    backgroundColor: colors.background.primary,
+    paddingTop: 0,
   },
   center: {
     flex: 1,
@@ -284,6 +355,23 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
     textAlign: 'center',
     lineHeight: typography.fontSize.h2 * typography.lineHeight.tight,
+  },
+  hintContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary.main + '10',
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.primary.main,
+  },
+  hintText: {
+    flex: 1,
+    fontSize: typography.fontSize.small,
+    color: colors.text.secondary,
+    marginLeft: spacing.sm,
+    fontStyle: 'italic',
   },
   option: {
     width: '100%',
@@ -311,6 +399,20 @@ const styles = StyleSheet.create({
     color: colors.state.error,
     fontSize: typography.fontSize.body,
     lineHeight: typography.fontSize.body * typography.lineHeight.normal,
+    textAlign: 'center',
+    paddingHorizontal: spacing.md,
+  },
+  retryButton: {
+    backgroundColor: colors.primary.main,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.md,
+    marginTop: spacing.md,
+  },
+  retryButtonText: {
+    color: colors.text.inverse,
+    fontSize: typography.fontSize.body,
+    fontWeight: typography.fontWeight.medium,
   },
   movieCard: {
     width: '100%',
@@ -469,5 +571,25 @@ const styles = StyleSheet.create({
     color: colors.primary.main,
     marginLeft: spacing.xs,
     fontWeight: typography.fontWeight.medium,
+  },
+  // Estilo para badge de contexto
+  contextBadges: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: spacing.md,
+  },
+  sentimentBadge: {
+    backgroundColor: colors.primary.main + '15',
+    borderRadius: borderRadius.lg,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderWidth: 1,
+    borderColor: colors.primary.main + '30',
+  },
+  badgeText: {
+    fontSize: typography.fontSize.small,
+    fontWeight: typography.fontWeight.medium,
+    color: colors.primary.main,
+    textAlign: 'center',
   },
 }); 

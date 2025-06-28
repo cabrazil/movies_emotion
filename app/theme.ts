@@ -8,9 +8,9 @@ export const colors = {
   
   // Cores de destaque
   primary: {
-    main: '#60B2A3',       // Teal suave
-    light: '#6E9C9F',      // Teal mais claro
-    dark: '#4A8A8C',       // Teal mais escuro
+    main: '#1e3a8a',       // Azul profundo
+    light: '#3b82f6',      // Azul médio
+    dark: '#1e40af',       // Azul escuro
   },
   
   // Cores de texto
@@ -36,6 +36,7 @@ export const colors = {
   orange: '#FFA500',
   green: '#4CAF50',
   teal:  '#60B2A3',
+  white: '#FFFFFF',
 };
 
 export const typography = {

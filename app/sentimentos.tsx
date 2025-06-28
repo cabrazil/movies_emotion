@@ -4,19 +4,11 @@ import { useRouter } from 'expo-router';
 import { colors, typography, spacing, borderRadius, shadows } from './theme';
 import { SentimentIcon } from './components/SentimentIcon';
 import { API_ENDPOINTS } from './config';
+import { Sentiment } from './types';
 
-interface Sentiment {
-  id: number;
-  name: string;
-  description: string;
-  keywords: string[];
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-const CARD_MARGIN = 8;
-const CARD_WIDTH = (Dimensions.get('window').width - 3 * CARD_MARGIN) / 2;
-const CARD_HEIGHT = 120;
+const CARD_MARGIN = 12;
+const CARD_WIDTH = (Dimensions.get('window').width - (2 * spacing.md) - CARD_MARGIN) / 2;
+const CARD_HEIGHT = 110;
 
 export default function SentimentosScreen() {
   const router = useRouter();
@@ -45,7 +37,7 @@ export default function SentimentosScreen() {
 
   const handleSentimentPress = (sentiment: Sentiment) => {
     router.push({
-      pathname: '/jornada/[id]',
+      pathname: '/intencoes/[id]',
       params: { id: sentiment.id.toString() }
     });
   };
@@ -89,7 +81,10 @@ export default function SentimentosScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Como você está se sentindo?</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>Como você está se sentindo hoje?</Text>
+        <Text style={styles.subtitle}>Escolha o sentimento que melhor descreve seu estado emocional atual</Text>
+      </View>
       <FlatList
         data={sentiments}
         keyExtractor={item => item.id.toString()}
@@ -126,13 +121,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.background.primary,
   },
+  header: {
+    marginBottom: spacing.lg,
+    alignItems: 'center',
+  },
   title: {
     fontSize: typography.fontSize.h2,
     fontWeight: typography.fontWeight.semibold,
     color: colors.text.primary,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.sm,
     textAlign: 'center',
     lineHeight: typography.fontSize.h2 * typography.lineHeight.tight,
+  },
+  subtitle: {
+    fontSize: typography.fontSize.body,
+    fontWeight: typography.fontWeight.regular,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    lineHeight: typography.fontSize.body * typography.lineHeight.normal,
+    paddingHorizontal: spacing.sm,
   },
   row: {
     flexDirection: 'row',
@@ -145,11 +152,10 @@ const styles = StyleSheet.create({
   card: {
     width: CARD_WIDTH,
     height: CARD_HEIGHT,
-    backgroundColor: colors.background.card,
+    backgroundColor: colors.primary.main,
     borderRadius: borderRadius.lg,
     paddingVertical: spacing.lg,
-    paddingHorizontal: spacing.sm,
-    marginHorizontal: CARD_MARGIN / 2,
+    paddingHorizontal: spacing.md,
     marginBottom: CARD_MARGIN,
     alignItems: 'center',
     justifyContent: 'center',
@@ -159,12 +165,13 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   cardTitle: {
-    fontSize: typography.fontSize.h4,
+    fontSize: typography.fontSize.body,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.primary.main,
+    color: colors.background.card,
     textAlign: 'center',
     flexWrap: 'wrap',
-    lineHeight: typography.fontSize.h4 * typography.lineHeight.normal,
+    lineHeight: typography.fontSize.body * typography.lineHeight.normal,
+    width: '100%',
   },
   loadingText: {
     marginTop: spacing.md,

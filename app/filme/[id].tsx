@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, typography, spacing, borderRadius, shadows } from '../theme';
 import { API_ENDPOINTS } from '../config';
+import { NavigationFooter } from '../components/NavigationFooter';
 
 interface Movie {
   id: string;
@@ -86,102 +87,109 @@ export default function MovieDetailsScreen() {
   }
 
   return (
-    <ScrollView style={styles.container}>
-      {movie.thumbnail && (
-        <View style={styles.thumbnailContainer}>
-          <View style={styles.thumbnailWrapper}>
-            <Image 
-              source={{ uri: movie.thumbnail }} 
-              style={styles.thumbnail} 
-              resizeMode="cover"
-            />
+    <View style={styles.fullContainer}>
+      <ScrollView style={styles.container}>
+        {movie.thumbnail && (
+          <View style={styles.thumbnailContainer}>
+            <View style={styles.thumbnailWrapper}>
+              <Image 
+                source={{ uri: movie.thumbnail }} 
+                style={styles.thumbnail} 
+                resizeMode="cover"
+              />
+            </View>
           </View>
-        </View>
-      )}
-      
-      <View style={styles.content}>
-        <Text style={styles.title}>{movie.title}</Text>
+        )}
         
-        <View style={styles.detailsRow}>
-          {movie.year && (
-            <Text style={styles.detailText}>{movie.year}</Text>
+        <View style={styles.content}>
+          <Text style={styles.title}>{movie.title}</Text>
+          
+          <View style={styles.detailsRow}>
+            {movie.year && (
+              <Text style={styles.detailText}>{movie.year}</Text>
+            )}
+            {movie.runtime && (
+              <Text style={styles.detailText}>{movie.runtime} min</Text>
+            )}
+            {movie.certification && (
+              <View style={styles.certificationContainer}>
+                <Text style={styles.certificationText}>{movie.certification}</Text>
+              </View>
+            )}
+            {movie.vote_average !== undefined && movie.vote_average !== null && (
+              <View style={styles.ratingContainer}>
+                <Ionicons name="star" size={16} color={colors.yellow} />
+                <Text style={styles.ratingText}>
+                  {typeof movie.vote_average === 'number' 
+                    ? movie.vote_average.toFixed(1)
+                    : movie.vote_average}
+                </Text>
+              </View>
+            )}
+          </View>
+
+          {movie.director && (
+            <Text style={styles.directorText}>Diretor: {movie.director}</Text>
           )}
-          {movie.runtime && (
-            <Text style={styles.detailText}>{movie.runtime} min</Text>
-          )}
-          {movie.certification && (
-            <View style={styles.certificationContainer}>
-              <Text style={styles.certificationText}>{movie.certification}</Text>
+
+          {movie.genres && movie.genres.length > 0 && (
+            <View style={styles.genresContainer}>
+              <Text style={styles.genresTitle}>Gêneros:</Text>
+              <View style={styles.genresList}>
+                {movie.genres.map((genre) => (
+                  <View key={genre} style={styles.genreTag}>
+                    <Text style={styles.genreText}>{genre}</Text>
+                  </View>
+                ))}
+              </View>
             </View>
           )}
-          {movie.vote_average !== undefined && movie.vote_average !== null && (
-            <View style={styles.ratingContainer}>
-              <Ionicons name="star" size={16} color={colors.yellow} />
-              <Text style={styles.ratingText}>
-                {typeof movie.vote_average === 'number' 
-                  ? movie.vote_average.toFixed(1)
-                  : movie.vote_average}
-              </Text>
+
+          {reason && (
+            <View style={styles.reasonContainer}>
+              <Text style={styles.reasonTitle}>Por que assistir?</Text>
+              <Text style={styles.reasonText}>{reason}</Text>
             </View>
           )}
+
+          {movie.description && (
+            <View style={styles.descriptionContainer}>
+              <Text style={styles.descriptionTitle}>Sinopse</Text>
+              <Text style={styles.descriptionText}>{movie.description}</Text>
+            </View>
+          )}
+
+          {movie.streamingPlatforms && movie.streamingPlatforms.length > 0 && (
+            <View style={styles.streamingContainer}>
+              <Text style={styles.streamingTitle}>Disponível em:</Text>
+              <View style={styles.streamingPlatforms}>
+                {movie.streamingPlatforms.map((platform) => (
+                  <View key={platform} style={styles.platformTag}>
+                    <Text style={styles.platformText}>{platform}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          <View style={styles.actionsContainer}>
+            <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
+              <Ionicons name="share-outline" size={24} color={colors.primary.main} />
+              <Text style={styles.actionButtonText}>Compartilhar</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-
-        {movie.director && (
-          <Text style={styles.directorText}>Diretor: {movie.director}</Text>
-        )}
-
-        {movie.genres && movie.genres.length > 0 && (
-          <View style={styles.genresContainer}>
-            <Text style={styles.genresTitle}>Gêneros:</Text>
-            <View style={styles.genresList}>
-              {movie.genres.map((genre) => (
-                <View key={genre} style={styles.genreTag}>
-                  <Text style={styles.genreText}>{genre}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {reason && (
-          <View style={styles.reasonContainer}>
-            <Text style={styles.reasonTitle}>Por que assistir?</Text>
-            <Text style={styles.reasonText}>{reason}</Text>
-          </View>
-        )}
-
-        {movie.description && (
-          <View style={styles.descriptionContainer}>
-            <Text style={styles.descriptionTitle}>Sinopse</Text>
-            <Text style={styles.descriptionText}>{movie.description}</Text>
-          </View>
-        )}
-
-        {movie.streamingPlatforms && movie.streamingPlatforms.length > 0 && (
-          <View style={styles.streamingContainer}>
-            <Text style={styles.streamingTitle}>Disponível em:</Text>
-            <View style={styles.streamingPlatforms}>
-              {movie.streamingPlatforms.map((platform) => (
-                <View key={platform} style={styles.platformTag}>
-                  <Text style={styles.platformText}>{platform}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
-
-        <View style={styles.actionsContainer}>
-          <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
-            <Ionicons name="share-outline" size={24} color={colors.primary.main} />
-            <Text style={styles.actionButtonText}>Compartilhar</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+      <NavigationFooter backLabel="Voltar aos Filmes" showHome={true} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  fullContainer: {
+    flex: 1,
+    backgroundColor: colors.background.primary,
+  },
   container: {
     flex: 1,
     backgroundColor: colors.background.primary,
