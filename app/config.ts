@@ -1,4 +1,25 @@
-export const API_BASE_URL = 'https://2d89-187-255-43-93.ngrok-free.app';
+// Configuração automática de ambiente baseada na versão web
+const getApiBaseUrl = () => {
+  // Prioridade: variável de ambiente > detecção automática > fallback
+  if (process.env.EXPO_PUBLIC_API_BASE_URL) {
+    return process.env.EXPO_PUBLIC_API_BASE_URL;
+  }
+  
+  // Detecção automática baseada no ambiente
+  if (__DEV__) {
+    // Desenvolvimento: usar ngrok local
+    return 'https://06654ae66bd6.ngrok-free.app';
+  }
+  
+  // Produção: usar Vercel
+  return 'https://moviesf-back.vercel.app';
+};
+
+export const API_BASE_URL = getApiBaseUrl();
+
+// Log da URL base para debug
+console.log('🌐 API Base URL:', API_BASE_URL);
+console.log('🔧 Environment:', __DEV__ ? 'development' : 'production');
 
 export const API_ENDPOINTS = {
   mainSentiments: {

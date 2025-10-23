@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView, Image, Pressable, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView, Image, Pressable, Dimensions, SafeAreaView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { API_ENDPOINTS } from '../../config';
 import { colors, typography, spacing, borderRadius, shadows } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
 import { PersonalizedJourneyResponse, PersonalizedJourneyStep, JourneyOption, MovieSuggestion } from '../../types';
 import { NavigationFooter } from '../../components/NavigationFooter';
+import { AppHeader } from '../../components/AppHeader';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_MARGIN = spacing.xs;
@@ -24,6 +25,9 @@ export default function JornadaPersonalizadaScreen() {
   const [currentPage, setCurrentPage] = useState(0);
   const [moviesPerPage] = useState(3);
   const router = useRouter();
+
+  // Obter cor do sentimento
+  const sentimentColor = colors.sentimentColors[Number(sentimentId)] || colors.primary.main;
 
   const loadMoreMovies = () => {
     const nextPage = currentPage + 1;
@@ -139,8 +143,15 @@ export default function JornadaPersonalizadaScreen() {
           {step.options.map(option => (
             <TouchableOpacity
               key={option.id}
-              style={styles.genreOption}
+              style={[
+                styles.genreOption,
+                {
+                  borderColor: sentimentColor,
+                  borderWidth: 1.5,
+                }
+              ]}
               onPress={() => handleOption(option)}
+              activeOpacity={0.7}
             >
               <Text style={styles.genreOptionText} numberOfLines={1}>{option.text}</Text>
             </TouchableOpacity>
@@ -153,8 +164,16 @@ export default function JornadaPersonalizadaScreen() {
     return step.options.map(option => (
       <TouchableOpacity
         key={option.id}
-        style={styles.option}
+        style={[
+          styles.option,
+          {
+            borderLeftWidth: 4,
+            borderLeftColor: sentimentColor,
+            borderColor: colors.border.light,
+          }
+        ]}
         onPress={() => handleOption(option)}
+        activeOpacity={0.7}
       >
         <Text style={styles.optionText}>{option.text}</Text>
       </TouchableOpacity>
@@ -163,31 +182,39 @@ export default function JornadaPersonalizadaScreen() {
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color={colors.primary.main} />
-        <Text style={styles.loadingText}>Carregando jornada personalizada...</Text>
-      </View>
+      <SafeAreaView style={styles.safeArea}>
+        <AppHeader showBack={true} />
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color={colors.primary.main} />
+          <Text style={styles.loadingText}>Carregando jornada personalizada...</Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   if (error || !step) {
     return (
-      <View style={styles.center}>
-        <Text style={styles.errorText}>{error || 'Jornada personalizada não encontrada'}</Text>
-        <TouchableOpacity
-          style={styles.retryButton}
-          onPress={() => router.back()}
-        >
-          <Text style={styles.retryButtonText}>Voltar</Text>
-        </TouchableOpacity>
-      </View>
+      <SafeAreaView style={styles.safeArea}>
+        <AppHeader showBack={true} />
+        <View style={styles.center}>
+          <Text style={styles.errorText}>{error || 'Jornada personalizada não encontrada'}</Text>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={() => router.back()}
+          >
+            <Text style={styles.retryButtonText}>Voltar</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
     );
   }
 
   if (suggestedMovies) {
     return (
-      <View style={styles.container}>
-        <ScrollView contentContainerStyle={styles.movieResultsContainer}>
+      <SafeAreaView style={styles.safeArea}>
+        <AppHeader showBack={true} />
+        <View style={styles.container}>
+          <ScrollView contentContainerStyle={styles.movieResultsContainer}>
           {/* Header melhorado */}
           <View style={styles.resultsHeader}>
             <View style={styles.journeyIndicator}>
@@ -286,39 +313,55 @@ export default function JornadaPersonalizadaScreen() {
           onLoadMore={loadMoreMovies}
           loadMoreLabel={`Ver Mais (${getTotalMoviesInfo().currentlyShowing}/${getTotalMoviesInfo().total})`}
         />
-      </View>
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.safeArea}>
+      <AppHeader showBack={true} />
+      <View style={styles.container}>
       <ScrollView 
         contentContainerStyle={[
           styles.scrollContainer,
           step?.id === 38 && styles.genreContainer
         ]}
       >
-        <Text style={styles.question}>{step?.question}</Text>
-        
-        {/* Badge de contexto */}
-        {step?.contextualHint && (
-          <View style={styles.contextBadges}>
-            <View style={styles.sentimentBadge}>
-              <Text style={styles.badgeText}>
+        {/* Header da pergunta */}
+        <View style={styles.questionHeader}>
+          <Text style={styles.question}>{step?.question}</Text>
+          
+          {/* Badge de contexto melhorado */}
+          {step?.contextualHint && (
+            <View style={[
+              styles.contextHintContainer,
+              {
+                backgroundColor: sentimentColor + '10',
+                borderLeftColor: sentimentColor,
+              }
+            ]}>
+              <Ionicons name="information-circle" size={18} color={sentimentColor} />
+              <Text style={styles.contextHintText}>
                 {step.contextualHint}
               </Text>
             </View>
-          </View>
-        )}
+          )}
+        </View>
         
         {renderOptions()}
       </ScrollView>
       <NavigationFooter backLabel="Trocar Intenção" />
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: colors.background.primary,
+  },
   container: {
     flex: 1,
     backgroundColor: colors.background.primary,
@@ -348,13 +391,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.background.primary,
   },
+  questionHeader: {
+    marginBottom: spacing.lg,
+    paddingHorizontal: spacing.xs,
+  },
   question: {
     fontSize: typography.fontSize.h2,
-    fontWeight: typography.fontWeight.medium,
+    fontWeight: typography.fontWeight.bold,
     color: colors.text.primary,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
     textAlign: 'center',
     lineHeight: typography.fontSize.h2 * typography.lineHeight.tight,
+  },
+  contextHintContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    borderRadius: borderRadius.md,
+    padding: spacing.sm,
+    borderLeftWidth: 3,
+  },
+  contextHintText: {
+    flex: 1,
+    fontSize: typography.fontSize.small,
+    color: colors.text.secondary,
+    marginLeft: spacing.xs,
+    lineHeight: typography.fontSize.small * typography.lineHeight.relaxed,
   },
   hintContainer: {
     flexDirection: 'row',
@@ -375,17 +436,18 @@ const styles = StyleSheet.create({
   },
   option: {
     width: '100%',
-    backgroundColor: colors.primary.main,
-    borderRadius: borderRadius.md,
-    padding: spacing.md,
+    backgroundColor: colors.background.card,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
     marginBottom: spacing.md,
     alignItems: 'center',
-    ...shadows.sm,
+    borderWidth: 1,
+    ...shadows.md,
   },
   optionText: {
-    color: colors.background.card,
+    color: colors.text.primary,
     fontSize: typography.fontSize.body,
-    fontWeight: typography.fontWeight.medium,
+    fontWeight: typography.fontWeight.semibold,
     textAlign: 'center',
     lineHeight: typography.fontSize.body * typography.lineHeight.normal,
   },
@@ -518,8 +580,8 @@ const styles = StyleSheet.create({
   genreOption: {
     width: CARD_WIDTH,
     height: CARD_HEIGHT,
-    backgroundColor: colors.primary.main,
-    borderRadius: borderRadius.sm,
+    backgroundColor: colors.background.card,
+    borderRadius: borderRadius.md,
     padding: spacing.xs,
     marginBottom: CARD_MARGIN,
     alignItems: 'center',
@@ -527,9 +589,9 @@ const styles = StyleSheet.create({
     ...shadows.sm,
   },
   genreOptionText: {
-    color: colors.background.card,
+    color: colors.text.primary,
     fontSize: typography.fontSize.small,
-    fontWeight: typography.fontWeight.medium,
+    fontWeight: typography.fontWeight.semibold,
     textAlign: 'center',
     lineHeight: typography.fontSize.small * typography.lineHeight.normal,
   },
@@ -573,23 +635,4 @@ const styles = StyleSheet.create({
     fontWeight: typography.fontWeight.medium,
   },
   // Estilo para badge de contexto
-  contextBadges: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: spacing.md,
-  },
-  sentimentBadge: {
-    backgroundColor: colors.primary.main + '15',
-    borderRadius: borderRadius.lg,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderWidth: 1,
-    borderColor: colors.primary.main + '30',
-  },
-  badgeText: {
-    fontSize: typography.fontSize.small,
-    fontWeight: typography.fontWeight.medium,
-    color: colors.primary.main,
-    textAlign: 'center',
-  },
 }); 

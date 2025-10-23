@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Share } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Share, SafeAreaView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, typography, spacing, borderRadius, shadows } from '../theme';
 import { API_ENDPOINTS } from '../config';
 import { NavigationFooter } from '../components/NavigationFooter';
+import { AppHeader } from '../components/AppHeader';
 
 interface Movie {
   id: string;
@@ -72,23 +73,31 @@ export default function MovieDetailsScreen() {
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <Text style={styles.loadingText}>Carregando filme...</Text>
-      </View>
+      <SafeAreaView style={styles.safeArea}>
+        <AppHeader showBack={true} />
+        <View style={styles.center}>
+          <Text style={styles.loadingText}>Carregando filme...</Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   if (error || !movie) {
     return (
-      <View style={styles.center}>
-        <Text style={styles.errorText}>{error || 'Filme não encontrado'}</Text>
-      </View>
+      <SafeAreaView style={styles.safeArea}>
+        <AppHeader showBack={true} />
+        <View style={styles.center}>
+          <Text style={styles.errorText}>{error || 'Filme não encontrado'}</Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={styles.fullContainer}>
-      <ScrollView style={styles.container}>
+    <SafeAreaView style={styles.safeArea}>
+      <AppHeader showBack={true} />
+      <View style={styles.fullContainer}>
+        <ScrollView style={styles.container}>
         {movie.thumbnail && (
           <View style={styles.thumbnailContainer}>
             <View style={styles.thumbnailWrapper}>
@@ -181,11 +190,16 @@ export default function MovieDetailsScreen() {
         </View>
       </ScrollView>
       <NavigationFooter backLabel="Voltar aos Filmes" showHome={true} />
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: colors.background.primary,
+  },
   fullContainer: {
     flex: 1,
     backgroundColor: colors.background.primary,

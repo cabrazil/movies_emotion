@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { colors, typography, spacing, borderRadius, shadows } from './theme';
 
@@ -6,28 +6,40 @@ export default function HomeScreen() {
   const router = useRouter();
 
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <View style={styles.content}>
+        <Text style={styles.welcomeText}>Bem-vindo(a) ao</Text>
+        
         <View style={styles.logoContainer}>
-          <Image 
-            source={require('../assets/logo.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+          {/* TODO: Substituir por logo quando disponível */}
+          <Text style={styles.brandName}>Vibesfilm</Text>
         </View>
-        <Text style={styles.subtitle}>Encontre filmes que combinam com seu momento</Text>
+        
+        <Text style={styles.title}>Encontre o filme perfeito para sua vibe!</Text>
+        
+        <Text style={styles.description}>
+          O cinema vai além de espelhar seu estado de espírito: ele pode te ajudar a processar uma emoção, 
+          transformar seu humor, manter uma boa energia ou explorar novas sensações.
+        </Text>
+        
         <TouchableOpacity
           style={styles.button}
           onPress={() => router.push('/sentimentos')}
         >
-          <Text style={styles.buttonText}>Começar</Text>
+          <Text style={styles.buttonText}>Vamos começar</Text>
         </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: colors.background.primary,
+  },
   container: {
     flex: 1,
     backgroundColor: colors.background.primary,
@@ -39,35 +51,54 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
     paddingBottom: spacing.xl * 2,
   },
+  welcomeText: {
+    fontSize: typography.fontSize.h3,
+    fontWeight: typography.fontWeight.regular,
+    color: colors.text.secondary,
+    marginBottom: spacing.sm,
+    textAlign: 'center',
+  },
   logoContainer: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
     alignItems: 'center',
   },
-  logo: {
-    width: 320,
-    height: 320,
+  brandName: {
+    fontSize: 48,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.primary.light,
+    textAlign: 'center',
+    letterSpacing: 1,
   },
-  subtitle: {
+  title: {
     fontSize: typography.fontSize.h2,
-    fontWeight: typography.fontWeight.semibold,
+    fontWeight: typography.fontWeight.bold,
     color: colors.text.primary,
     marginBottom: spacing.lg,
     textAlign: 'center',
     lineHeight: typography.fontSize.h2 * typography.lineHeight.tight,
   },
+  description: {
+    fontSize: typography.fontSize.body,
+    fontWeight: typography.fontWeight.regular,
+    color: colors.text.secondary,
+    marginBottom: spacing.xl,
+    textAlign: 'center',
+    lineHeight: typography.fontSize.body * typography.lineHeight.relaxed,
+    paddingHorizontal: spacing.sm,
+  },
   button: {
-    backgroundColor: colors.primary.main,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xl,
+    backgroundColor: colors.primary.light,
+    paddingVertical: spacing.md + 4,
+    paddingHorizontal: spacing.xl * 1.5,
     borderRadius: borderRadius.lg,
-    ...shadows.sm,
+    ...shadows.md,
     marginTop: spacing.md,
   },
   buttonText: {
-    color: colors.background.card,
+    color: colors.text.inverse,
     fontSize: typography.fontSize.body * 1.2,
-    fontWeight: typography.fontWeight.semibold,
+    fontWeight: typography.fontWeight.bold,
     textAlign: 'center',
-    lineHeight: typography.fontSize.body * typography.lineHeight.normal,
+    letterSpacing: 0.5,
   },
 }); 

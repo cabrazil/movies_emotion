@@ -21,6 +21,13 @@ export const colors = {
     inverse: '#FFFFFF',    // Branco para texto sobre fundo colorido
   },
   
+  // Cores de borda
+  border: {
+    light: '#E0E0E0',      // Borda clara
+    medium: '#CCCCCC',     // Borda média
+    dark: '#999999',       // Borda escura
+  },
+  
   // Cores de estado
   state: {
     error: '#FF6B6B',      // Vermelho suave
@@ -37,6 +44,16 @@ export const colors = {
   green: '#4CAF50',
   teal:  '#60B2A3',
   white: '#FFFFFF',
+  
+  // Cores específicas por sentimento (cards)
+  sentimentColors: {
+    13: '#FF8F00', // Laranja/Âmbar para Feliz/Alegre
+    14: '#1A73E8', // Azul para Triste
+    15: '#2E7D32', // Verde escuro para Calmo
+    16: '#BA55D3', // Roxo para Ansioso
+    17: '#FF4444', // Vermelho para Animado
+    18: '#808080', // Cinza para Cansado
+  } as Record<number, string>,
 };
 
 export const typography = {
@@ -83,6 +100,7 @@ export const borderRadius = {
   md: 8,
   lg: 12,
   xl: 16,
+  full: 9999,  // Círculo perfeito
 };
 
 export const shadows = {
@@ -105,5 +123,15 @@ export const shadows = {
     shadowOpacity: 0.15,
     shadowRadius: 4,
     elevation: 4,
+  },
+  lg: {
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 8,
   },
 }; 

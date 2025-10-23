@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView, SafeAreaView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { colors, typography, spacing, borderRadius, shadows } from '../theme';
 import { API_ENDPOINTS } from '../config';
 import { EmotionalIntentionsResponse, EmotionalIntention, Sentiment } from '../types';
 import { IntentionIcon } from '../components/IntentionIcon';
 import { NavigationFooter } from '../components/NavigationFooter';
+import { AppHeader } from '../components/AppHeader';
 
 export default function IntencoesScreen() {
   const { id } = useLocalSearchParams();
@@ -66,42 +67,57 @@ export default function IntencoesScreen() {
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color={colors.primary.main} />
-        <Text style={styles.loadingText}>Carregando intenções emocionais...</Text>
-      </View>
+      <SafeAreaView style={styles.safeArea}>
+        <AppHeader showBack={true} />
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color={colors.primary.main} />
+          <Text style={styles.loadingText}>Carregando intenções emocionais...</Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   if (error) {
     return (
-      <View style={styles.center}>
-        <Text style={styles.errorText}>{error}</Text>
-        <TouchableOpacity 
-          style={styles.retryButton}
-          onPress={fetchIntentions}
-        >
-          <Text style={styles.retryButtonText}>Tentar novamente</Text>
-        </TouchableOpacity>
-      </View>
+      <SafeAreaView style={styles.safeArea}>
+        <AppHeader showBack={true} />
+        <View style={styles.center}>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity 
+            style={styles.retryButton}
+            onPress={fetchIntentions}
+          >
+            <Text style={styles.retryButtonText}>Tentar novamente</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
     );
   }
 
+  const sentimentColor = sentiment ? (colors.sentimentColors[sentiment.id] || colors.primary.main) : colors.primary.main;
+
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>O que você gostaria de fazer com esse sentimento?</Text>
-        {sentiment && (
-          <View style={styles.sentimentBadge}>
-            <Text style={styles.sentimentBadgeText}>{sentiment.name}</Text>
-          </View>
-        )}
-      </View>
+    <SafeAreaView style={styles.safeArea}>
+      <AppHeader showBack={true} />
+      <ScrollView style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>O que você gostaria de fazer com esse sentimento?</Text>
+          {sentiment && (
+            <View style={[styles.sentimentBadge, { 
+              backgroundColor: sentimentColor + '15',
+              borderColor: sentimentColor + '30',
+            }]}>
+              <Text style={[styles.sentimentBadgeText, { color: sentimentColor }]}>
+                {sentiment.name}
+              </Text>
+            </View>
+          )}
+          <Text style={styles.subtitle}>Escolha sua intenção emocional:</Text>
+        </View>
 
       <View style={styles.intentionsContainer}>
         {intentions
           .sort((a, b) => {
-            // Definir ordem específica para as intenções
             const order = ['PROCESS', 'TRANSFORM', 'MAINTAIN', 'EXPLORE'];
             const indexA = order.indexOf(a.type);
             const indexB = order.indexOf(b.type);
@@ -110,16 +126,21 @@ export default function IntencoesScreen() {
           .map((intention) => (
             <TouchableOpacity
               key={intention.id}
-              style={styles.intentionCard}
+              style={[styles.intentionCard, {
+                borderLeftWidth: 4,
+                borderLeftColor: sentimentColor,
+              }]}
               onPress={() => handleIntentionPress(intention)}
-              activeOpacity={0.8}
+              activeOpacity={0.7}
             >
               <View style={styles.intentionHeader}>
-                <View style={styles.intentionIconContainer}>
+                <View style={[styles.intentionIconContainer, { 
+                  backgroundColor: sentimentColor + '20' 
+                }]}>
                   <IntentionIcon 
                     intentionType={intention.type} 
-                    size={28} 
-                    color={colors.white} 
+                    size={24} 
+                    color={sentimentColor} 
                   />
                 </View>
                 <Text style={styles.intentionTitle}>
@@ -135,11 +156,16 @@ export default function IntencoesScreen() {
       </View>
 
       <NavigationFooter backLabel="Voltar aos Sentimentos" />
-    </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: colors.background.primary,
+  },
   container: {
     flex: 1,
     backgroundColor: colors.background.primary,
@@ -152,31 +178,36 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: spacing.md,
-    paddingTop: spacing.xl,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.lg,
   },
   title: {
     fontSize: typography.fontSize.h2,
-    fontWeight: typography.fontWeight.semibold,
+    fontWeight: typography.fontWeight.bold,
     color: colors.text.primary,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
     textAlign: 'center',
     lineHeight: typography.fontSize.h2 * typography.lineHeight.tight,
   },
   sentimentBadge: {
-    backgroundColor: colors.primary.main + '15',
     borderRadius: borderRadius.lg,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
+    paddingVertical: spacing.sm,
     borderWidth: 1,
-    borderColor: colors.primary.main + '30',
     alignSelf: 'center',
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
   },
   sentimentBadgeText: {
-    fontSize: typography.fontSize.small,
-    fontWeight: typography.fontWeight.medium,
-    color: colors.primary.main,
+    fontSize: typography.fontSize.body,
+    fontWeight: typography.fontWeight.semibold,
     textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: typography.fontSize.body,
+    fontWeight: typography.fontWeight.regular,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    marginTop: spacing.sm,
   },
 
   intentionsContainer: {
@@ -186,11 +217,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   intentionCard: {
-    backgroundColor: colors.primary.main,
+    backgroundColor: colors.background.card,
     borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    marginBottom: spacing.sm,
-    ...shadows.sm,
+    padding: spacing.lg,
+    marginBottom: spacing.md,
+    ...shadows.md,
   },
   intentionHeader: {
     flexDirection: 'row',
@@ -198,18 +229,24 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   intentionIconContainer: {
-    marginRight: spacing.sm,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: spacing.md,
   },
   intentionTitle: {
-    fontSize: typography.fontSize.h4,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.white,
+    fontSize: typography.fontSize.h3,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.text.primary,
     flex: 1,
   },
   intentionDescription: {
-    fontSize: typography.fontSize.body,
-    color: colors.white,
-    lineHeight: typography.fontSize.body * typography.lineHeight.normal,
+    fontSize: typography.fontSize.small,
+    color: colors.text.secondary,
+    lineHeight: typography.fontSize.small * typography.lineHeight.relaxed,
+    marginLeft: 48 + spacing.md,
   },
   footer: {
     padding: spacing.md,
