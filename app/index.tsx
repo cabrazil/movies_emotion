@@ -1,19 +1,30 @@
 import { View, Text, StyleSheet, TouchableOpacity, Image, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors, typography, spacing, borderRadius, shadows } from './theme';
+
+// Importar o logo do Vibesfilm
+const vibesfilmLogo = require('../assets/logo_header.png');
 
 export default function HomeScreen() {
   const router = useRouter();
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+      <LinearGradient
+        colors={['#FFFFFF', '#F8F9FA', '#F0F2F5', '#E8EAE6']}
+        locations={[0, 0.3, 0.7, 1]}
+        style={styles.container}
+      >
         <View style={styles.content}>
         <Text style={styles.welcomeText}>Bem-vindo(a) ao</Text>
         
         <View style={styles.logoContainer}>
-          {/* TODO: Substituir por logo quando disponível */}
-          <Text style={styles.brandName}>Vibesfilm</Text>
+          <Image 
+            source={vibesfilmLogo} 
+            style={styles.logo}
+            resizeMode="contain"
+          />
         </View>
         
         <Text style={styles.title}>Encontre o filme perfeito para sua vibe!</Text>
@@ -30,7 +41,7 @@ export default function HomeScreen() {
           <Text style={styles.buttonText}>Vamos começar</Text>
         </TouchableOpacity>
         </View>
-      </View>
+      </LinearGradient>
     </SafeAreaView>
   );
 }
@@ -38,11 +49,10 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.background.primary,
+    backgroundColor: 'transparent',
   },
   container: {
     flex: 1,
-    backgroundColor: colors.background.primary,
   },
   content: {
     flex: 1,
@@ -62,12 +72,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     alignItems: 'center',
   },
-  brandName: {
-    fontSize: 48,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.primary.light,
-    textAlign: 'center',
-    letterSpacing: 1,
+  logo: {
+    height: 80,
+    width: 250,
   },
   title: {
     fontSize: typography.fontSize.h2,
@@ -78,27 +85,35 @@ const styles = StyleSheet.create({
     lineHeight: typography.fontSize.h2 * typography.lineHeight.tight,
   },
   description: {
-    fontSize: typography.fontSize.body,
-    fontWeight: typography.fontWeight.regular,
+    fontSize: typography.fontSize.h4,
+    fontWeight: typography.fontWeight.semibold,
     color: colors.text.secondary,
     marginBottom: spacing.xl,
     textAlign: 'center',
-    lineHeight: typography.fontSize.body * typography.lineHeight.relaxed,
+    lineHeight: typography.fontSize.h4 * typography.lineHeight.relaxed,
     paddingHorizontal: spacing.sm,
   },
   button: {
-    backgroundColor: colors.primary.light,
+    backgroundColor: '#1976D2',
+    borderWidth: 0,
     paddingVertical: spacing.md + 4,
     paddingHorizontal: spacing.xl * 1.5,
     borderRadius: borderRadius.lg,
-    ...shadows.md,
+    shadowColor: '#1976D2',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
     marginTop: spacing.md,
   },
   buttonText: {
-    color: colors.text.inverse,
+    color: '#FFFFFF',
     fontSize: typography.fontSize.body * 1.2,
     fontWeight: typography.fontWeight.bold,
     textAlign: 'center',
     letterSpacing: 0.5,
   },
-}); 
+});

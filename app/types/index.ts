@@ -22,6 +22,17 @@ export interface Sentiment {
   updatedAt?: string;
 }
 
+export interface MovieStreamingPlatform {
+  streamingPlatformId: number;
+  accessType: 'INCLUDED_WITH_SUBSCRIPTION' | 'RENTAL' | 'PURCHASE';
+  streamingPlatform: {
+    id: number;
+    name: string;
+    category: 'SUBSCRIPTION_PRIMARY' | 'HYBRID' | 'RENTAL_PURCHASE_PRIMARY' | 'FREE_PRIMARY';
+    logoPath: string | null;
+  };
+}
+
 export interface Movie {
   id: string;
   title: string;
@@ -32,6 +43,7 @@ export interface Movie {
   certification?: string;
   genres?: string[];
   runtime?: number;
+  platforms?: MovieStreamingPlatform[];
 }
 
 export interface MovieSuggestion {
@@ -65,4 +77,15 @@ export interface PersonalizedJourneyResponse {
   mainSentimentId: number;
   emotionalIntentionId: number;
   steps: PersonalizedJourneyStep[];
+}
+
+export interface StreamingPlatform {
+  id: number;
+  name: string;
+  category: 'SUBSCRIPTION_PRIMARY' | 'HYBRID' | 'RENTAL_PURCHASE_PRIMARY' | 'FREE_PRIMARY';
+  showFilter: 'PRIORITY' | 'SECONDARY' | 'HIDDEN';
+  logoPath: string | null;
+  baseUrl: string | null;
+  hasFreeTrial: boolean;
+  freeTrialDuration: string | null;
 } 

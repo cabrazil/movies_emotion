@@ -1,15 +1,19 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, typography, spacing, shadows } from '../theme';
 
+// Importar o logo do Vibesfilm
+const vibesfilmLogo = require('../../assets/logo_header.png');
+
 interface AppHeaderProps {
   showBack?: boolean;
   title?: string;
+  showLogo?: boolean;
   onBackPress?: () => void;
 }
 
-export function AppHeader({ showBack = false, title = 'Vibesfilm', onBackPress }: AppHeaderProps) {
+export function AppHeader({ showBack = false, title = 'Vibesfilm', showLogo = false, onBackPress }: AppHeaderProps) {
   const router = useRouter();
 
   const handleBackPress = () => {
@@ -35,7 +39,17 @@ export function AppHeader({ showBack = false, title = 'Vibesfilm', onBackPress }
           <View style={styles.placeholder} />
         )}
 
-        <Text style={styles.title}>{title}</Text>
+        {showLogo ? (
+          <View style={styles.logoContainer}>
+            <Image 
+              source={vibesfilmLogo} 
+              style={styles.logo}
+              resizeMode="contain"
+            />
+          </View>
+        ) : (
+          <Text style={styles.title}>{title}</Text>
+        )}
 
         <View style={styles.placeholder} />
       </View>
@@ -70,6 +84,14 @@ const styles = StyleSheet.create({
     fontWeight: typography.fontWeight.bold,
     color: colors.primary.light,
     letterSpacing: 0.5,
+  },
+  logo: {
+    height: 32,
+    width: 120,
+  },
+  logoContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   placeholder: {
     width: 40,
