@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Share, SafeAreaView } from 'react-native';
+import { useEffect, useState, useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Share, SafeAreaView, Animated } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, typography, spacing, borderRadius, shadows } from '../theme';
@@ -97,6 +97,9 @@ export default function MovieDetailsScreen() {
   const [showFullSynopsis, setShowFullSynopsis] = useState(false);
   const [showFullCast, setShowFullCast] = useState(false);
   const [showFullNominations, setShowFullNominations] = useState(false);
+  const [showScrollIndicator, setShowScrollIndicator] = useState(false);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollIndicatorOpacity = useRef(new Animated.Value(1)).current;
   const router = useRouter();
 
   // Obter cor do sentimento
@@ -263,6 +266,18 @@ export default function MovieDetailsScreen() {
     fetchMovie();
   }, [id]);
 
+  // Mostrar indicador de scroll inicialmente se há conteúdo
+  useEffect(() => {
+    if (movie && !loading) {
+      // Pequeno delay para garantir que o layout foi renderizado
+      const timer = setTimeout(() => {
+        setShowScrollIndicator(true);
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [movie, loading]);
+
   const handleShare = async () => {
     if (!movie) return;
     
@@ -293,6 +308,33 @@ export default function MovieDetailsScreen() {
     );
   }
 
+  // Função para lidar com o scroll
+  const handleScroll = (event: any) => {
+    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+    const isScrolledToBottom = contentOffset.y + layoutMeasurement.height >= contentSize.height - 20;
+    
+    if (isScrolledToBottom) {
+      // Fazer o indicador desaparecer suavemente
+      Animated.timing(scrollIndicatorOpacity, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => {
+        setShowScrollIndicator(false);
+      });
+    } else {
+      // Mostrar o indicador se não estiver no final
+      if (!showScrollIndicator) {
+        setShowScrollIndicator(true);
+        Animated.timing(scrollIndicatorOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
+      }
+    }
+  };
+
   if (error || !movie) {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -308,7 +350,12 @@ export default function MovieDetailsScreen() {
     <SafeAreaView style={styles.safeArea}>
       <AppHeader showBack={true} showLogo={true} />
     <View style={styles.fullContainer}>
-      <ScrollView style={styles.container}>
+      <ScrollView 
+        ref={scrollViewRef}
+        style={styles.container}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
         {/* Header do Filme */}
         <View style={styles.movieHeader}>
         {movie.thumbnail && (
@@ -410,16 +457,6 @@ export default function MovieDetailsScreen() {
                             );
                           })()}
                         </View>
-                        {(platform.streamingPlatform || platform).hasFreeTrial && (
-                          <View style={styles.freeTrialBadge}>
-                            <Text style={styles.freeTrialBadgeText}>
-                              {(platform.streamingPlatform || platform).freeTrialDuration ? 
-                                `${(platform.streamingPlatform || platform).freeTrialDuration} dias grátis` : 
-                                'Teste grátis'
-                              }
-                            </Text>
-              </View>
-            )}
                       </TouchableOpacity>
                     ))}
                 </View>
@@ -782,6 +819,21 @@ export default function MovieDetailsScreen() {
             </TouchableOpacity>
         </View>
       </ScrollView>
+      
+      {/* Indicador de Scroll */}
+      {showScrollIndicator && (
+        <Animated.View 
+          style={[
+            styles.scrollIndicator,
+            { 
+              opacity: scrollIndicatorOpacity,
+              borderColor: sentimentColor + '40'
+            }
+          ]}
+        >
+          <Ionicons name="chevron-down" size={24} color={sentimentColor} />
+        </Animated.View>
+      )}
         
       <NavigationFooter backLabel="Filmes" showHome={true} />
     </View>
@@ -923,12 +975,12 @@ const styles = StyleSheet.create({
   platformsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: spacing.md,
-    justifyContent: 'center',
+    gap: spacing.sm,
+    justifyContent: 'flex-start',
   },
   platformLogoItem: {
-    width: 80,
-    height: 80,
+    width: 70,
+    height: 70,
     backgroundColor: colors.background.card,
     borderRadius: borderRadius.md,
     borderWidth: 2,
@@ -942,30 +994,14 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   platformLogoContainer: {
-    width: 50,
-    height: 50,
+    width: 40,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
   },
   platformLogoImage: {
     width: 40,
     height: 40,
-  },
-  freeTrialBadge: {
-    position: 'absolute',
-    top: -8,
-    right: -8,
-    backgroundColor: '#4CAF50',
-    borderRadius: borderRadius.sm,
-    paddingHorizontal: spacing.xs,
-    paddingVertical: 2,
-    minWidth: 60,
-  },
-  freeTrialBadgeText: {
-    fontSize: typography.fontSize.tiny,
-    color: colors.text.inverse,
-    fontWeight: typography.fontWeight.bold,
-    textAlign: 'center',
   },
   accessTypeBadge: {
     position: 'absolute',
@@ -1383,5 +1419,20 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.body,
     color: colors.text.secondary,
     lineHeight: typography.fontSize.body * typography.lineHeight.normal,
+  },
+  scrollIndicator: {
+    position: 'absolute',
+    bottom: 100, // Acima do footer
+    left: '50%',
+    marginLeft: -25, // Metade da largura para centralizar
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: colors.background.card,
+    borderWidth: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...shadows.lg,
+    elevation: 8,
   },
 }); 

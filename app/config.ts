@@ -9,7 +9,7 @@ const getApiBaseUrl = () => {
   
   if (__DEV__) {
     // Desenvolvimento: usar mesmo backend local que o frontend
-    return 'https://96e98cddb3fa.ngrok-free.app';
+    return 'https://c3da75ce6779.ngrok-free.app';
   }
   
   // Produção: usar Vercel

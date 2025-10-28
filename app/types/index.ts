@@ -44,6 +44,8 @@ export interface Movie {
   genres?: string[];
   runtime?: number;
   platforms?: MovieStreamingPlatform[];
+  imdbRating?: number;
+  imdb_rating?: number;
 }
 
 export interface MovieSuggestion {

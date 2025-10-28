@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView, Image, Pressable, Dimensions, Animated } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -24,6 +24,7 @@ export default function JornadaPersonalizadaScreen() {
   const [allMovies, setAllMovies] = useState<MovieSuggestion[]>([]);
   const [selectedPlatformIds, setSelectedPlatformIds] = useState<number[]>([]);
   const [platformsData, setPlatformsData] = useState<Record<number, string>>({});
+  const [sortType, setSortType] = useState<'smart' | 'rating' | 'year'>('smart');
   const router = useRouter();
 
   // Obter cor do sentimento
@@ -58,6 +59,24 @@ export default function JornadaPersonalizadaScreen() {
     
     fetchPlatformsData();
   }, []);
+
+  // Lógica de rotação automática dos critérios de ordenação
+  useEffect(() => {
+    const availableFilters: ('smart' | 'rating' | 'year')[] = ['smart', 'rating', 'year'];
+    
+    const timestamp = Date.now();
+    const sessionData = JSON.stringify(allMovies.length + Number(sentimentId));
+    const hash = sessionData.split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+    
+    const filterIndex = Math.abs(timestamp + hash) % availableFilters.length;
+    const selectedFilter = availableFilters[filterIndex];
+    
+    setSortType(selectedFilter);
+    console.log(`🎲 Ordenação automática selecionada: ${selectedFilter}`);
+  }, []); // Executa apenas uma vez quando o componente é montado
 
   useEffect(() => {
     const fetchPersonalizedJourney = async () => {
@@ -108,6 +127,14 @@ export default function JornadaPersonalizadaScreen() {
 
   // Processar retorno da tela de plataformas
   useEffect(() => {
+    console.log('🔍 Debug useEffect - Parâmetros recebidos:', { 
+      showResults, 
+      optionId, 
+      platforms, 
+      allStepsLength: allSteps.length,
+      selectedPlatformIdsLength: selectedPlatformIds.length
+    });
+    
     if (showResults === 'true' && optionId && allSteps.length > 0) {
       console.log('🔄 Retornando da tela de plataformas:', { optionId, platforms });
       
@@ -325,6 +352,53 @@ export default function JornadaPersonalizadaScreen() {
     ));
   };
 
+  // Ordenar filmes baseado no critério selecionado
+  const sortedMovies = useMemo(() => {
+    return [...allMovies].sort((a, b) => {
+      switch (sortType) {
+        case 'smart':
+          // Score de diversidade (40% rating + 30% relevance + 15% year + 15% title hash)
+          const getDiversityScore = (suggestion: MovieSuggestion) => {
+            const movie = suggestion.movie;
+            
+            const imdbRating = movie.imdbRating ?? 0;
+            const voteAverage = (movie as any).vote_average ?? 0;
+            const ratingScore = (imdbRating * 0.6) + (voteAverage * 0.4);
+            
+            const relevanceScore = (suggestion as any).relevanceScore ?? 0;
+            
+            const yearScore = movie.year ? (movie.year - 1900) / 100 : 0;
+            
+            const titleHash = movie.title.split('').reduce((hash, char) => {
+              return ((hash << 5) - hash + char.charCodeAt(0)) & 0xffffffff;
+            }, 0);
+            const titleScore = (titleHash % 100) / 100;
+            
+            return (ratingScore * 0.4) + (relevanceScore * 0.3) + (yearScore * 0.15) + (titleScore * 0.15);
+          };
+          
+          return getDiversityScore(b) - getDiversityScore(a);
+          
+        case 'rating':
+          const aRating = a.movie.imdbRating ?? -Infinity;
+          const bRating = b.movie.imdbRating ?? -Infinity;
+          if (bRating !== aRating) return bRating - aRating;
+          
+          const aVoteAvg = (a.movie as any).vote_average ?? -Infinity;
+          const bVoteAvg = (b.movie as any).vote_average ?? -Infinity;
+          return bVoteAvg - aVoteAvg;
+          
+        case 'year':
+          const aYear = a.movie.year || 0;
+          const bYear = b.movie.year || 0;
+          return bYear - aYear;
+          
+        default:
+          return 0;
+      }
+    });
+  }, [allMovies, sortType]);
+
   if (loading) {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -354,12 +428,14 @@ export default function JornadaPersonalizadaScreen() {
     );
   }
 
+  console.log('🔍 Debug renderização principal - allMovies.length:', allMovies.length, 'selectedPlatformIds.length:', selectedPlatformIds.length);
+
+  // Buscar o texto da opção escolhida
+  const selectedOption = optionId ? allSteps
+    .flatMap(s => s.options)
+    .find(o => o.id.toString() === optionId.toString()) : null;
+
   if (allMovies.length > 0) {
-    // Buscar o texto da opção escolhida
-    const selectedOption = allSteps
-      .flatMap(s => s.options)
-      .find(o => o.id.toString() === optionId.toString());
-    
     return (
       <SafeAreaView style={styles.safeArea}>
         <AppHeader showBack={true} showLogo={true} />
@@ -369,7 +445,7 @@ export default function JornadaPersonalizadaScreen() {
             onScroll={handleScroll}
             scrollEventThrottle={16}
           >
-          {/* Header simplificado */}
+          {/* Header compacto */}
           <View style={styles.resultsHeader}>
             {/* Título com a opção escolhida */}
             {selectedOption && (
@@ -391,10 +467,105 @@ export default function JornadaPersonalizadaScreen() {
               </View>
           </View>
 
-          {allMovies.length === 0 && (
-            <Text style={styles.errorText}>Nenhum filme sugerido para este caminho.</Text>
+          {/* Seletor de Ordenação Compacto */}
+          <View style={styles.sortContainer}>
+            <View style={styles.sortChips}>
+              <TouchableOpacity
+                style={[
+                  styles.sortChip,
+                  sortType === 'smart' && { 
+                    backgroundColor: colors.primary.main,
+                    borderColor: colors.primary.main
+                  }
+                ]}
+                onPress={() => setSortType('smart')}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.sortChipIcon}>✨</Text>
+                <Text style={[
+                  styles.sortChipText,
+                  sortType === 'smart' && styles.sortChipTextActive
+                ]}>
+                  Inteligente
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={[
+                  styles.sortChip,
+                  sortType === 'rating' && { 
+                    backgroundColor: colors.primary.main,
+                    borderColor: colors.primary.main
+                  }
+                ]}
+                onPress={() => setSortType('rating')}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.sortChipIcon, { color: '#F5C518' }]}>★</Text>
+                <Text style={[
+                  styles.sortChipText,
+                  sortType === 'rating' && styles.sortChipTextActive
+                ]}>
+                  Rating
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={[
+                  styles.sortChip,
+                  sortType === 'year' && { 
+                    backgroundColor: colors.primary.main,
+                    borderColor: colors.primary.main
+                  }
+                ]}
+                onPress={() => setSortType('year')}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.sortChipIcon}>📅</Text>
+                <Text style={[
+                  styles.sortChipText,
+                  sortType === 'year' && styles.sortChipTextActive
+                ]}>
+                  Ano
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {(() => {
+            console.log('🔍 Debug condição - allMovies.length:', allMovies.length, 'typeof:', typeof allMovies.length, '=== 0:', allMovies.length === 0);
+            return allMovies.length === 0;
+          })() && (
+            <View style={styles.noMoviesContainer}>
+              <Text style={styles.noMoviesTitle}>
+                {(() => {
+                  console.log('🔍 Debug mensagem - allMovies.length:', allMovies.length, 'selectedPlatformIds.length:', selectedPlatformIds.length, 'showResults:', showResults);
+                  return selectedPlatformIds.length > 0 
+                    ? "Nenhuma sugestão de filme encontrada." 
+                    : "Nenhum filme sugerido para este caminho.";
+                })()}
+              </Text>
+              {selectedPlatformIds.length > 0 && (
+                <Text style={styles.noMoviesSubtitle}>
+                  Tente selecionar outras plataformas de streaming ou pular o filtro.
+                </Text>
+              )}
+              <TouchableOpacity 
+                style={[styles.backToFiltersButton, { borderColor: sentimentColor }]}
+                onPress={() => {
+                  console.log('🔍 Botão voltar pressionado - selectedPlatformIds:', selectedPlatformIds);
+                  router.back();
+                }}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="arrow-back" size={20} color={sentimentColor} />
+                <Text style={[styles.backToFiltersButtonText, { color: sentimentColor }]}>
+                  {selectedPlatformIds.length > 0 ? "Voltar aos Filtros" : "Voltar"}
+                </Text>
+              </TouchableOpacity>
+            </View>
           )}
-          {allMovies.map((ms, idx) => (
+          {sortedMovies.map((ms: MovieSuggestion, idx: number) => (
             <Pressable
               key={ms.movie.id + idx}
               style={({ pressed }) => [
@@ -540,21 +711,19 @@ export default function JornadaPersonalizadaScreen() {
                     )}
                       
                       {/* Nota IMDb */}
-                      {(() => {
-                        const imdbValue = ms.movie.imdbRating || ms.movie.imdb_rating;
-                        const hasImdb = imdbValue !== undefined && imdbValue !== null;
-                        
-                        return hasImdb && (
-                          <View style={styles.ratingContainer}>
-                            <Ionicons name="film" size={16} color="#F5C518" />
-                            <Text style={styles.ratingText}>
-                              {typeof imdbValue === 'number' 
+                      {((ms.movie as any).imdbRating || (ms.movie as any).imdb_rating) && (
+                        <View style={styles.ratingContainer}>
+                          <Ionicons name="film" size={16} color="#F5C518" />
+                          <Text style={styles.ratingText}>
+                            {(() => {
+                              const imdbValue = (ms.movie as any).imdbRating || (ms.movie as any).imdb_rating;
+                              return typeof imdbValue === 'number' 
                                 ? imdbValue.toFixed(1)
-                                : imdbValue}
-                            </Text>
-                          </View>
-                        );
-                      })()}
+                                : imdbValue;
+                            })()}
+                          </Text>
+                        </View>
+                      )}
                     </View>
                     {ms.movie.runtime && (
                       <View style={styles.runtimeContainer}>
@@ -614,28 +783,64 @@ export default function JornadaPersonalizadaScreen() {
           customBackRoute="/sentimentos"
         />
       </View>
+    </SafeAreaView>
+  );
+  }
+
+  // Exibir mensagem quando não há filmes E o usuário veio de filtros de plataformas
+  if (showResults === 'true' && selectedPlatformIds.length > 0) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <AppHeader showBack={true} showLogo={true} />
+        <View style={styles.container}>
+          <View style={styles.noMoviesContainer}>
+            <Text style={styles.noMoviesTitle}>
+              {(() => {
+                console.log('🔍 Debug mensagem - allMovies.length:', allMovies.length, 'selectedPlatformIds.length:', selectedPlatformIds.length, 'showResults:', showResults);
+                return "Nenhuma sugestão de filme encontrada.";
+              })()}
+            </Text>
+            <Text style={styles.noMoviesSubtitle}>
+              Tente selecionar outras plataformas de streaming ou pular o filtro.
+            </Text>
+            <TouchableOpacity 
+              style={[styles.backToFiltersButton, { borderColor: sentimentColor }]}
+              onPress={() => {
+                console.log('🔍 Botão voltar pressionado - selectedPlatformIds:', selectedPlatformIds);
+                router.back();
+              }}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="arrow-back" size={20} color={sentimentColor} />
+              <Text style={[styles.backToFiltersButtonText, { color: sentimentColor }]}>
+                Voltar aos Filtros
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </SafeAreaView>
     );
   }
 
+  // Renderizar a jornada normal quando não há filmes (estado inicial)
   return (
     <SafeAreaView style={styles.safeArea}>
       <AppHeader showBack={true} showLogo={true} />
-    <View style={styles.container}>
-      <ScrollView 
-        contentContainerStyle={[
-          styles.scrollContainer,
-          step?.id === 38 && styles.genreContainer
-        ]}
+      <View style={styles.container}>
+        <ScrollView 
+          contentContainerStyle={[
+            styles.scrollContainer,
+            step?.id === 38 && styles.genreContainer
+          ]}
           onScroll={handleScroll}
           scrollEventThrottle={16}
-      >
+        >
           {/* Header da pergunta */}
           <View style={styles.questionHeader}>
-        <Text style={styles.question}>{step?.question}</Text>
-        
+            <Text style={styles.question}>{step?.question}</Text>
+            
             {/* Badge de contexto melhorado */}
-        {step?.contextualHint && (
+            {step?.contextualHint && (
               <View style={[
                 styles.contextHintContainer,
                 {
@@ -645,14 +850,14 @@ export default function JornadaPersonalizadaScreen() {
               ]}>
                 <Ionicons name="information-circle" size={18} color={sentimentColor} />
                 <Text style={styles.contextHintText}>
-                {step.contextualHint}
-              </Text>
-            </View>
+                  {step.contextualHint}
+                </Text>
+              </View>
             )}
           </View>
-        
-        {renderOptions()}
-      </ScrollView>
+          
+          {renderOptions()}
+        </ScrollView>
 
         {/* Indicador de scroll animado */}
         {showScrollIndicator && (
@@ -666,8 +871,8 @@ export default function JornadaPersonalizadaScreen() {
           </Animated.View>
         )}
 
-      <NavigationFooter backLabel="Trocar Intenção" />
-    </View>
+        <NavigationFooter backLabel="Trocar Intenção" />
+      </View>
     </SafeAreaView>
   );
 }
@@ -922,11 +1127,12 @@ const styles = StyleSheet.create({
   },
   // Novos estilos para a tela de resultados
   movieResultsContainer: {
-    padding: spacing.md,
+    padding: spacing.sm,
+    paddingTop: spacing.xs,
     backgroundColor: colors.background.primary,
   },
   resultsHeader: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.sm,
     alignItems: 'center',
   },
   journeyIndicator: {
@@ -952,6 +1158,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: spacing.xs,
+    marginBottom: spacing.xs,
   },
   movieCountText: {
     fontSize: typography.fontSize.small,
@@ -1014,5 +1221,80 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     ...shadows.lg,
+  },
+  sortContainer: {
+    marginTop: spacing.xs,
+    marginBottom: spacing.sm,
+    paddingHorizontal: spacing.xs,
+  },
+  sortLabel: {
+    fontSize: typography.fontSize.small,
+    color: colors.text.secondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: spacing.xs,
+    textAlign: 'center',
+  },
+  sortChips: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    flexWrap: 'nowrap',
+  },
+  sortChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.full,
+    borderWidth: 1,
+    borderColor: colors.border.medium,
+    backgroundColor: colors.background.card,
+    gap: spacing.xs,
+  },
+  sortChipIcon: {
+    fontSize: 12,
+  },
+  sortChipText: {
+    fontSize: typography.fontSize.small,
+    color: colors.text.primary,
+    fontWeight: typography.fontWeight.medium,
+  },
+  sortChipTextActive: {
+    color: colors.text.inverse,
+    fontWeight: typography.fontWeight.semibold,
+  },
+  noMoviesContainer: {
+    alignItems: 'center',
+    padding: spacing.xl,
+    marginTop: spacing.lg,
+  },
+  noMoviesTitle: {
+    fontSize: typography.fontSize.h4,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.text.primary,
+    textAlign: 'center',
+    marginBottom: spacing.sm,
+  },
+  noMoviesSubtitle: {
+    fontSize: typography.fontSize.body,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    marginBottom: spacing.lg,
+    lineHeight: typography.fontSize.body * typography.lineHeight.normal,
+  },
+  backToFiltersButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.md,
+    borderWidth: 2,
+    backgroundColor: colors.background.card,
+    gap: spacing.sm,
+  },
+  backToFiltersButtonText: {
+    fontSize: typography.fontSize.body,
+    fontWeight: typography.fontWeight.semibold,
   },
 }); 

@@ -73,9 +73,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xl + 8, // Espaço extra para compensar status bar
+    paddingTop: spacing.sm + 4, // Reduzido para ficar próximo ao status bar
     paddingBottom: spacing.lg,
-    minHeight: 70,
+    minHeight: 60, // Reduzido também
   },
   backButton: {
     width: 36,
