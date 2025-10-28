@@ -121,7 +121,7 @@ export default function PlataformasStreamingScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <AppHeader showBack={true} />
+        <AppHeader showBack={true} showLogo={true} />
         <View style={styles.center}>
           <ActivityIndicator size="large" color={colors.primary.main} />
           <Text style={styles.loadingText}>Carregando plataformas...</Text>
@@ -133,7 +133,7 @@ export default function PlataformasStreamingScreen() {
   if (error) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <AppHeader showBack={true} />
+        <AppHeader showBack={true} showLogo={true} />
         <View style={styles.center}>
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity 
@@ -152,7 +152,7 @@ export default function PlataformasStreamingScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <AppHeader showBack={true} />
+      <AppHeader showBack={true} showLogo={true} />
       <View style={styles.container}>
         <ScrollView 
           style={styles.scrollView}

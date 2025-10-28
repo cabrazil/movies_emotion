@@ -783,7 +783,7 @@ export default function MovieDetailsScreen() {
         </View>
       </ScrollView>
         
-      <NavigationFooter backLabel="Voltar aos Filmes" showHome={true} />
+      <NavigationFooter backLabel="Filmes" showHome={true} />
     </View>
     </SafeAreaView>
   );

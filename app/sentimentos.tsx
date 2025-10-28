@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, Animated, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, typography, spacing, borderRadius, shadows } from './theme';
 import { SentimentIcon } from './components/SentimentIcon';
 import { AppHeader } from './components/AppHeader';
@@ -85,7 +86,7 @@ export default function SentimentosScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <AppHeader showBack={true} />
+        <AppHeader showBack={true} showLogo={true} />
         <View style={styles.center}>
           <ActivityIndicator size="large" color={colors.primary.main} />
           <Text style={styles.loadingText}>Carregando sentimentos...</Text>
@@ -97,7 +98,7 @@ export default function SentimentosScreen() {
   if (error) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <AppHeader showBack={true} />
+        <AppHeader showBack={true} showLogo={true} />
         <View style={styles.center}>
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity
@@ -114,7 +115,7 @@ export default function SentimentosScreen() {
   if (sentiments.length === 0) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <AppHeader showBack={true} />
+        <AppHeader showBack={true} showLogo={true} />
         <View style={styles.center}>
           <Text style={styles.emptyText}>Nenhum sentimento encontrado</Text>
           <TouchableOpacity
@@ -130,7 +131,7 @@ export default function SentimentosScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <AppHeader showBack={true} />
+      <AppHeader showBack={true} showLogo={true} />
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.title}>Como você está se sentindo?</Text>

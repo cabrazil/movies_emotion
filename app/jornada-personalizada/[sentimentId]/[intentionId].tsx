@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView, Image, Pressable, Dimensions, SafeAreaView, Animated } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView, Image, Pressable, Dimensions, Animated } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { API_ENDPOINTS } from '../../config';
 import { colors, typography, spacing, borderRadius, shadows } from '../../theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -327,7 +328,7 @@ export default function JornadaPersonalizadaScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <AppHeader showBack={true} />
+        <AppHeader showBack={true} showLogo={true} />
       <View style={styles.center}>
         <ActivityIndicator size="large" color={colors.primary.main} />
         <Text style={styles.loadingText}>Carregando jornada personalizada...</Text>
@@ -339,7 +340,7 @@ export default function JornadaPersonalizadaScreen() {
   if (error || !step) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <AppHeader showBack={true} />
+        <AppHeader showBack={true} showLogo={true} />
       <View style={styles.center}>
         <Text style={styles.errorText}>{error || 'Jornada personalizada não encontrada'}</Text>
         <TouchableOpacity
@@ -361,7 +362,7 @@ export default function JornadaPersonalizadaScreen() {
     
     return (
       <SafeAreaView style={styles.safeArea}>
-        <AppHeader showBack={true} />
+        <AppHeader showBack={true} showLogo={true} />
       <View style={styles.container}>
           <ScrollView 
             contentContainerStyle={styles.movieResultsContainer}
@@ -609,6 +610,8 @@ export default function JornadaPersonalizadaScreen() {
         <NavigationFooter 
           backLabel="Nova Jornada" 
           showHome={true}
+          twoLineText={true}
+          customBackRoute="/sentimentos"
         />
       </View>
       </SafeAreaView>
@@ -617,7 +620,7 @@ export default function JornadaPersonalizadaScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <AppHeader showBack={true} />
+      <AppHeader showBack={true} showLogo={true} />
     <View style={styles.container}>
       <ScrollView 
         contentContainerStyle={[

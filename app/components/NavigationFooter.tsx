@@ -13,6 +13,8 @@ interface NavigationFooterProps {
   onLoadMore?: () => void;
   loadMoreLabel?: string;
   loadMoreDisabled?: boolean;
+  twoLineText?: boolean;
+  customBackRoute?: string;
 }
 
 export function NavigationFooter({ 
@@ -23,13 +25,17 @@ export function NavigationFooter({
   showLoadMore = false,
   onLoadMore,
   loadMoreLabel = "Ver Mais",
-  loadMoreDisabled = false
+  loadMoreDisabled = false,
+  twoLineText = false,
+  customBackRoute
 }: NavigationFooterProps) {
   const router = useRouter();
 
   const handleBackPress = () => {
     if (onBackPress) {
       onBackPress();
+    } else if (customBackRoute) {
+      router.push(customBackRoute);
     } else {
       router.back();
     }
@@ -41,11 +47,20 @@ export function NavigationFooter({
 
   return (
     <View style={styles.footer}>
+      {showHome && (
+        <TouchableOpacity
+          style={styles.homeButton}
+          onPress={handleHomePress}
+        >
+          <Ionicons name="home-outline" size={20} color={colors.primary.main} />
+        </TouchableOpacity>
+      )}
+
       <TouchableOpacity
         style={[
           styles.backButton, 
           disabled && styles.disabledButton,
-          (showLoadMore || showHome) && styles.buttonWithSiblings
+          showHome && styles.buttonWithHome
         ]}
         onPress={handleBackPress}
         disabled={disabled}
@@ -55,17 +70,29 @@ export function NavigationFooter({
           size={20} 
           color={disabled ? colors.text.light : colors.text.primary} 
         />
-        <Text style={[styles.backButtonText, disabled && styles.disabledText]}>
-          {backLabel}
-        </Text>
+        <View style={styles.textContainer}>
+          {twoLineText ? (
+            <>
+              <Text style={[styles.backButtonText, disabled && styles.disabledText]}>
+                Nova
+              </Text>
+              <Text style={[styles.backButtonText, disabled && styles.disabledText]}>
+                Jornada
+              </Text>
+            </>
+          ) : (
+            <Text style={[styles.backButtonText, disabled && styles.disabledText]}>
+              {backLabel}
+            </Text>
+          )}
+        </View>
       </TouchableOpacity>
 
       {showLoadMore && onLoadMore && (
         <TouchableOpacity
           style={[
             styles.loadMoreButton, 
-            loadMoreDisabled && styles.disabledButton,
-            showHome && styles.buttonWithSiblings
+            loadMoreDisabled && styles.disabledButton
           ]}
           onPress={onLoadMore}
           disabled={loadMoreDisabled}
@@ -78,16 +105,6 @@ export function NavigationFooter({
           <Text style={[styles.loadMoreButtonText, loadMoreDisabled && styles.disabledText]}>
             {loadMoreLabel}
           </Text>
-        </TouchableOpacity>
-      )}
-
-      {showHome && (
-        <TouchableOpacity
-          style={styles.homeButton}
-          onPress={handleHomePress}
-        >
-          <Ionicons name="home-outline" size={20} color={colors.primary.main} />
-          <Text style={styles.homeButtonText}>Início</Text>
         </TouchableOpacity>
       )}
     </View>
@@ -116,6 +133,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     marginRight: spacing.sm,
+    minHeight: 50,
   },
   buttonWithSiblings: {
     flex: 0.5,
@@ -139,25 +157,29 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     color: colors.text.primary,
-    fontSize: typography.fontSize.body,
+    fontSize: typography.fontSize.small,
     fontWeight: typography.fontWeight.medium,
-    marginLeft: spacing.xs,
+    lineHeight: typography.fontSize.small * 1.2,
   },
   homeButton: {
-    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: colors.primary.main + '15',
     paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.sm,
     borderRadius: borderRadius.md,
     borderWidth: 1,
     borderColor: colors.primary.main + '30',
+    width: 48,
+    height: 48,
   },
-  homeButtonText: {
-    color: colors.primary.main,
-    fontSize: typography.fontSize.body,
-    fontWeight: typography.fontWeight.medium,
-    marginLeft: spacing.xs,
+  textContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonWithHome: {
+    flex: 1,
+    marginLeft: spacing.md,
   },
   disabledButton: {
     backgroundColor: colors.background.secondary,

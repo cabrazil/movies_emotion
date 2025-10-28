@@ -1,11 +1,11 @@
 import { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView, SafeAreaView, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView, Animated } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, typography, spacing, borderRadius, shadows } from '../theme';
 import { API_ENDPOINTS } from '../config';
 import { EmotionalIntentionsResponse, EmotionalIntention, Sentiment } from '../types';
 import { IntentionIcon } from '../components/IntentionIcon';
-import { NavigationFooter } from '../components/NavigationFooter';
 import { AppHeader } from '../components/AppHeader';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -89,7 +89,7 @@ export default function IntencoesScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <AppHeader showBack={true} />
+        <AppHeader showBack={true} showLogo={true} />
         <View style={styles.center}>
           <ActivityIndicator size="large" color={colors.primary.main} />
           <Text style={styles.loadingText}>Carregando intenções emocionais...</Text>
@@ -101,7 +101,7 @@ export default function IntencoesScreen() {
   if (error) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <AppHeader showBack={true} />
+        <AppHeader showBack={true} showLogo={true} />
         <View style={styles.center}>
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity 
@@ -119,7 +119,7 @@ export default function IntencoesScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <AppHeader showBack={true} />
+      <AppHeader showBack={true} showLogo={true} />
       <View style={styles.container}>
         <ScrollView 
           style={styles.scrollView}
@@ -180,8 +180,6 @@ export default function IntencoesScreen() {
                 </TouchableOpacity>
               ))}
           </View>
-
-          <NavigationFooter backLabel="Voltar aos Sentimentos" />
         </ScrollView>
 
         {/* Indicador de scroll animado */}
