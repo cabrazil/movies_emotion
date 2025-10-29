@@ -195,22 +195,18 @@ export default function JornadaPersonalizadaScreen() {
                 return false;
               }
               
-              // Mapear IDs para nomes das plataformas selecionadas
+              // Mapear IDs para nomes das plataformas selecionadas usando dados reais
               const selectedPlatformNames = platformIds.map(id => {
-                // Mapear IDs conhecidos para nomes (baseado na API /streaming-platforms)
-                const idToNameMap: Record<number, string> = {
-                  32: 'Netflix',
-                  33: 'Prime Video', 
-                  34: 'Disney+',
-                  35: 'HBO Max',
-                  36: 'Paramount+',
-                  37: 'Apple TV+',
-                  38: 'Globoplay',
-                  39: 'Claro Video',
-                  43: 'Telecine',
-                };
-                return idToNameMap[id];
+                // Buscar o nome da plataforma nos dados carregados
+                const platform = Object.entries(platformsData).find(([platformId, name]) => 
+                  parseInt(platformId) === id
+                );
+                const platformName = platform ? platform[1] : null;
+                console.log(`🔍 Mapeando ID ${id} -> "${platformName}"`);
+                return platformName;
               }).filter(Boolean);
+              
+              console.log(`🔍 Plataformas selecionadas mapeadas:`, selectedPlatformNames);
               
               const isMatch = selectedPlatformNames.includes(platformName) &&
                               platform.accessType === 'INCLUDED_WITH_SUBSCRIPTION';
@@ -308,8 +304,24 @@ export default function JornadaPersonalizadaScreen() {
   const renderOptions = () => {
     if (!step) return null;
     
-    // Layout em duas colunas para gêneros (step 38)
-    if (step.id === 38) {
+    // Debug para investigar o problema específico
+    console.log('🔍 Debug renderOptions:', {
+      stepId: step.id,
+      stepStepId: step.stepId,
+      optionsCount: step.options.length,
+      sentimentId: sentimentId,
+      intentionId: intentionId,
+      firstOptionText: step.options[0]?.text?.substring(0, 50) + '...'
+    });
+    
+    // Layout em duas colunas para gêneros (step 38) - APENAS se for realmente gêneros
+    // Verificar se é realmente um step de gêneros baseado no conteúdo, não apenas no ID
+    const isGenreStep = step.id === 38 && step.options.every(option => 
+      option.text.length < 30 // Gêneros são textos curtos
+    );
+    
+    if (isGenreStep) {
+      console.log('🔍 Usando layout de gêneros para step:', step.stepId);
       return (
         <View style={styles.genreGrid}>
           {step.options.map(option => (
@@ -333,23 +345,32 @@ export default function JornadaPersonalizadaScreen() {
     }
 
     // Layout padrão para outras opções
-    return step.options.map(option => (
-      <TouchableOpacity
-        key={option.id}
-        style={[
-          styles.option,
-          {
-            borderLeftWidth: 4,
-            borderLeftColor: sentimentColor,
-            borderColor: colors.border.light,
-          }
-        ]}
-        onPress={() => handleOption(option)}
-        activeOpacity={0.7}
-      >
-        <Text style={styles.optionText}>{option.text}</Text>
-      </TouchableOpacity>
-    ));
+    console.log('🔍 Usando layout padrão para step:', step.stepId);
+    return step.options.map(option => {
+      console.log('🔍 Renderizando opção:', {
+        id: option.id,
+        textLength: option.text.length,
+        textPreview: option.text.substring(0, 30) + '...'
+      });
+      
+      return (
+        <TouchableOpacity
+          key={option.id}
+          style={[
+            styles.option,
+            {
+              borderLeftWidth: 4,
+              borderLeftColor: sentimentColor,
+              borderColor: colors.border.light,
+            }
+          ]}
+          onPress={() => handleOption(option)}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.optionCardText}>{option.text}</Text>
+        </TouchableOpacity>
+      );
+    });
   };
 
   // Ordenar filmes baseado no critério selecionado
@@ -449,13 +470,12 @@ export default function JornadaPersonalizadaScreen() {
           <View style={styles.resultsHeader}>
             {/* Título com a opção escolhida */}
             {selectedOption && (
-              <View style={[
-                styles.selectedOptionContainer,
-                { borderLeftColor: sentimentColor }
-              ]}>
-                <Text style={styles.selectedOptionLabel}>Filmes sugeridos para opção:</Text>
-                <Text style={styles.selectedOptionText}>"{selectedOption.text}"</Text>
-            </View>
+              <View style={styles.optionContext}>
+                <Text style={styles.optionLabel}>Filmes sugeridos para:</Text>
+                <Text style={[styles.optionText, { color: sentimentColor }]}>
+                  "{selectedOption.text}"
+                </Text>
+              </View>
             )}
             
             {/* Contador de filmes sempre visível */}
@@ -964,7 +984,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     ...shadows.md,
   },
-  optionText: {
+  optionCardText: {
     color: colors.text.primary,
     fontSize: typography.fontSize.body,
     fontWeight: typography.fontWeight.semibold,
@@ -1166,26 +1186,24 @@ const styles = StyleSheet.create({
     marginLeft: spacing.xs,
     fontWeight: typography.fontWeight.medium,
   },
-         selectedOptionContainer: {
-           backgroundColor: colors.background.card,
-           borderRadius: borderRadius.md,
-           padding: spacing.md,
+         optionContext: {
            marginTop: spacing.md,
            marginBottom: spacing.sm,
-           borderLeftWidth: 3,
-           borderLeftColor: colors.primary.main,
+           alignItems: 'center',
          },
-         selectedOptionLabel: {
+         optionLabel: {
            fontSize: typography.fontSize.small,
            color: colors.text.secondary,
+           textAlign: 'center',
            marginBottom: spacing.xs,
            fontWeight: typography.fontWeight.medium,
          },
-         selectedOptionText: {
+         optionText: {
            fontSize: typography.fontSize.body,
-           color: colors.text.primary,
-           fontWeight: typography.fontWeight.semibold,
-           lineHeight: typography.fontSize.body * typography.lineHeight.normal,
+           textAlign: 'center',
+           fontStyle: 'italic',
+           lineHeight: 22,
+           paddingHorizontal: spacing.md,
          },
          platformBadgesContainer: {
     flexDirection: 'row',

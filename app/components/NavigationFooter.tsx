@@ -52,7 +52,7 @@ export function NavigationFooter({
           style={styles.homeButton}
           onPress={handleHomePress}
         >
-          <Ionicons name="home-outline" size={20} color={colors.primary.main} />
+          <Ionicons name="home-outline" size={20} color="#FFFFFF" />
         </TouchableOpacity>
       )}
 
@@ -68,7 +68,7 @@ export function NavigationFooter({
         <Ionicons 
           name="arrow-back" 
           size={20} 
-          color={disabled ? colors.text.light : colors.text.primary} 
+          color={disabled ? '#CCCCCC' : '#FFFFFF'} 
         />
         <View style={styles.textContainer}>
           {twoLineText ? (
@@ -118,15 +118,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
-    backgroundColor: colors.background.primary,
+    backgroundColor: '#FFFFFF', // Fundo branco limpo
     borderTopWidth: 1,
-    borderTopColor: colors.background.secondary,
+    borderTopColor: '#E8EAED', // Borda sutil
     ...shadows.sm,
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.background.secondary,
+    backgroundColor: '#b4b4b4', // Cinza médio para destaque
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     borderRadius: borderRadius.md,
@@ -134,6 +134,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: spacing.sm,
     minHeight: 50,
+    borderWidth: 1,
+    borderColor: '#a0a0a0', // Borda um pouco mais escura
   },
   buttonWithSiblings: {
     flex: 0.5,
@@ -156,7 +158,7 @@ const styles = StyleSheet.create({
     marginLeft: spacing.xs,
   },
   backButtonText: {
-    color: colors.text.primary,
+    color: '#FFFFFF', // Texto branco para contraste com fundo cinza
     fontSize: typography.fontSize.small,
     fontWeight: typography.fontWeight.medium,
     lineHeight: typography.fontSize.small * 1.2,
@@ -164,12 +166,12 @@ const styles = StyleSheet.create({
   homeButton: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.primary.main + '15',
+    backgroundColor: '#b4b4b4', // Cinza médio para destaque
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.sm,
     borderRadius: borderRadius.md,
     borderWidth: 1,
-    borderColor: colors.primary.main + '30',
+    borderColor: '#a0a0a0', // Borda um pouco mais escura
     width: 48,
     height: 48,
   },
@@ -182,10 +184,10 @@ const styles = StyleSheet.create({
     marginLeft: spacing.md,
   },
   disabledButton: {
-    backgroundColor: colors.background.secondary,
+    backgroundColor: '#d0d0d0', // Cinza mais claro para botão desabilitado
     opacity: 0.6,
   },
   disabledText: {
-    color: colors.text.light,
+    color: '#999999', // Cinza médio para texto desabilitado
   },
 }); 
