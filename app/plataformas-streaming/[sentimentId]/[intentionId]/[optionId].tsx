@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView, SafeAreaView, Animated, Image } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { API_ENDPOINTS } from '../../../config';
@@ -42,8 +42,11 @@ export default function PlataformasStreamingScreen() {
   const [platformMovieCounts, setPlatformMovieCounts] = useState<Record<number, number>>({});
   const [selectedOptionText, setSelectedOptionText] = useState<string>('');
 
-  // Obter cor do sentimento
-  const sentimentColor = colors.sentimentColors[Number(sentimentId)] || colors.primary.main;
+  // Obter cor do sentimento (memoizada)
+  const sentimentColor = useMemo(() => 
+    colors.sentimentColors[Number(sentimentId)] || colors.primary.main,
+    [sentimentId]
+  );
 
   // Animação do indicador de scroll
   const scrollIndicatorOpacity = useRef(new Animated.Value(1)).current;
@@ -52,7 +55,9 @@ export default function PlataformasStreamingScreen() {
   // Função para contar filmes por plataforma
   const fetchMovieCountsByPlatform = async (platforms: StreamingPlatform[]) => {
     try {
-      console.log('🔍 Contando filmes por plataforma para opção:', optionId);
+      if (__DEV__) {
+        console.log('🔍 Contando filmes por plataforma para opção:', optionId);
+      }
       
       // Buscar filmes da opção escolhida
       const response = await fetch(API_ENDPOINTS.personalizedJourney.get(sentimentId.toString(), intentionId.toString()));
@@ -65,13 +70,17 @@ export default function PlataformasStreamingScreen() {
         .find((o: any) => o.id.toString() === optionId.toString());
       
       if (!option || !option.movieSuggestions) {
-        console.log('❌ Opção ou filmes não encontrados');
+        if (__DEV__) {
+          console.log('❌ Opção ou filmes não encontrados');
+        }
         return {};
       }
       
       // Armazenar o texto da opção escolhida
       setSelectedOptionText(option.text);
-      console.log('📝 Opção escolhida:', option.text);
+      if (__DEV__) {
+        console.log('📝 Opção escolhida:', option.text);
+      }
       
       const movies = option.movieSuggestions;
       const counts: Record<number, number> = {};
@@ -93,13 +102,17 @@ export default function PlataformasStreamingScreen() {
         });
         
         counts[platform.id] = count;
-        console.log(`📊 ${platform.name}: ${count} filmes`);
+        if (__DEV__) {
+          console.log(`📊 ${platform.name}: ${count} filmes`);
+        }
       });
       
       setPlatformMovieCounts(counts);
       return counts;
     } catch (error) {
-      console.error('❌ Erro ao contar filmes por plataforma:', error);
+      if (__DEV__) {
+        console.error('❌ Erro ao contar filmes por plataforma:', error);
+      }
       return {};
     }
   };
@@ -112,7 +125,9 @@ export default function PlataformasStreamingScreen() {
 
          const fetchPlatforms = async () => {
            try {
-             console.log('🌐 Buscando plataformas de streaming:', API_ENDPOINTS.streamingPlatforms.list);
+             if (__DEV__) {
+               console.log('🌐 Buscando plataformas de streaming:', API_ENDPOINTS.streamingPlatforms.list);
+             }
              const response = await fetch(API_ENDPOINTS.streamingPlatforms.list, {
                headers: {
                  'Cache-Control': 'no-cache',
@@ -123,7 +138,9 @@ export default function PlataformasStreamingScreen() {
                throw new Error('Erro ao carregar plataformas de streaming');
              }
       const data: StreamingPlatform[] = await response.json();
-      console.log('✅ Plataformas carregadas:', data.length);
+      if (__DEV__) {
+        console.log('✅ Plataformas carregadas:', data.length);
+      }
       
       // Filtrar apenas plataformas de assinatura e que não sejam HIDDEN
       const subscriptionPlatforms = data.filter(
@@ -131,7 +148,9 @@ export default function PlataformasStreamingScreen() {
              p.showFilter !== 'HIDDEN'
       );
       
-      console.log('📺 Plataformas filtradas (assinatura + não-hidden):', subscriptionPlatforms.length);
+      if (__DEV__) {
+        console.log('📺 Plataformas filtradas (assinatura + não-hidden):', subscriptionPlatforms.length);
+      }
       
       setPlatforms(subscriptionPlatforms);
       
@@ -142,7 +161,9 @@ export default function PlataformasStreamingScreen() {
       const priorityPlatforms = subscriptionPlatforms.filter(p => p.showFilter === 'PRIORITY');
       setShowScrollIndicator(priorityPlatforms.length > 6);
     } catch (err) {
-      console.error('❌ Erro ao carregar plataformas:', err);
+      if (__DEV__) {
+        console.error('❌ Erro ao carregar plataformas:', err);
+      }
       setError(err instanceof Error ? err.message : 'Erro desconhecido');
     } finally {
       setLoading(false);

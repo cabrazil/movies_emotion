@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Share, SafeAreaView, Animated } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,29 +8,116 @@ import { NavigationFooter } from '../components/NavigationFooter';
 import { AppHeader } from '../components/AppHeader';
 import { RatingRow } from '../components/RatingIcon';
 
-  // Helper para construir URL do logo
-  const getPlatformLogoUrl = (logoPath: string | null, platformName: string): string => {
-    // Caso especial: YouTube sempre usa ícone do Ionicons
-    if (platformName.toLowerCase().includes('youtube')) {
-      return 'YOUTUBE_ICON'; // String especial para identificar YouTube
-    }
-    
-    // Para outras plataformas, usar logoPath do Supabase
-    if (!logoPath) return '';
-    
-    // Se já for uma URL completa, retornar como está
-    if (logoPath.startsWith('http://') || logoPath.startsWith('https://')) {
-      return logoPath;
-    }
-    
-    // Se é um path do TMDB, constrói a URL completa
-    if (logoPath.startsWith('/') && (logoPath.includes('.jpg') || logoPath.includes('.png') || logoPath.includes('.jpeg'))) {
-      return `https://image.tmdb.org/t/p/w92${logoPath}`;
-    }
-    
-    // Caso contrário, retornar o logoPath como está (pode ser uma URL do Supabase)
+// Helper para construir URL do logo (movido para fora do componente)
+const getPlatformLogoUrl = (logoPath: string | null, platformName: string): string => {
+  // Caso especial: YouTube sempre usa ícone do Ionicons
+  if (platformName.toLowerCase().includes('youtube')) {
+    return 'YOUTUBE_ICON'; // String especial para identificar YouTube
+  }
+  
+  // Para outras plataformas, usar logoPath do Supabase
+  if (!logoPath) return '';
+  
+  // Se já for uma URL completa, retornar como está
+  if (logoPath.startsWith('http://') || logoPath.startsWith('https://')) {
     return logoPath;
+  }
+  
+  // Se é um path do TMDB, constrói a URL completa
+  if (logoPath.startsWith('/') && (logoPath.includes('.jpg') || logoPath.includes('.png') || logoPath.includes('.jpeg'))) {
+    return `https://image.tmdb.org/t/p/w92${logoPath}`;
+  }
+  
+  // Caso contrário, retornar o logoPath como está (pode ser uma URL do Supabase)
+  return logoPath;
+};
+
+// Função para traduzir categorias do Oscar (movida para fora do componente)
+const translateOscarCategory = (category: string): string => {
+  const translations: { [key: string]: string } = {
+    'BEST PICTURE': 'Melhor Filme',
+    'BEST DIRECTOR': 'Melhor Diretor',
+    'BEST ACTOR': 'Melhor Ator',
+    'BEST ACTRESS': 'Melhor Atriz',
+    'BEST SUPPORTING ACTOR': 'Melhor Ator Coadjuvante',
+    'BEST SUPPORTING ACTRESS': 'Melhor Atriz Coadjuvante',
+    'BEST ORIGINAL SCREENPLAY': 'Melhor Roteiro Original',
+    'BEST ADAPTED SCREENPLAY': 'Melhor Roteiro Adaptado',
+    'BEST CINEMATOGRAPHY': 'Melhor Fotografia',
+    'BEST FILM EDITING': 'Melhor Edição',
+    'BEST PRODUCTION DESIGN': 'Melhor Direção de Arte',
+    'BEST COSTUME DESIGN': 'Melhor Figurino',
+    'BEST MAKEUP AND HAIRSTYLING': 'Melhor Maquiagem e Penteados',
+    'BEST SOUND': 'Melhor Som',
+    'BEST SOUND EDITING': 'Melhor Edição de Som',
+    'SOUND EFFECTS EDITING': 'Melhor Edição de Efeitos Sonoros',
+    'BEST SOUND MIXING': 'Melhor Mixagem de Som',
+    'BEST VISUAL EFFECTS': 'Melhores Efeitos Visuais',
+    'BEST ORIGINAL SCORE': 'Melhor Trilha Sonora Original',
+    'BEST ORIGINAL SONG': 'Melhor Canção Original',
+    'MUSIC (Original Score)': 'Melhor Trilha Sonora Original',
+    'WRITING (Original Screenplay)': 'Melhor Roteiro Original',
+    'WRITING (Adapted Screenplay)': 'Melhor Roteiro Adaptado',
+    'WRITING (Story and Screenplay--written directly for the screen)': 'Melhor Roteiro Original',
+    'WRITING (Screenplay Based on Material from Another Medium)': 'Melhor Roteiro Adaptado',
+    'WRITING (Screenplay Based on Material Previously Produced or Published)': 'Melhor Roteiro baseado em material produzido ou publicado anteriormente',
+    'BEST INTERNATIONAL FEATURE FILM': 'Melhor Filme Internacional',
+    'BEST DOCUMENTARY FEATURE': 'Melhor Documentário',
+    'BEST DOCUMENTARY SHORT SUBJECT': 'Melhor Documentário em Curta-Metragem',
+    'BEST ANIMATED FEATURE FILM': 'Melhor Filme de Animação',
+    'BEST ANIMATED SHORT FILM': 'Melhor Curta-Metragem de Animação',
+    'BEST LIVE ACTION SHORT FILM': 'Melhor Curta-Metragem de Ação ao Vivo',
+    'ACTOR IN A LEADING ROLE': 'Melhor Ator',
+    'ACTRESS IN A LEADING ROLE': 'Melhor Atriz',
+    'ACTOR IN A SUPPORTING ROLE': 'Melhor Ator Coadjuvante',
+    'ACTRESS IN A SUPPORTING ROLE': 'Melhor Atriz Coadjuvante',
+    'DIRECTING': 'Melhor Diretor',
+    'CINEMATOGRAPHY': 'Melhor Fotografia',
+    'FILM EDITING': 'Melhor Edição',
+    'PRODUCTION DESIGN': 'Melhor Direção de Arte',
+    'ART DIRECTION': 'Melhor Direção de Arte',
+    'COSTUME DESIGN': 'Melhor Figurino',
+    'MAKEUP AND HAIRSTYLING': 'Melhor Maquiagem e Penteados',
+    'SOUND': 'Melhor Som',
+    'SOUND MIXING': 'Melhor Mixagem de Som',
+    'SOUND EDITING': 'Melhor Edição de Som',
+    'VISUAL EFFECTS': 'Melhores Efeitos Visuais',
+    'SPECIAL VISUAL EFFECTS': 'Melhores Efeitos Visuais',
+    'ORIGINAL SCORE': 'Melhor Trilha Sonora Original',
+    'ORIGINAL SONG': 'Melhor Canção Original',
+    'MUSIC (Original Dramatic Score)': 'Melhor Trilha Sonora Original',
+    'MUSIC (Original Song)': 'Melhor Canção Original',
+    'WRITING (Screenplay Written Directly for the Screen)': 'Melhor Roteiro Original',
+    'INTERNATIONAL FEATURE FILM': 'Melhor Filme Internacional',
+    'DOCUMENTARY FEATURE': 'Melhor Documentário',
+    'ANIMATED FEATURE FILM': 'Melhor Filme de Animação',
+    // Versões com "Best" no início (formato mais comum)
+    'Best Picture': 'Melhor Filme',
+    'Best Director': 'Melhor Diretor',
+    'Best Actor': 'Melhor Ator',
+    'Best Actress': 'Melhor Atriz',
+    'Best Supporting Actor': 'Melhor Ator Coadjuvante',
+    'Best Supporting Actress': 'Melhor Atriz Coadjuvante',
+    'Best Original Screenplay': 'Melhor Roteiro Original',
+    'Best Adapted Screenplay': 'Melhor Roteiro Adaptado',
+    'Best Cinematography': 'Melhor Fotografia',
+    'Best Film Editing': 'Melhor Edição',
+    'Best Original Score': 'Melhor Trilha Sonora Original',
+    'Best Original Song': 'Melhor Canção Original',
+    'Best Production Design': 'Melhor Direção de Arte',
+    'Best Costume Design': 'Melhor Figurino',
+    'Best Makeup and Hairstyling': 'Melhor Maquiagem e Penteados',
+    'Best Sound': 'Melhor Som',
+    'Best Visual Effects': 'Melhores Efeitos Visuais',
+    'Best Animated Feature': 'Melhor Filme de Animação',
+    'Best Foreign Language Film': 'Melhor Filme Estrangeiro',
+    'Best Documentary Feature': 'Melhor Documentário',
+    'Best Documentary Short': 'Melhor Documentário Curto',
+    'Best Live Action Short': 'Melhor Curta-Metragem',
+    'Best Animated Short': 'Melhor Curta-Metragem de Animação'
   };
+  return translations[category] || category;
+};
 
 interface StreamingPlatform {
   id: number;
@@ -102,131 +189,59 @@ export default function MovieDetailsScreen() {
   const scrollIndicatorOpacity = useRef(new Animated.Value(1)).current;
   const router = useRouter();
 
-  // Obter cor do sentimento
-  const sentimentColor = sentimentId ? (colors.sentimentColors[Number(sentimentId)] || colors.primary.main) : colors.primary.main;
-
-  // Função para traduzir categorias do Oscar (versão completa)
-  const translateOscarCategory = (category: string) => {
-    const translations: { [key: string]: string } = {
-      'BEST PICTURE': 'Melhor Filme',
-      'BEST DIRECTOR': 'Melhor Diretor',
-      'BEST ACTOR': 'Melhor Ator',
-      'BEST ACTRESS': 'Melhor Atriz',
-      'BEST SUPPORTING ACTOR': 'Melhor Ator Coadjuvante',
-      'BEST SUPPORTING ACTRESS': 'Melhor Atriz Coadjuvante',
-      'BEST ORIGINAL SCREENPLAY': 'Melhor Roteiro Original',
-      'BEST ADAPTED SCREENPLAY': 'Melhor Roteiro Adaptado',
-      'BEST CINEMATOGRAPHY': 'Melhor Fotografia',
-      'BEST FILM EDITING': 'Melhor Edição',
-      'BEST PRODUCTION DESIGN': 'Melhor Direção de Arte',
-      'BEST COSTUME DESIGN': 'Melhor Figurino',
-      'BEST MAKEUP AND HAIRSTYLING': 'Melhor Maquiagem e Penteados',
-      'BEST SOUND': 'Melhor Som',
-      'BEST SOUND EDITING': 'Melhor Edição de Som',
-      'SOUND EFFECTS EDITING': 'Melhor Edição de Efeitos Sonoros',
-      'BEST SOUND MIXING': 'Melhor Mixagem de Som',
-      'BEST VISUAL EFFECTS': 'Melhores Efeitos Visuais',
-      'BEST ORIGINAL SCORE': 'Melhor Trilha Sonora Original',
-      'BEST ORIGINAL SONG': 'Melhor Canção Original',
-      'MUSIC (Original Score)': 'Melhor Trilha Sonora Original',
-      'WRITING (Original Screenplay)': 'Melhor Roteiro Original',
-      'WRITING (Adapted Screenplay)': 'Melhor Roteiro Adaptado',
-      'WRITING (Story and Screenplay--written directly for the screen)': 'Melhor Roteiro Original',
-      'WRITING (Screenplay Based on Material from Another Medium)': 'Melhor Roteiro Adaptado',
-      'WRITING (Screenplay Based on Material Previously Produced or Published)': 'Melhor Roteiro baseado em material produzido ou publicado anteriormente',
-      'BEST INTERNATIONAL FEATURE FILM': 'Melhor Filme Internacional',
-      'BEST DOCUMENTARY FEATURE': 'Melhor Documentário',
-      'BEST DOCUMENTARY SHORT SUBJECT': 'Melhor Documentário em Curta-Metragem',
-      'BEST ANIMATED FEATURE FILM': 'Melhor Filme de Animação',
-      'BEST ANIMATED SHORT FILM': 'Melhor Curta-Metragem de Animação',
-      'BEST LIVE ACTION SHORT FILM': 'Melhor Curta-Metragem de Ação ao Vivo',
-      'ACTOR IN A LEADING ROLE': 'Melhor Ator',
-      'ACTRESS IN A LEADING ROLE': 'Melhor Atriz',
-      'ACTOR IN A SUPPORTING ROLE': 'Melhor Ator Coadjuvante',
-      'ACTRESS IN A SUPPORTING ROLE': 'Melhor Atriz Coadjuvante',
-      'DIRECTING': 'Melhor Diretor',
-      'CINEMATOGRAPHY': 'Melhor Fotografia',
-      'FILM EDITING': 'Melhor Edição',
-      'PRODUCTION DESIGN': 'Melhor Direção de Arte',
-      'ART DIRECTION': 'Melhor Direção de Arte',
-      'COSTUME DESIGN': 'Melhor Figurino',
-      'MAKEUP AND HAIRSTYLING': 'Melhor Maquiagem e Penteados',
-      'SOUND': 'Melhor Som',
-      'SOUND MIXING': 'Melhor Mixagem de Som',
-      'SOUND EDITING': 'Melhor Edição de Som',
-      'VISUAL EFFECTS': 'Melhores Efeitos Visuais',
-      'SPECIAL VISUAL EFFECTS': 'Melhores Efeitos Visuais',
-      'ORIGINAL SCORE': 'Melhor Trilha Sonora Original',
-      'ORIGINAL SONG': 'Melhor Canção Original',
-      'MUSIC (Original Dramatic Score)': 'Melhor Trilha Sonora Original',
-      'MUSIC (Original Song)': 'Melhor Canção Original',
-      'WRITING (Screenplay Written Directly for the Screen)': 'Melhor Roteiro Original',
-      'INTERNATIONAL FEATURE FILM': 'Melhor Filme Internacional',
-      'DOCUMENTARY FEATURE': 'Melhor Documentário',
-      'ANIMATED FEATURE FILM': 'Melhor Filme de Animação',
-      // Versões com "Best" no início (formato mais comum)
-      'Best Picture': 'Melhor Filme',
-      'Best Director': 'Melhor Diretor',
-      'Best Actor': 'Melhor Ator',
-      'Best Actress': 'Melhor Atriz',
-      'Best Supporting Actor': 'Melhor Ator Coadjuvante',
-      'Best Supporting Actress': 'Melhor Atriz Coadjuvante',
-      'Best Original Screenplay': 'Melhor Roteiro Original',
-      'Best Adapted Screenplay': 'Melhor Roteiro Adaptado',
-      'Best Cinematography': 'Melhor Fotografia',
-      'Best Film Editing': 'Melhor Edição',
-      'Best Original Score': 'Melhor Trilha Sonora Original',
-      'Best Original Song': 'Melhor Canção Original',
-      'Best Production Design': 'Melhor Direção de Arte',
-      'Best Costume Design': 'Melhor Figurino',
-      'Best Makeup and Hairstyling': 'Melhor Maquiagem e Penteados',
-      'Best Sound': 'Melhor Som',
-      'Best Visual Effects': 'Melhores Efeitos Visuais',
-      'Best Animated Feature': 'Melhor Filme de Animação',
-      'Best Foreign Language Film': 'Melhor Filme Estrangeiro',
-      'Best Documentary Feature': 'Melhor Documentário',
-      'Best Documentary Short': 'Melhor Documentário Curto',
-      'Best Live Action Short': 'Melhor Curta-Metragem',
-      'Best Animated Short': 'Melhor Curta-Metragem de Animação'
-    };
-    return translations[category] || category;
-  };
+  // Obter cor do sentimento (memoizada)
+  const sentimentColor = useMemo(() => 
+    sentimentId ? (colors.sentimentColors[Number(sentimentId)] || colors.primary.main) : colors.primary.main,
+    [sentimentId]
+  );
 
   useEffect(() => {
     const fetchMovie = async () => {
       try {
-        console.log('Buscando filme com ID:', id);
+        if (__DEV__) {
+          console.log('Buscando filme com ID:', id);
+        }
         const url = `${API_ENDPOINTS.movies.detail(id.toString())}`;
-        console.log('URL da requisição:', url);
+        if (__DEV__) {
+          console.log('URL da requisição:', url);
+        }
         
         const res = await apiRequest(url);
-        console.log('Status da resposta:', res.status);
+        if (__DEV__) {
+          console.log('Status da resposta:', res.status);
+        }
         
         if (!res.ok) {
           const errorData = await res.json().catch(() => null);
-          console.error('Erro na resposta:', errorData);
+          if (__DEV__) {
+            console.error('Erro na resposta:', errorData);
+          }
           throw new Error(errorData?.error || 'Erro ao carregar filme');
         }
         
         const data = await res.json();
-        console.log('Dados do filme:', data);
+        if (__DEV__) {
+          console.log('Dados do filme:', data);
+        }
         
         // O endpoint /api/movie/{id}/details retorna { movie: {...}, subscriptionPlatforms: [...] }
         const movieData = data.movie || data;
         const platforms = data.subscriptionPlatforms || data.platforms || [];
         
-        console.log('Título original:', movieData.original_title);
-        console.log('landingPageHook:', movieData.landingPageHook);
-        console.log('targetAudienceForLP:', movieData.targetAudienceForLP);
-        console.log('contentWarnings:', movieData.contentWarnings);
-        console.log('Ratings:', {
-          imdbRating: movieData.imdbRating,
-          rottenTomatoesRating: movieData.rottenTomatoesRating,
-          metacriticRating: movieData.metacriticRating,
-          vote_average: movieData.vote_average
-        });
-        console.log('Plataformas:', platforms);
-        console.log('Elenco Principal:', movieData.mainCast);
+        if (__DEV__) {
+          console.log('Título original:', movieData.original_title);
+          console.log('landingPageHook:', movieData.landingPageHook);
+          console.log('targetAudienceForLP:', movieData.targetAudienceForLP);
+          console.log('contentWarnings:', movieData.contentWarnings);
+          console.log('Ratings:', {
+            imdbRating: movieData.imdbRating,
+            rottenTomatoesRating: movieData.rottenTomatoesRating,
+            metacriticRating: movieData.metacriticRating,
+            vote_average: movieData.vote_average
+          });
+          console.log('Plataformas:', platforms);
+          console.log('Elenco Principal:', movieData.mainCast);
+        }
         
         // Mapear os dados para o formato esperado pelo mobile
         const processedMovieData = {
@@ -257,7 +272,9 @@ export default function MovieDetailsScreen() {
         setMovie(processedMovieData);
         setLoading(false);
       } catch (err) {
-        console.error('Erro detalhado:', err);
+        if (__DEV__) {
+          console.error('Erro detalhado:', err);
+        }
         setError(`Erro ao carregar filme: ${err instanceof Error ? err.message : 'Erro desconhecido'}`);
         setLoading(false);
       }
@@ -278,7 +295,7 @@ export default function MovieDetailsScreen() {
     }
   }, [movie, loading]);
 
-  const handleShare = async () => {
+  const handleShare = useCallback(async () => {
     if (!movie) return;
     
     try {
@@ -287,29 +304,20 @@ export default function MovieDetailsScreen() {
         title: movie.title,
       });
     } catch (error) {
-      console.error('Erro ao compartilhar:', error);
+      if (__DEV__) {
+        console.error('Erro ao compartilhar:', error);
+      }
     }
-  };
+  }, [movie]);
 
-  const handleTrailer = () => {
+  const handleTrailer = useCallback(() => {
     // Por enquanto, vamos apenas mostrar um alerta
     // Em uma implementação real, você abriria o YouTube ou outro serviço de vídeo
     alert('Funcionalidade de trailer será implementada em breve!');
-  };
+  }, []);
 
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.safeArea}>
-        <AppHeader showBack={true} showLogo={true} />
-      <View style={styles.center}>
-        <Text style={styles.loadingText}>Carregando filme...</Text>
-      </View>
-      </SafeAreaView>
-    );
-  }
-
-  // Função para lidar com o scroll
-  const handleScroll = (event: any) => {
+  // Função para lidar com o scroll (memoizada) - DEVE estar antes de qualquer early return
+  const handleScroll = useCallback((event: any) => {
     const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
     const isScrolledToBottom = contentOffset.y + layoutMeasurement.height >= contentSize.height - 20;
     
@@ -324,16 +332,30 @@ export default function MovieDetailsScreen() {
       });
     } else {
       // Mostrar o indicador se não estiver no final
-      if (!showScrollIndicator) {
-        setShowScrollIndicator(true);
-        Animated.timing(scrollIndicatorOpacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }).start();
-      }
+      setShowScrollIndicator((prev) => {
+        if (!prev) {
+          Animated.timing(scrollIndicatorOpacity, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          }).start();
+          return true;
+        }
+        return prev;
+      });
     }
-  };
+  }, [scrollIndicatorOpacity]);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <AppHeader showBack={true} showLogo={true} />
+      <View style={styles.center}>
+        <Text style={styles.loadingText}>Carregando filme...</Text>
+      </View>
+      </SafeAreaView>
+    );
+  }
 
   if (error || !movie) {
     return (
@@ -432,7 +454,9 @@ export default function MovieDetailsScreen() {
                           const platformData = platform.streamingPlatform || platform;
                           if (platformData.baseUrl) {
                             // Aqui você pode abrir o link da plataforma
-                            console.log('Abrindo:', platformData.baseUrl);
+                            if (__DEV__) {
+                              console.log('Abrindo:', platformData.baseUrl);
+                            }
                           }
                         }}
                       >
@@ -668,7 +692,7 @@ export default function MovieDetailsScreen() {
           {/* Ratings */}
           <View style={styles.ratingsContainer}>
             <Text style={styles.ratingsTitle}>Notas da Crítica:</Text>
-            {(() => {
+            {__DEV__ && (() => {
               console.log('🔍 Debug Ratings:', {
                 vote_average: movie.vote_average,
                 imdbRating: movie.imdbRating,

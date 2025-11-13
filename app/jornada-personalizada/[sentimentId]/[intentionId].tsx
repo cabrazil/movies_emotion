@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useMemo } from 'react';
+import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView, Image, Pressable, Dimensions, Animated } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -27,17 +27,19 @@ export default function JornadaPersonalizadaScreen() {
   const [sortType, setSortType] = useState<'smart' | 'rating' | 'year'>('smart');
   const router = useRouter();
 
-  // Obter cor do sentimento
-  const sentimentColor = colors.sentimentColors[Number(sentimentId)] || colors.primary.main;
+  // Obter cor do sentimento (memoizada)
+  const sentimentColor = useMemo(() => 
+    colors.sentimentColors[Number(sentimentId)] || colors.primary.main,
+    [sentimentId]
+  );
   
   // Animação do indicador de scroll
   const scrollIndicatorOpacity = useRef(new Animated.Value(1)).current;
   const [showScrollIndicator, setShowScrollIndicator] = useState(false);
 
-  const getTotalMoviesInfo = () => {
-    const total = allMovies.length;
-    return { total };
-  };
+  const totalMoviesInfo = useMemo(() => {
+    return { total: allMovies.length };
+  }, [allMovies.length]);
 
   // Buscar dados das plataformas para mapeamento dinâmico
   useEffect(() => {
@@ -53,7 +55,9 @@ export default function JornadaPersonalizadaScreen() {
           setPlatformsData(platformsMap);
         }
       } catch (error) {
-        console.error('Erro ao carregar dados das plataformas:', error);
+        if (__DEV__) {
+          console.error('Erro ao carregar dados das plataformas:', error);
+        }
       }
     };
     
@@ -75,13 +79,17 @@ export default function JornadaPersonalizadaScreen() {
     const selectedFilter = availableFilters[filterIndex];
     
     setSortType(selectedFilter);
-    console.log(`🎲 Ordenação automática selecionada: ${selectedFilter}`);
+    if (__DEV__) {
+      console.log(`🎲 Ordenação automática selecionada: ${selectedFilter}`);
+    }
   }, []); // Executa apenas uma vez quando o componente é montado
 
   useEffect(() => {
     const fetchPersonalizedJourney = async () => {
       try {
-        console.log('🚀 Carregando jornada personalizada:', { sentimentId, intentionId });
+        if (__DEV__) {
+          console.log('🚀 Carregando jornada personalizada:', { sentimentId, intentionId });
+        }
         
              const res = await fetch(API_ENDPOINTS.personalizedJourney.get(sentimentId.toString(), intentionId.toString()), {
                headers: {
@@ -94,11 +102,13 @@ export default function JornadaPersonalizadaScreen() {
         }
         
         const data: PersonalizedJourneyResponse = await res.json();
-        console.log('📊 Dados da jornada recebidos:', {
-          totalSteps: data.steps.length,
-          firstStep: data.steps[0]?.stepId,
-          stepIds: data.steps.map(s => s.stepId)
-        });
+        if (__DEV__) {
+          console.log('📊 Dados da jornada recebidos:', {
+            totalSteps: data.steps.length,
+            firstStep: data.steps[0]?.stepId,
+            stepIds: data.steps.map(s => s.stepId)
+          });
+        }
         
 
         
@@ -107,7 +117,9 @@ export default function JornadaPersonalizadaScreen() {
         if (data.steps.length > 0) {
           // Buscar o primeiro step (menor order ou primeiro disponível)
           const firstStep = data.steps.sort((a, b) => a.order - b.order)[0];
-          console.log('🎯 Primeiro step selecionado:', firstStep.stepId);
+          if (__DEV__) {
+            console.log('🎯 Primeiro step selecionado:', firstStep.stepId);
+          }
           setStep(firstStep);
           setCurrentStepId(firstStep.stepId);
         } else {
@@ -116,7 +128,9 @@ export default function JornadaPersonalizadaScreen() {
         
         setLoading(false);
       } catch (err: unknown) {
-        console.error('❌ Erro detalhado:', err);
+        if (__DEV__) {
+          console.error('❌ Erro detalhado:', err);
+        }
         setError(`Erro ao carregar jornada personalizada: ${err instanceof Error ? err.message : 'Erro desconhecido'}`);
         setLoading(false);
       }
@@ -127,23 +141,29 @@ export default function JornadaPersonalizadaScreen() {
 
   // Processar retorno da tela de plataformas
   useEffect(() => {
-    console.log('🔍 Debug useEffect - Parâmetros recebidos:', { 
-      showResults, 
-      optionId, 
-      platforms, 
-      allStepsLength: allSteps.length,
-      selectedPlatformIdsLength: selectedPlatformIds.length
-    });
+    if (__DEV__) {
+      console.log('🔍 Debug useEffect - Parâmetros recebidos:', { 
+        showResults, 
+        optionId, 
+        platforms, 
+        allStepsLength: allSteps.length,
+        selectedPlatformIdsLength: selectedPlatformIds.length
+      });
+    }
     
     if (showResults === 'true' && optionId && allSteps.length > 0) {
-      console.log('🔄 Retornando da tela de plataformas:', { optionId, platforms });
+      if (__DEV__) {
+        console.log('🔄 Retornando da tela de plataformas:', { optionId, platforms });
+      }
       
       // Parsear plataformas selecionadas
       let platformIds: number[] = [];
       if (platforms && typeof platforms === 'string' && platforms.length > 0) {
         platformIds = platforms.split(',').map(id => parseInt(id, 10));
         setSelectedPlatformIds(platformIds);
-        console.log('📺 Plataformas selecionadas:', platformIds);
+        if (__DEV__) {
+          console.log('📺 Plataformas selecionadas:', platformIds);
+        }
       }
       
       // Buscar a opção que foi selecionada para pegar os filmes
@@ -153,10 +173,12 @@ export default function JornadaPersonalizadaScreen() {
       
       if (option && option.isEndState && option.movieSuggestions) {
         let movies = option.movieSuggestions;
-        console.log('🎬 Total de filmes antes do filtro:', movies.length);
+        if (__DEV__) {
+          console.log('🎬 Total de filmes antes do filtro:', movies.length);
+        }
         
         // Debug: verificar estrutura dos filmes
-        if (movies.length > 0) {
+        if (__DEV__ && movies.length > 0) {
           const firstMovie = movies[0];
           console.log('🔍 Estrutura do primeiro filme:', {
             id: firstMovie.movie.id,
@@ -175,12 +197,16 @@ export default function JornadaPersonalizadaScreen() {
         
         // Filtrar filmes por plataformas se houver seleção
         if (platformIds.length > 0) {
-          console.log('🔍 Iniciando filtro com plataformas:', platformIds);
+          if (__DEV__) {
+            console.log('🔍 Iniciando filtro com plataformas:', platformIds);
+          }
           
           movies = movies.filter(suggestion => {
             // Verificar se o filme tem plataformas
             if (!suggestion.movie.platforms || suggestion.movie.platforms.length === 0) {
-              console.log(`❌ Filme "${suggestion.movie.title}" sem plataformas`);
+              if (__DEV__) {
+                console.log(`❌ Filme "${suggestion.movie.title}" sem plataformas`);
+              }
               return false;
             }
             
@@ -191,7 +217,9 @@ export default function JornadaPersonalizadaScreen() {
               const platformName = platform.streamingPlatform?.name;
               
               if (!platformName) {
-                console.log(`⚠️ Plataforma sem nome no filme "${suggestion.movie.title}"`);
+                if (__DEV__) {
+                  console.log(`⚠️ Plataforma sem nome no filme "${suggestion.movie.title}"`);
+                }
                 return false;
               }
               
@@ -202,32 +230,40 @@ export default function JornadaPersonalizadaScreen() {
                   parseInt(platformId) === id
                 );
                 const platformName = platform ? platform[1] : null;
-                console.log(`🔍 Mapeando ID ${id} -> "${platformName}"`);
+                if (__DEV__) {
+                  console.log(`🔍 Mapeando ID ${id} -> "${platformName}"`);
+                }
                 return platformName;
               }).filter(Boolean);
               
-              console.log(`🔍 Plataformas selecionadas mapeadas:`, selectedPlatformNames);
+              if (__DEV__) {
+                console.log(`🔍 Plataformas selecionadas mapeadas:`, selectedPlatformNames);
+              }
               
               const isMatch = selectedPlatformNames.includes(platformName) &&
                               platform.accessType === 'INCLUDED_WITH_SUBSCRIPTION';
               
-              if (isMatch) {
+              if (__DEV__ && isMatch) {
                 console.log(`✅ Match encontrado: Filme "${suggestion.movie.title}" - Plataforma "${platformName}"`);
               }
               
               return isMatch;
             });
             
-            if (hasSelectedPlatform) {
-              console.log(`✅ Filme "${suggestion.movie.title}" disponível em plataforma selecionada`);
-            } else {
-              console.log(`❌ Filme "${suggestion.movie.title}" não disponível nas plataformas selecionadas`);
+            if (__DEV__) {
+              if (hasSelectedPlatform) {
+                console.log(`✅ Filme "${suggestion.movie.title}" disponível em plataforma selecionada`);
+              } else {
+                console.log(`❌ Filme "${suggestion.movie.title}" não disponível nas plataformas selecionadas`);
+              }
             }
             
             return hasSelectedPlatform;
           });
           
-          console.log('📺 Filmes após filtro de plataformas:', movies.length);
+          if (__DEV__) {
+            console.log('📺 Filmes após filtro de plataformas:', movies.length);
+          }
         }
         
                setAllMovies(movies);
@@ -235,17 +271,21 @@ export default function JornadaPersonalizadaScreen() {
     }
   }, [showResults, optionId, platforms, allSteps]);
 
-  const handleOption = (option: JourneyOption) => {
-    console.log('🎯 Opção selecionada:', {
-      optionId: option.id,
-      text: option.text,
-      nextStepId: option.nextStepId,
-      isEndState: option.isEndState,
-      hasMovieSuggestions: option.movieSuggestions?.length || 0
-    });
+  const handleOption = useCallback((option: JourneyOption) => {
+    if (__DEV__) {
+      console.log('🎯 Opção selecionada:', {
+        optionId: option.id,
+        text: option.text,
+        nextStepId: option.nextStepId,
+        isEndState: option.isEndState,
+        hasMovieSuggestions: option.movieSuggestions?.length || 0
+      });
+    }
 
     if (option.isEndState) {
-      console.log('🎬 Estado final alcançado, redirecionando para plataformas de streaming');
+      if (__DEV__) {
+        console.log('🎬 Estado final alcançado, redirecionando para plataformas de streaming');
+      }
       // Redirecionar para tela de seleção de plataformas de streaming
       router.push({
         pathname: '/plataformas-streaming/[sentimentId]/[intentionId]/[optionId]',
@@ -259,7 +299,9 @@ export default function JornadaPersonalizadaScreen() {
     }
 
     if (!option.nextStepId) {
-      console.error('❌ NextStepId não encontrado para opção não-final');
+      if (__DEV__) {
+        console.error('❌ NextStepId não encontrado para opção não-final');
+      }
       alert('Erro: próximo passo não definido.');
       return;
     }
@@ -268,7 +310,9 @@ export default function JornadaPersonalizadaScreen() {
     const next = allSteps.find(s => s.stepId === option.nextStepId || s.id?.toString() === option.nextStepId);
     
     if (next) {
-      console.log('✅ Próximo step encontrado:', next.stepId);
+      if (__DEV__) {
+        console.log('✅ Próximo step encontrado:', next.stepId);
+      }
       setStep(next);
       setCurrentStepId(next.stepId);
       
@@ -280,15 +324,17 @@ export default function JornadaPersonalizadaScreen() {
         setShowScrollIndicator(false);
       }
     } else {
-      console.error('❌ Próximo step não encontrado:', {
-        nextStepId: option.nextStepId,
-        availableSteps: allSteps.map(s => ({ id: s.id, stepId: s.stepId }))
-      });
+      if (__DEV__) {
+        console.error('❌ Próximo step não encontrado:', {
+          nextStepId: option.nextStepId,
+          availableSteps: allSteps.map(s => ({ id: s.id, stepId: s.stepId }))
+        });
+      }
       alert(`Erro ao avançar: próximo passo '${option.nextStepId}' não encontrado`);
     }
-  };
+  }, [allSteps, router, sentimentId, intentionId, scrollIndicatorOpacity]);
 
-  const handleScroll = (event: any) => {
+  const handleScroll = useCallback((event: any) => {
     const scrollY = event.nativeEvent.contentOffset.y;
     
     // Esconder indicador após 50px de scroll
@@ -299,20 +345,22 @@ export default function JornadaPersonalizadaScreen() {
         useNativeDriver: true,
       }).start(() => setShowScrollIndicator(false));
     }
-  };
+  }, [showScrollIndicator, scrollIndicatorOpacity]);
 
-  const renderOptions = () => {
+  const renderOptions = useCallback(() => {
     if (!step) return null;
     
     // Debug para investigar o problema específico
-    console.log('🔍 Debug renderOptions:', {
-      stepId: step.id,
-      stepStepId: step.stepId,
-      optionsCount: step.options.length,
-      sentimentId: sentimentId,
-      intentionId: intentionId,
-      firstOptionText: step.options[0]?.text?.substring(0, 50) + '...'
-    });
+    if (__DEV__) {
+      console.log('🔍 Debug renderOptions:', {
+        stepId: step.id,
+        stepStepId: step.stepId,
+        optionsCount: step.options.length,
+        sentimentId: sentimentId,
+        intentionId: intentionId,
+        firstOptionText: step.options[0]?.text?.substring(0, 50) + '...'
+      });
+    }
     
     // Layout em duas colunas para gêneros (step 38) - APENAS se for realmente gêneros
     // Verificar se é realmente um step de gêneros baseado no conteúdo, não apenas no ID
@@ -321,7 +369,9 @@ export default function JornadaPersonalizadaScreen() {
     );
     
     if (isGenreStep) {
-      console.log('🔍 Usando layout de gêneros para step:', step.stepId);
+      if (__DEV__) {
+        console.log('🔍 Usando layout de gêneros para step:', step.stepId);
+      }
       return (
         <View style={styles.genreGrid}>
           {step.options.map(option => (
@@ -345,13 +395,17 @@ export default function JornadaPersonalizadaScreen() {
     }
 
     // Layout padrão para outras opções
-    console.log('🔍 Usando layout padrão para step:', step.stepId);
+    if (__DEV__) {
+      console.log('🔍 Usando layout padrão para step:', step.stepId);
+    }
     return step.options.map(option => {
-      console.log('🔍 Renderizando opção:', {
-        id: option.id,
-        textLength: option.text.length,
-        textPreview: option.text.substring(0, 30) + '...'
-      });
+      if (__DEV__) {
+        console.log('🔍 Renderizando opção:', {
+          id: option.id,
+          textLength: option.text.length,
+          textPreview: option.text.substring(0, 30) + '...'
+        });
+      }
       
       return (
         <TouchableOpacity
@@ -371,7 +425,7 @@ export default function JornadaPersonalizadaScreen() {
         </TouchableOpacity>
       );
     });
-  };
+  }, [step, sentimentColor, handleOption, sentimentId, intentionId]);
 
   // Ordenar filmes baseado no critério selecionado
   const sortedMovies = useMemo(() => {
@@ -449,7 +503,9 @@ export default function JornadaPersonalizadaScreen() {
     );
   }
 
-  console.log('🔍 Debug renderização principal - allMovies.length:', allMovies.length, 'selectedPlatformIds.length:', selectedPlatformIds.length);
+  if (__DEV__) {
+    console.log('🔍 Debug renderização principal - allMovies.length:', allMovies.length, 'selectedPlatformIds.length:', selectedPlatformIds.length);
+  }
 
   // Buscar o texto da opção escolhida
   const selectedOption = optionId ? allSteps
@@ -482,7 +538,7 @@ export default function JornadaPersonalizadaScreen() {
               <View style={styles.movieCountIndicator}>
                 <Ionicons name="film-outline" size={16} color={colors.primary.main} />
                 <Text style={styles.movieCountText}>
-                  {getTotalMoviesInfo().total} filmes encontrados
+                  {totalMoviesInfo.total} filmes encontrados
                 </Text>
               </View>
           </View>
@@ -553,13 +609,17 @@ export default function JornadaPersonalizadaScreen() {
           </View>
 
           {(() => {
-            console.log('🔍 Debug condição - allMovies.length:', allMovies.length, 'typeof:', typeof allMovies.length, '=== 0:', allMovies.length === 0);
+            if (__DEV__) {
+              console.log('🔍 Debug condição - allMovies.length:', allMovies.length, 'typeof:', typeof allMovies.length, '=== 0:', allMovies.length === 0);
+            }
             return allMovies.length === 0;
           })() && (
             <View style={styles.noMoviesContainer}>
               <Text style={styles.noMoviesTitle}>
                 {(() => {
-                  console.log('🔍 Debug mensagem - allMovies.length:', allMovies.length, 'selectedPlatformIds.length:', selectedPlatformIds.length, 'showResults:', showResults);
+                  if (__DEV__) {
+                    console.log('🔍 Debug mensagem - allMovies.length:', allMovies.length, 'selectedPlatformIds.length:', selectedPlatformIds.length, 'showResults:', showResults);
+                  }
                   return selectedPlatformIds.length > 0 
                     ? "Nenhuma sugestão de filme encontrada." 
                     : "Nenhum filme sugerido para este caminho.";
@@ -573,7 +633,9 @@ export default function JornadaPersonalizadaScreen() {
               <TouchableOpacity 
                 style={[styles.backToFiltersButton, { borderColor: sentimentColor }]}
                 onPress={() => {
-                  console.log('🔍 Botão voltar pressionado - selectedPlatformIds:', selectedPlatformIds);
+                  if (__DEV__) {
+                    console.log('🔍 Botão voltar pressionado - selectedPlatformIds:', selectedPlatformIds);
+                  }
                   router.back();
                 }}
                 activeOpacity={0.7}
@@ -593,10 +655,12 @@ export default function JornadaPersonalizadaScreen() {
                 pressed && styles.movieCardPressed
               ]}
               onPress={() => {
-                console.log('Navegando para filme:', {
-                  id: ms.movie.id,
-                  reason: ms.reason
-                });
+                if (__DEV__) {
+                  console.log('Navegando para filme:', {
+                    id: ms.movie.id,
+                    reason: ms.reason
+                  });
+                }
                 router.push({
                   pathname: '/filme/[id]',
                   params: { 
