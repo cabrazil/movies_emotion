@@ -1,8 +1,10 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView, SafeAreaView, Animated, Image } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView, Animated, Image } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { API_ENDPOINTS } from '../../../config';
-import { colors, typography, spacing, borderRadius, shadows } from '../../../theme';
+import { API_ENDPOINTS, apiRequest } from '../../../config';
+import { typography, spacing, borderRadius, shadows } from '../../../theme';
+import { useTheme } from '../../../hooks/useTheme';
 import { Ionicons } from '@expo/vector-icons';
 import { StreamingPlatform } from '../../../types';
 import { AppHeader } from '../../../components/AppHeader';
@@ -34,6 +36,7 @@ const getPlatformLogoUrl = (logoPath: string | null, platformName: string): stri
 export default function PlataformasStreamingScreen() {
   const { sentimentId, intentionId, optionId } = useLocalSearchParams();
   const router = useRouter();
+  const { colors } = useTheme();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [platforms, setPlatforms] = useState<StreamingPlatform[]>([]);
@@ -45,7 +48,7 @@ export default function PlataformasStreamingScreen() {
   // Obter cor do sentimento (memoizada)
   const sentimentColor = useMemo(() => 
     colors.sentimentColors[Number(sentimentId)] || colors.primary.main,
-    [sentimentId]
+    [sentimentId, colors]
   );
 
   // Animação do indicador de scroll
@@ -55,12 +58,8 @@ export default function PlataformasStreamingScreen() {
   // Função para contar filmes por plataforma
   const fetchMovieCountsByPlatform = async (platforms: StreamingPlatform[]) => {
     try {
-      if (__DEV__) {
-        console.log('🔍 Contando filmes por plataforma para opção:', optionId);
-      }
-      
       // Buscar filmes da opção escolhida
-      const response = await fetch(API_ENDPOINTS.personalizedJourney.get(sentimentId.toString(), intentionId.toString()));
+      const response = await apiRequest(API_ENDPOINTS.personalizedJourney.get(sentimentId.toString(), intentionId.toString()));
       if (!response.ok) throw new Error('Erro ao carregar jornada');
       
       const data = await response.json();
@@ -102,10 +101,22 @@ export default function PlataformasStreamingScreen() {
         });
         
         counts[platform.id] = count;
-        if (__DEV__) {
-          console.log(`📊 ${platform.name}: ${count} filmes`);
-        }
       });
+      
+      // Log resumido apenas com plataformas que têm filmes
+      if (__DEV__) {
+        const platformsWithMovies = Object.entries(counts)
+          .filter(([_, count]) => count > 0)
+          .map(([id, count]) => {
+            const platform = platforms.find(p => p.id.toString() === id);
+            return `${platform?.name}: ${count}`;
+          });
+        if (platformsWithMovies.length > 0) {
+          console.log(`📊 Filmes por plataforma: ${platformsWithMovies.join(', ')}`);
+        } else {
+          console.log('📊 Nenhum filme encontrado nas plataformas');
+        }
+      }
       
       setPlatformMovieCounts(counts);
       return counts;
@@ -125,10 +136,7 @@ export default function PlataformasStreamingScreen() {
 
          const fetchPlatforms = async () => {
            try {
-             if (__DEV__) {
-               console.log('🌐 Buscando plataformas de streaming:', API_ENDPOINTS.streamingPlatforms.list);
-             }
-             const response = await fetch(API_ENDPOINTS.streamingPlatforms.list, {
+             const response = await apiRequest(API_ENDPOINTS.streamingPlatforms.list, {
                headers: {
                  'Cache-Control': 'no-cache',
                  'Pragma': 'no-cache'
@@ -194,16 +202,12 @@ export default function PlataformasStreamingScreen() {
   const handleContinue = () => {
     // Navegar de volta para a jornada com as plataformas selecionadas
     // A tela de jornada irá mostrar os filmes filtrados
-    console.log('🔄 Retornando da tela de plataformas:', { 
-      optionId, 
-      platforms: selectedPlatforms.join(','),
-      selectedPlatforms,
-      platformMovieCounts: selectedPlatforms.map(id => ({
-        id,
-        name: platforms.find(p => p.id === id)?.name,
-        movieCount: platformMovieCounts[id] || 0
-      }))
-    });
+    if (__DEV__) {
+      console.log('🔄 Retornando da tela de plataformas:', { 
+        optionId, 
+        platformsCount: selectedPlatforms.length
+      });
+    }
     router.push({
       pathname: '/jornada-personalizada/[sentimentId]/[intentionId]',
       params: {
@@ -229,6 +233,252 @@ export default function PlataformasStreamingScreen() {
       }
     });
   };
+
+  // Criar estilos dinamicamente com base no tema
+  const styles = useMemo(() => StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: colors.background.primary,
+    },
+    container: {
+      flex: 1,
+      backgroundColor: colors.background.primary,
+    },
+    scrollView: {
+      flex: 1,
+    },
+    center: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.background.primary,
+    },
+    header: {
+      padding: spacing.lg,
+      alignItems: 'center',
+    },
+    iconContainer: {
+      width: 72,
+      height: 72,
+      borderRadius: 36,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: spacing.md,
+    },
+    title: {
+      fontSize: typography.fontSize.h1,
+      fontWeight: typography.fontWeight.bold,
+      color: colors.text.primary,
+      marginBottom: spacing.sm,
+      textAlign: 'center',
+    },
+    subtitle: {
+      fontSize: typography.fontSize.body,
+      color: colors.text.secondary,
+      textAlign: 'center',
+      lineHeight: typography.fontSize.body * typography.lineHeight.relaxed,
+    },
+    optionContext: {
+      marginTop: spacing.md,
+      alignItems: 'center',
+    },
+    optionLabel: {
+      fontSize: typography.fontSize.small,
+      color: colors.text.secondary,
+      textAlign: 'center',
+      marginBottom: spacing.xs,
+      fontWeight: typography.fontWeight.medium,
+    },
+    optionText: {
+      fontSize: typography.fontSize.body,
+      color: colors.text.secondary,
+      textAlign: 'center',
+      fontStyle: 'italic',
+      lineHeight: 22,
+      paddingHorizontal: spacing.md,
+    },
+    platformsContainer: {
+      paddingHorizontal: spacing.md,
+      marginBottom: spacing.lg,
+    },
+    sectionTitle: {
+      fontSize: typography.fontSize.h3,
+      fontWeight: typography.fontWeight.semibold,
+      color: colors.text.primary,
+      marginBottom: spacing.md,
+    },
+    platformsGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+      justifyContent: 'flex-start',
+    },
+    platformCard: {
+      width: 70,
+      height: 70,
+      backgroundColor: colors.background.secondary,
+      borderRadius: borderRadius.md,
+      borderWidth: 2,
+      borderColor: colors.border.medium,
+      justifyContent: 'center',
+      alignItems: 'center',
+      position: 'relative',
+      ...shadows.sm,
+    },
+    platformLogo: {
+      width: 40,
+      height: 40,
+    },
+    platformName: {
+      fontSize: typography.fontSize.small,
+      fontWeight: typography.fontWeight.medium,
+      color: colors.text.primary,
+      textAlign: 'center',
+    },
+    checkmark: {
+      position: 'absolute',
+      top: 4,
+      right: 4,
+      width: 24,
+      height: 24,
+      borderRadius: 12,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    expandButton: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      backgroundColor: colors.background.card,
+      borderRadius: borderRadius.md,
+      padding: spacing.md,
+      marginBottom: spacing.md,
+      ...shadows.sm,
+    },
+    expandButtonText: {
+      fontSize: typography.fontSize.body,
+      fontWeight: typography.fontWeight.medium,
+      color: colors.text.primary,
+    },
+    movieCountBadge: {
+      position: 'absolute',
+      top: -6,
+      left: -6,
+      minWidth: 20,
+      height: 20,
+      borderRadius: 10,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: 6,
+      ...shadows.sm,
+    },
+    movieCountText: {
+      fontSize: typography.fontSize.tiny,
+      fontWeight: typography.fontWeight.bold,
+      color: colors.text.inverse,
+      textAlign: 'center',
+    },
+    platformCardEmpty: {
+      opacity: 0.5,
+      borderColor: colors.border.light,
+      backgroundColor: colors.background.secondary,
+    },
+    platformLogoEmpty: {
+      opacity: 0.6,
+    },
+    platformNameEmpty: {
+      color: colors.text.secondary,
+    },
+    infoBox: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginHorizontal: spacing.md,
+      marginBottom: spacing.lg,
+      padding: spacing.md,
+      borderRadius: borderRadius.md,
+      borderLeftWidth: 3,
+    },
+    infoText: {
+      flex: 1,
+      fontSize: typography.fontSize.small,
+      color: colors.text.secondary,
+      marginLeft: spacing.sm,
+    },
+    footer: {
+      padding: spacing.md,
+      paddingBottom: spacing.lg,
+      backgroundColor: colors.background.card,
+      borderTopWidth: 1,
+      borderTopColor: colors.border.light,
+      gap: spacing.sm,
+    },
+    skipButton: {
+      backgroundColor: colors.background.secondary,
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.lg,
+      borderRadius: borderRadius.md,
+      alignItems: 'center',
+      borderWidth: 2,
+      ...shadows.sm,
+    },
+    skipButtonText: {
+      fontSize: typography.fontSize.body,
+      fontWeight: typography.fontWeight.semibold,
+      color: colors.text.primary,
+    },
+    continueButton: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.lg,
+      borderRadius: borderRadius.md,
+      gap: spacing.xs,
+    },
+    continueButtonDisabled: {
+      opacity: 0.5,
+    },
+    continueButtonText: {
+      color: colors.text.inverse,
+      fontSize: typography.fontSize.body,
+      fontWeight: typography.fontWeight.semibold,
+    },
+    loadingText: {
+      marginTop: spacing.md,
+      color: colors.primary.main,
+      fontSize: typography.fontSize.body,
+    },
+    errorText: {
+      color: colors.state.error,
+      fontSize: typography.fontSize.body,
+      textAlign: 'center',
+      paddingHorizontal: spacing.md,
+      marginBottom: spacing.md,
+    },
+    retryButton: {
+      backgroundColor: colors.primary.main,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.sm,
+      borderRadius: borderRadius.md,
+    },
+    retryButtonText: {
+      color: colors.text.inverse,
+      fontSize: typography.fontSize.body,
+      fontWeight: typography.fontWeight.medium,
+    },
+    scrollIndicator: {
+      position: 'absolute',
+      bottom: spacing.xl + 120,
+      alignSelf: 'center',
+      backgroundColor: colors.background.card,
+      borderRadius: borderRadius.full,
+      width: 40,
+      height: 40,
+      justifyContent: 'center',
+      alignItems: 'center',
+      ...shadows.lg,
+    },
+  }), [colors]);
 
   if (loading) {
     return (
@@ -315,11 +565,19 @@ export default function PlataformasStreamingScreen() {
                     disabled={!hasMovies}
                   >
                     {logoUrl ? (
-                      <Image 
-                        source={{ uri: logoUrl }} 
-                        style={[styles.platformLogo, !hasMovies && styles.platformLogoEmpty]}
-                        resizeMode="contain"
-                      />
+                      <View style={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                        borderRadius: borderRadius.sm,
+                        padding: 4,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}>
+                        <Image 
+                          source={{ uri: logoUrl }} 
+                          style={[styles.platformLogo, !hasMovies && styles.platformLogoEmpty]}
+                          resizeMode="contain"
+                        />
+                      </View>
                     ) : (
                       <Text style={[styles.platformName, !hasMovies && styles.platformNameEmpty]} numberOfLines={2}>
                         {platform.name}
@@ -386,11 +644,19 @@ export default function PlataformasStreamingScreen() {
                         disabled={!hasMovies}
                       >
                         {logoUrl ? (
-                          <Image 
-                            source={{ uri: logoUrl }} 
-                            style={[styles.platformLogo, !hasMovies && styles.platformLogoEmpty]}
-                            resizeMode="contain"
-                          />
+                          <View style={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                            borderRadius: borderRadius.sm,
+                            padding: 4,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }}>
+                            <Image 
+                              source={{ uri: logoUrl }} 
+                              style={[styles.platformLogo, !hasMovies && styles.platformLogoEmpty]}
+                              resizeMode="contain"
+                            />
+                          </View>
                         ) : (
                           <Text style={[styles.platformName, !hasMovies && styles.platformNameEmpty]} numberOfLines={2}>
                             {platform.name}
@@ -466,256 +732,10 @@ export default function PlataformasStreamingScreen() {
             <Text style={styles.continueButtonText}>
               Ver Sugestões
             </Text>
-            <Ionicons name="arrow-forward" size={20} color={colors.white} />
           </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: colors.background.primary,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: colors.background.primary,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.background.primary,
-  },
-  header: {
-    padding: spacing.lg,
-    alignItems: 'center',
-  },
-  iconContainer: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  title: {
-    fontSize: typography.fontSize.h1,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.text.primary,
-    marginBottom: spacing.sm,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: typography.fontSize.body,
-    color: colors.text.secondary,
-    textAlign: 'center',
-    lineHeight: typography.fontSize.body * typography.lineHeight.relaxed,
-  },
-  optionContext: {
-    marginTop: spacing.md,
-    alignItems: 'center',
-  },
-  optionLabel: {
-    fontSize: typography.fontSize.small,
-    color: colors.text.secondary,
-    textAlign: 'center',
-    marginBottom: spacing.xs,
-    fontWeight: typography.fontWeight.medium,
-  },
-  optionText: {
-    fontSize: typography.fontSize.body,
-    textAlign: 'center',
-    fontStyle: 'italic',
-    lineHeight: 22,
-    paddingHorizontal: spacing.md,
-  },
-  platformsContainer: {
-    paddingHorizontal: spacing.md,
-    marginBottom: spacing.lg,
-  },
-  sectionTitle: {
-    fontSize: typography.fontSize.h3,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.text.primary,
-    marginBottom: spacing.md,
-  },
-  platformsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-    justifyContent: 'flex-start',
-  },
-  platformCard: {
-    width: 70,
-    height: 70,
-    backgroundColor: colors.background.card,
-    borderRadius: borderRadius.md,
-    borderWidth: 2,
-    borderColor: colors.border.light,
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-    ...shadows.sm,
-  },
-  platformLogo: {
-    width: 40,
-    height: 40,
-  },
-  platformName: {
-    fontSize: typography.fontSize.small,
-    fontWeight: typography.fontWeight.medium,
-    color: colors.text.primary,
-    textAlign: 'center',
-  },
-  checkmark: {
-    position: 'absolute',
-    top: 4,
-    right: 4,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  expandButton: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: colors.background.card,
-    borderRadius: borderRadius.md,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-    ...shadows.sm,
-  },
-  expandButtonText: {
-    fontSize: typography.fontSize.body,
-    fontWeight: typography.fontWeight.medium,
-    color: colors.text.primary,
-  },
-  // Estilos para badges de contagem
-  movieCountBadge: {
-    position: 'absolute',
-    top: -6,
-    left: -6,
-    minWidth: 20,
-    height: 20,
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 6,
-    ...shadows.sm,
-  },
-  movieCountText: {
-    fontSize: typography.fontSize.tiny,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.text.inverse,
-    textAlign: 'center',
-  },
-  // Estilos para plataformas sem filmes
-  platformCardEmpty: {
-    opacity: 0.5,
-    borderColor: colors.border.light,
-    backgroundColor: colors.background.secondary,
-  },
-  platformLogoEmpty: {
-    opacity: 0.6,
-  },
-  platformNameEmpty: {
-    color: colors.text.secondary,
-  },
-  infoBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: spacing.md,
-    marginBottom: spacing.lg,
-    padding: spacing.md,
-    borderRadius: borderRadius.md,
-    borderLeftWidth: 3,
-  },
-  infoText: {
-    flex: 1,
-    fontSize: typography.fontSize.small,
-    color: colors.text.secondary,
-    marginLeft: spacing.sm,
-  },
-  footer: {
-    padding: spacing.md,
-    paddingBottom: spacing.lg,
-    backgroundColor: colors.background.card,
-    borderTopWidth: 1,
-    borderTopColor: colors.border.light,
-    gap: spacing.sm,
-  },
-  skipButton: {
-    backgroundColor: colors.background.secondary,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    borderRadius: borderRadius.md,
-    alignItems: 'center',
-    borderWidth: 2,
-    ...shadows.sm,
-  },
-  skipButtonText: {
-    fontSize: typography.fontSize.body,
-    fontWeight: typography.fontWeight.semibold,
-  },
-  continueButton: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    borderRadius: borderRadius.md,
-    gap: spacing.xs,
-  },
-  continueButtonDisabled: {
-    opacity: 0.5,
-  },
-  continueButtonText: {
-    color: colors.white,
-    fontSize: typography.fontSize.body,
-    fontWeight: typography.fontWeight.semibold,
-  },
-  loadingText: {
-    marginTop: spacing.md,
-    color: colors.primary.main,
-    fontSize: typography.fontSize.body,
-  },
-  errorText: {
-    color: colors.state.error,
-    fontSize: typography.fontSize.body,
-    textAlign: 'center',
-    paddingHorizontal: spacing.md,
-    marginBottom: spacing.md,
-  },
-  retryButton: {
-    backgroundColor: colors.primary.main,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
-  },
-  retryButtonText: {
-    color: colors.text.inverse,
-    fontSize: typography.fontSize.body,
-    fontWeight: typography.fontWeight.medium,
-  },
-  scrollIndicator: {
-    position: 'absolute',
-    bottom: spacing.xl + 120, // Acima do footer
-    alignSelf: 'center',
-    backgroundColor: colors.background.card,
-    borderRadius: borderRadius.full,
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...shadows.lg,
-  },
-});
 

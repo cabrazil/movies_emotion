@@ -1,4 +1,5 @@
-export const colors = {
+// Cores para modo claro (Light Mode)
+export const colorsLight = {
   // Cores de fundo
   background: {
     primary: '#F5F5F5',    // Branco off-white
@@ -45,7 +46,7 @@ export const colors = {
   teal:  '#60B2A3',
   white: '#FFFFFF',
   
-  // Cores específicas por sentimento (cards)
+  // Cores específicas por sentimento (cards) - mantém as mesmas em ambos os modos
   sentimentColors: {
     13: '#FF8F00', // Laranja/Âmbar para Feliz/Alegre
     14: '#1A73E8', // Azul para Triste
@@ -55,6 +56,68 @@ export const colors = {
     18: '#808080', // Cinza para Cansado
   } as Record<number, string>,
 };
+
+// Cores para modo escuro (Dark Mode)
+export const colorsDark = {
+  // Cores de fundo
+  background: {
+    primary: '#121212',    // Preto quase puro
+    card: '#1E1E1E',       // Cinza muito escuro para cards
+    secondary: '#2C2C2C',  // Cinza escuro
+  },
+  
+  // Cores de destaque
+  primary: {
+    main: '#3b82f6',       // Azul mais claro para contraste
+    light: '#60a5fa',      // Azul claro
+    dark: '#2563eb',       // Azul médio
+  },
+  
+  // Cores de texto
+  text: {
+    primary: '#E0E0E0',    // Cinza muito claro para texto principal (evita branco puro que cansa a vista)
+    secondary: '#C8C8C8',  // Cinza claro para texto secundário (melhor contraste que #B0B0B0)
+    light: '#888888',      // Cinza médio
+    inverse: '#1F1F1F',   // Preto para texto sobre fundo claro
+  },
+  
+  // Cores de borda
+  border: {
+    light: '#333333',      // Borda escura
+    medium: '#444444',     // Borda média escura
+    dark: '#555555',       // Borda mais clara
+  },
+  
+  // Cores de estado (mantém as mesmas para consistência)
+  state: {
+    error: '#FF6B6B',      // Vermelho suave
+    success: '#4CAF50',    // Verde suave
+    warning: '#FFB74D',    // Laranja suave
+  },
+  
+  // Cores dos ícones de sentimentos (mantém as mesmas)
+  yellow: '#FFD700',
+  gray: '#808080',
+  blue: '#1E90FF',
+  red: '#FF4444',
+  orange: '#FFA500',
+  green: '#4CAF50',
+  teal:  '#60B2A3',
+  white: '#FFFFFF',
+  
+  // Cores específicas por sentimento (cards) - mantém as mesmas em ambos os modos
+  sentimentColors: {
+    13: '#FF8F00', // Laranja/Âmbar para Feliz/Alegre
+    14: '#1A73E8', // Azul para Triste
+    15: '#2E7D32', // Verde escuro para Calmo
+    16: '#BA55D3', // Roxo para Ansioso
+    17: '#FF4444', // Vermelho para Animado
+    18: '#808080', // Cinza para Cansado
+  } as Record<number, string>,
+};
+
+// Exportar colorsLight como padrão para compatibilidade com código existente
+export const colors = colorsLight;
 
 export const typography = {
   fontFamily: {

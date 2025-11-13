@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Vibesfilm",
+    "name": "movies_emotion",
     "slug": "movies_emotion",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -13,8 +13,7 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.vibesfilm.app"
+      "supportsTablet": true
     },
     "android": {
       "package": "com.vibesfilm.app",
@@ -27,11 +26,14 @@
       "permissions": [
         "INTERNET",
         "ACCESS_NETWORK_STATE"
-      ],
-      "playStoreUrl": "https://play.google.com/store/apps/details?id=com.vibesfilm.app"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "apiBaseUrl": "https://moviesf-back.vercel.app"
     }
   }
 }
+

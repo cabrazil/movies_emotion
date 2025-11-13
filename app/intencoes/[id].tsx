@@ -1,9 +1,10 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView, Animated } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, typography, spacing, borderRadius, shadows } from '../theme';
-import { API_ENDPOINTS } from '../config';
+import { typography, spacing, borderRadius, shadows } from '../theme';
+import { useTheme } from '../hooks/useTheme';
+import { API_ENDPOINTS, apiRequest } from '../config';
 import { EmotionalIntentionsResponse, EmotionalIntention, Sentiment } from '../types';
 import { IntentionIcon } from '../components/IntentionIcon';
 import { AppHeader } from '../components/AppHeader';
@@ -12,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 export default function IntencoesScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const { colors } = useTheme();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [intentions, setIntentions] = useState<EmotionalIntention[]>([]);
@@ -27,7 +29,7 @@ export default function IntencoesScreen() {
 
   const fetchIntentions = async () => {
     try {
-      const response = await fetch(API_ENDPOINTS.emotionalIntentions.list(id.toString()));
+      const response = await apiRequest(API_ENDPOINTS.emotionalIntentions.list(id.toString()));
       if (!response.ok) {
         throw new Error('Erro ao carregar intenções emocionais');
       }
@@ -84,7 +86,154 @@ export default function IntencoesScreen() {
     }
   };
 
+  const sentimentColor = useMemo(() => 
+    sentiment ? (colors.sentimentColors[sentiment.id] || colors.primary.main) : colors.primary.main,
+    [sentiment, colors]
+  );
 
+  const styles = useMemo(() => StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: colors.background.primary,
+    },
+    container: {
+      flex: 1,
+      backgroundColor: colors.background.primary,
+    },
+    scrollView: {
+      flex: 1,
+    },
+    center: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.background.primary,
+    },
+    header: {
+      padding: spacing.md,
+      paddingTop: spacing.md,
+      paddingBottom: spacing.lg,
+    },
+    title: {
+      fontSize: typography.fontSize.h2,
+      fontWeight: typography.fontWeight.bold,
+      color: colors.text.primary,
+      marginBottom: spacing.md,
+      textAlign: 'center',
+      lineHeight: typography.fontSize.h2 * typography.lineHeight.tight,
+    },
+    sentimentBadge: {
+      borderRadius: borderRadius.lg,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+      borderWidth: 1,
+      alignSelf: 'center',
+      marginBottom: spacing.md,
+    },
+    sentimentBadgeText: {
+      fontSize: typography.fontSize.body,
+      fontWeight: typography.fontWeight.semibold,
+      textAlign: 'center',
+    },
+    subtitle: {
+      fontSize: typography.fontSize.body,
+      fontWeight: typography.fontWeight.regular,
+      color: colors.text.secondary,
+      textAlign: 'center',
+      marginTop: spacing.sm,
+    },
+    intentionsContainer: {
+      flex: 1,
+      padding: spacing.md,
+      paddingTop: 0,
+      justifyContent: 'space-between',
+    },
+    intentionCard: {
+      backgroundColor: colors.background.card,
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      marginBottom: spacing.md,
+      ...shadows.md,
+    },
+    intentionHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: spacing.sm,
+    },
+    intentionIconContainer: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: spacing.md,
+    },
+    intentionTitle: {
+      fontSize: typography.fontSize.h3,
+      fontWeight: typography.fontWeight.bold,
+      color: colors.text.primary,
+      flex: 1,
+    },
+    intentionDescription: {
+      fontSize: typography.fontSize.small,
+      color: colors.text.secondary,
+      lineHeight: typography.fontSize.small * typography.lineHeight.relaxed,
+      marginLeft: 48 + spacing.md,
+    },
+    footer: {
+      padding: spacing.md,
+      paddingTop: spacing.sm,
+    },
+    backButton: {
+      backgroundColor: colors.background.secondary,
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.lg,
+      borderRadius: borderRadius.md,
+      alignItems: 'center',
+    },
+    backButtonText: {
+      color: colors.text.primary,
+      fontSize: typography.fontSize.body,
+      fontWeight: typography.fontWeight.medium,
+    },
+    loadingText: {
+      marginTop: spacing.md,
+      color: colors.primary.main,
+      fontSize: typography.fontSize.body,
+      lineHeight: typography.fontSize.body * typography.lineHeight.normal,
+    },
+    errorText: {
+      color: colors.state.error,
+      fontSize: typography.fontSize.body,
+      lineHeight: typography.fontSize.body * typography.lineHeight.normal,
+      marginBottom: spacing.md,
+      textAlign: 'center',
+      paddingHorizontal: spacing.md,
+    },
+    retryButton: {
+      backgroundColor: colors.primary.main,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.sm,
+      borderRadius: borderRadius.md,
+    },
+    retryButtonText: {
+      color: colors.text.inverse,
+      fontSize: typography.fontSize.body,
+      fontWeight: typography.fontWeight.medium,
+    },
+    scrollIndicator: {
+      position: 'absolute',
+      bottom: spacing.xl,
+      alignSelf: 'center',
+      backgroundColor: colors.background.card,
+      borderRadius: borderRadius.full,
+      width: 40,
+      height: 40,
+      justifyContent: 'center',
+      alignItems: 'center',
+      ...shadows.lg,
+    },
+  }), [colors]);
 
   if (loading) {
     return (
@@ -114,8 +263,6 @@ export default function IntencoesScreen() {
       </SafeAreaView>
     );
   }
-
-  const sentimentColor = sentiment ? (colors.sentimentColors[sentiment.id] || colors.primary.main) : colors.primary.main;
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -196,150 +343,4 @@ export default function IntencoesScreen() {
       </View>
     </SafeAreaView>
   );
-}
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: colors.background.primary,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: colors.background.primary,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.background.primary,
-  },
-  header: {
-    padding: spacing.md,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.lg,
-  },
-  title: {
-    fontSize: typography.fontSize.h2,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.text.primary,
-    marginBottom: spacing.md,
-    textAlign: 'center',
-    lineHeight: typography.fontSize.h2 * typography.lineHeight.tight,
-  },
-  sentimentBadge: {
-    borderRadius: borderRadius.lg,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderWidth: 1,
-    alignSelf: 'center',
-    marginBottom: spacing.md,
-  },
-  sentimentBadgeText: {
-    fontSize: typography.fontSize.body,
-    fontWeight: typography.fontWeight.semibold,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: typography.fontSize.body,
-    fontWeight: typography.fontWeight.regular,
-    color: colors.text.secondary,
-    textAlign: 'center',
-    marginTop: spacing.sm,
-  },
-
-  intentionsContainer: {
-    flex: 1,
-    padding: spacing.md,
-    paddingTop: 0,
-    justifyContent: 'space-between',
-  },
-  intentionCard: {
-    backgroundColor: colors.background.card,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    marginBottom: spacing.md,
-    ...shadows.md,
-  },
-  intentionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
-  intentionIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: spacing.md,
-  },
-  intentionTitle: {
-    fontSize: typography.fontSize.h3,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.text.primary,
-    flex: 1,
-  },
-  intentionDescription: {
-    fontSize: typography.fontSize.small,
-    color: colors.text.secondary,
-    lineHeight: typography.fontSize.small * typography.lineHeight.relaxed,
-    marginLeft: 48 + spacing.md,
-  },
-  footer: {
-    padding: spacing.md,
-    paddingTop: spacing.sm,
-  },
-  backButton: {
-    backgroundColor: colors.background.secondary,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    borderRadius: borderRadius.md,
-    alignItems: 'center',
-  },
-  backButtonText: {
-    color: colors.text.primary,
-    fontSize: typography.fontSize.body,
-    fontWeight: typography.fontWeight.medium,
-  },
-
-  loadingText: {
-    marginTop: spacing.md,
-    color: colors.primary.main,
-    fontSize: typography.fontSize.body,
-    lineHeight: typography.fontSize.body * typography.lineHeight.normal,
-  },
-  errorText: {
-    color: colors.state.error,
-    fontSize: typography.fontSize.body,
-    lineHeight: typography.fontSize.body * typography.lineHeight.normal,
-    marginBottom: spacing.md,
-    textAlign: 'center',
-    paddingHorizontal: spacing.md,
-  },
-  retryButton: {
-    backgroundColor: colors.primary.main,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
-  },
-  retryButtonText: {
-    color: colors.text.inverse,
-    fontSize: typography.fontSize.body,
-    fontWeight: typography.fontWeight.medium,
-  },
-  scrollIndicator: {
-    position: 'absolute',
-    bottom: spacing.xl,
-    alignSelf: 'center',
-    backgroundColor: colors.background.card,
-    borderRadius: borderRadius.full,
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...shadows.lg,
-  },
-}); 
+} 

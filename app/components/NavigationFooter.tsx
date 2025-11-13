@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { colors, typography, spacing, borderRadius, shadows } from '../theme';
+import { typography, spacing, borderRadius, shadows } from '../theme';
+import { useTheme } from '../hooks/useTheme';
 
 interface NavigationFooterProps {
   backLabel?: string;
@@ -30,6 +31,7 @@ export function NavigationFooter({
   customBackRoute
 }: NavigationFooterProps) {
   const router = useRouter();
+  const { colors } = useTheme();
 
   const handleBackPress = () => {
     if (onBackPress) {
@@ -45,6 +47,87 @@ export function NavigationFooter({
     router.push('/');
   };
 
+  const styles = useMemo(() => StyleSheet.create({
+    footer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.md,
+      backgroundColor: colors.background.card,
+      borderTopWidth: 1,
+      borderTopColor: colors.border.light,
+      ...shadows.sm,
+    },
+    backButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.background.secondary,
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.md,
+      borderRadius: borderRadius.md,
+      flex: 1,
+      justifyContent: 'center',
+      marginRight: spacing.sm,
+      minHeight: 50,
+      borderWidth: 1,
+      borderColor: colors.border.medium,
+    },
+    buttonWithSiblings: {
+      flex: 0.5,
+    },
+    loadMoreButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.primary.main,
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.md,
+      borderRadius: borderRadius.md,
+      flex: 1,
+      justifyContent: 'center',
+      marginRight: spacing.sm,
+    },
+    loadMoreButtonText: {
+      color: colors.text.inverse,
+      fontSize: typography.fontSize.body,
+      fontWeight: typography.fontWeight.medium,
+      marginLeft: spacing.xs,
+    },
+    backButtonText: {
+      color: colors.text.primary,
+      fontSize: typography.fontSize.small,
+      fontWeight: typography.fontWeight.medium,
+      lineHeight: typography.fontSize.small * 1.2,
+    },
+    homeButton: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.background.secondary,
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.sm,
+      borderRadius: borderRadius.md,
+      borderWidth: 1,
+      borderColor: colors.border.medium,
+      width: 48,
+      height: 48,
+    },
+    textContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    buttonWithHome: {
+      flex: 1,
+      marginLeft: spacing.md,
+    },
+    disabledButton: {
+      backgroundColor: colors.background.secondary,
+      opacity: 0.6,
+    },
+    disabledText: {
+      color: colors.text.secondary,
+    },
+  }), [colors]);
+
   return (
     <View style={styles.footer}>
       {showHome && (
@@ -52,7 +135,7 @@ export function NavigationFooter({
           style={styles.homeButton}
           onPress={handleHomePress}
         >
-          <Ionicons name="home-outline" size={20} color="#FFFFFF" />
+          <Ionicons name="home-outline" size={20} color={colors.text.primary} />
         </TouchableOpacity>
       )}
 
@@ -68,7 +151,7 @@ export function NavigationFooter({
         <Ionicons 
           name="arrow-back" 
           size={20} 
-          color={disabled ? '#CCCCCC' : '#FFFFFF'} 
+          color={disabled ? colors.text.secondary : colors.text.primary} 
         />
         <View style={styles.textContainer}>
           {twoLineText ? (
@@ -100,7 +183,7 @@ export function NavigationFooter({
           <Ionicons 
             name="add-circle-outline" 
             size={20} 
-            color={loadMoreDisabled ? colors.text.light : colors.primary.main} 
+            color={loadMoreDisabled ? colors.text.light : colors.text.inverse} 
           />
           <Text style={[styles.loadMoreButtonText, loadMoreDisabled && styles.disabledText]}>
             {loadMoreLabel}
@@ -109,85 +192,4 @@ export function NavigationFooter({
       )}
     </View>
   );
-}
-
-const styles = StyleSheet.create({
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.md,
-    backgroundColor: '#FFFFFF', // Fundo branco limpo
-    borderTopWidth: 1,
-    borderTopColor: '#E8EAED', // Borda sutil
-    ...shadows.sm,
-  },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#b4b4b4', // Cinza médio para destaque
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.md,
-    flex: 1,
-    justifyContent: 'center',
-    marginRight: spacing.sm,
-    minHeight: 50,
-    borderWidth: 1,
-    borderColor: '#a0a0a0', // Borda um pouco mais escura
-  },
-  buttonWithSiblings: {
-    flex: 0.5,
-  },
-  loadMoreButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.primary.main,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.md,
-    flex: 1,
-    justifyContent: 'center',
-    marginRight: spacing.sm,
-  },
-  loadMoreButtonText: {
-    color: colors.text.inverse,
-    fontSize: typography.fontSize.body,
-    fontWeight: typography.fontWeight.medium,
-    marginLeft: spacing.xs,
-  },
-  backButtonText: {
-    color: '#FFFFFF', // Texto branco para contraste com fundo cinza
-    fontSize: typography.fontSize.small,
-    fontWeight: typography.fontWeight.medium,
-    lineHeight: typography.fontSize.small * 1.2,
-  },
-  homeButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#b4b4b4', // Cinza médio para destaque
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.sm,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: '#a0a0a0', // Borda um pouco mais escura
-    width: 48,
-    height: 48,
-  },
-  textContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonWithHome: {
-    flex: 1,
-    marginLeft: spacing.md,
-  },
-  disabledButton: {
-    backgroundColor: '#d0d0d0', // Cinza mais claro para botão desabilitado
-    opacity: 0.6,
-  },
-  disabledText: {
-    color: '#999999', // Cinza médio para texto desabilitado
-  },
-}); 
+} 

@@ -88,10 +88,9 @@ export const RatingIcon: React.FC<RatingIconProps> = ({
           style={[styles.iconImage, { width: iconSize, height: iconSize }]}
           resizeMode="contain"
           onError={(error) => {
-            console.log(`Erro ao carregar ícone ${type}:`, error);
-          }}
-          onLoad={() => {
-            console.log(`Ícone ${type} carregado com sucesso`);
+            if (__DEV__) {
+              console.error(`❌ Erro ao carregar ícone ${type}:`, error);
+            }
           }}
         />
       ) : (
@@ -117,8 +116,6 @@ interface RatingRowProps {
 }
 
 export const RatingRow: React.FC<RatingRowProps> = ({ ratings }) => {
-  console.log('🔍 RatingRow recebido:', ratings);
-  
   return (
     <View style={styles.rowContainer}>
       {ratings.tmdb && <RatingIcon type="tmdb" rating={ratings.tmdb} />}

@@ -1,11 +1,12 @@
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, typography, spacing, shadows } from '../theme';
+import { typography, spacing } from '../theme';
+import { useTheme } from '../hooks/useTheme';
 
-// Importar o logo do Vibesfilm
-const vibesfilmLogo = require('../../assets/logo_header.png');
+// Importar os logos do Vibesfilm para light e dark mode
+const vibesfilmLogoLight = require('../../assets/logo_header.png');
+const vibesfilmLogoDark = require('../../assets/logo_header_dark.png');
 
 interface AppHeaderProps {
   showBack?: boolean;
@@ -16,9 +17,10 @@ interface AppHeaderProps {
 
 export function AppHeader({ showBack = false, title = 'Vibesfilm', showLogo = false, onBackPress }: AppHeaderProps) {
   const router = useRouter();
-
-  // Debug: verificar se showLogo está sendo passado corretamente
-  console.log('AppHeader - showLogo:', showLogo, 'title:', title);
+  const { colors, isDark } = useTheme();
+  
+  // Escolher o logo baseado no tema
+  const vibesfilmLogo = isDark ? vibesfilmLogoDark : vibesfilmLogoLight;
 
   const handleBackPress = () => {
     if (onBackPress) {
@@ -27,6 +29,49 @@ export function AppHeader({ showBack = false, title = 'Vibesfilm', showLogo = fa
       router.back();
     }
   };
+
+  const styles = StyleSheet.create({
+    container: {
+      backgroundColor: colors.background.primary,
+      paddingTop: 0,
+    },
+    content: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.sm + 4, // Reduzido para ficar próximo ao status bar
+      paddingBottom: spacing.lg,
+      minHeight: 60, // Reduzido também
+    },
+    backButton: {
+      width: 36,
+      height: 36,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRadius: 18,
+      backgroundColor: 'transparent',
+    },
+    title: {
+      fontSize: typography.fontSize.h4,
+      fontWeight: typography.fontWeight.semibold,
+      color: colors.text.primary,
+      letterSpacing: 0.3,
+    },
+    logo: {
+      height: 56,
+      width: 180,
+    },
+    logoContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      flex: 1,
+      paddingHorizontal: spacing.sm,
+    },
+    placeholder: {
+      width: 36,
+    },
+  });
 
   return (
     <View style={styles.container}>
@@ -49,8 +94,11 @@ export function AppHeader({ showBack = false, title = 'Vibesfilm', showLogo = fa
               source={vibesfilmLogo} 
               style={styles.logo}
               resizeMode="contain"
-              onError={(error) => console.log('Erro ao carregar logo:', error)}
-              onLoad={() => console.log('Logo carregado com sucesso')}
+              onError={(error) => {
+                if (__DEV__) {
+                  console.error('❌ Erro ao carregar logo:', error);
+                }
+              }}
             />
           </View>
         ) : (
@@ -62,47 +110,4 @@ export function AppHeader({ showBack = false, title = 'Vibesfilm', showLogo = fa
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.background.primary,
-    paddingTop: 0,
-  },
-  content: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm + 4, // Reduzido para ficar próximo ao status bar
-    paddingBottom: spacing.lg,
-    minHeight: 60, // Reduzido também
-  },
-  backButton: {
-    width: 36,
-    height: 36,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 18,
-    backgroundColor: 'transparent',
-  },
-  title: {
-    fontSize: typography.fontSize.h4,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.text.primary,
-    letterSpacing: 0.3,
-  },
-  logo: {
-    height: 45,
-    width: 140,
-  },
-  logoContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: spacing.sm,
-  },
-  placeholder: {
-    width: 36,
-  },
-});
 

@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView, SafeAreaView, Animated, Image } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView, Animated, Image } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { API_ENDPOINTS } from '../../../config';
+import { API_ENDPOINTS, apiRequest } from '../../../config';
 import { colors, typography, spacing, borderRadius, shadows } from '../../../theme';
 import { Ionicons } from '@expo/vector-icons';
 import { StreamingPlatform } from '../../../types';
@@ -43,7 +44,7 @@ export default function PlataformasStreamingScreen() {
 
   const fetchPlatforms = async () => {
     try {
-      const response = await fetch(API_ENDPOINTS.streamingPlatforms.list);
+      const response = await apiRequest(API_ENDPOINTS.streamingPlatforms.list);
       if (!response.ok) {
         throw new Error('Erro ao carregar plataformas de streaming');
       }
@@ -315,7 +316,6 @@ export default function PlataformasStreamingScreen() {
             <Text style={styles.continueButtonText}>
               Ver Sugestões {selectedPlatforms.length > 0 && `(${selectedPlatforms.length})`}
             </Text>
-            <Ionicons name="arrow-forward" size={20} color={colors.white} />
           </TouchableOpacity>
         </View>
       </View>

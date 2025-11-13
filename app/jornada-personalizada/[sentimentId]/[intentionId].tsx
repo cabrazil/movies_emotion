@@ -2,8 +2,9 @@ import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView, Image, Pressable, Dimensions, Animated } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { API_ENDPOINTS } from '../../config';
-import { colors, typography, spacing, borderRadius, shadows } from '../../theme';
+import { API_ENDPOINTS, apiRequest } from '../../config';
+import { typography, spacing, borderRadius, shadows } from '../../theme';
+import { useTheme } from '../../hooks/useTheme';
 import { Ionicons } from '@expo/vector-icons';
 import { PersonalizedJourneyResponse, PersonalizedJourneyStep, JourneyOption, MovieSuggestion } from '../../types';
 import { NavigationFooter } from '../../components/NavigationFooter';
@@ -16,6 +17,7 @@ const CARD_HEIGHT = 45;
 
 export default function JornadaPersonalizadaScreen() {
   const { sentimentId, intentionId, optionId, platforms, showResults } = useLocalSearchParams();
+  const { colors } = useTheme();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState<PersonalizedJourneyStep | null>(null);
@@ -30,7 +32,7 @@ export default function JornadaPersonalizadaScreen() {
   // Obter cor do sentimento (memoizada)
   const sentimentColor = useMemo(() => 
     colors.sentimentColors[Number(sentimentId)] || colors.primary.main,
-    [sentimentId]
+    [sentimentId, colors]
   );
   
   // Animação do indicador de scroll
@@ -45,7 +47,7 @@ export default function JornadaPersonalizadaScreen() {
   useEffect(() => {
     const fetchPlatformsData = async () => {
       try {
-        const response = await fetch(API_ENDPOINTS.streamingPlatforms.list);
+        const response = await apiRequest(API_ENDPOINTS.streamingPlatforms.list);
         if (response.ok) {
           const platforms = await response.json();
           const platformsMap: Record<number, string> = {};
@@ -91,7 +93,7 @@ export default function JornadaPersonalizadaScreen() {
           console.log('🚀 Carregando jornada personalizada:', { sentimentId, intentionId });
         }
         
-             const res = await fetch(API_ENDPOINTS.personalizedJourney.get(sentimentId.toString(), intentionId.toString()), {
+             const res = await apiRequest(API_ENDPOINTS.personalizedJourney.get(sentimentId.toString(), intentionId.toString()), {
                headers: {
                  'Cache-Control': 'no-cache',
                  'Pragma': 'no-cache'
@@ -141,19 +143,9 @@ export default function JornadaPersonalizadaScreen() {
 
   // Processar retorno da tela de plataformas
   useEffect(() => {
-    if (__DEV__) {
-      console.log('🔍 Debug useEffect - Parâmetros recebidos:', { 
-        showResults, 
-        optionId, 
-        platforms, 
-        allStepsLength: allSteps.length,
-        selectedPlatformIdsLength: selectedPlatformIds.length
-      });
-    }
-    
     if (showResults === 'true' && optionId && allSteps.length > 0) {
       if (__DEV__) {
-        console.log('🔄 Retornando da tela de plataformas:', { optionId, platforms });
+        console.log('🔄 Retornando da tela de plataformas:', { optionId });
       }
       
       // Parsear plataformas selecionadas
@@ -177,29 +169,8 @@ export default function JornadaPersonalizadaScreen() {
           console.log('🎬 Total de filmes antes do filtro:', movies.length);
         }
         
-        // Debug: verificar estrutura dos filmes
-        if (__DEV__ && movies.length > 0) {
-          const firstMovie = movies[0];
-          console.log('🔍 Estrutura do primeiro filme:', {
-            id: firstMovie.movie.id,
-            title: firstMovie.movie.title,
-            hasPlatforms: !!firstMovie.movie.platforms,
-            platformsCount: firstMovie.movie.platforms?.length || 0,
-            platforms: firstMovie.movie.platforms?.map(p => ({
-              streamingPlatformId: p.streamingPlatformId,
-              platformId: (p as any).platformId,
-              id: (p as any).id,
-              accessType: p.accessType,
-              allKeys: Object.keys(p)
-            }))
-          });
-        }
-        
         // Filtrar filmes por plataformas se houver seleção
         if (platformIds.length > 0) {
-          if (__DEV__) {
-            console.log('🔍 Iniciando filtro com plataformas:', platformIds);
-          }
           
           movies = movies.filter(suggestion => {
             // Verificar se o filme tem plataformas
@@ -231,13 +202,11 @@ export default function JornadaPersonalizadaScreen() {
                 );
                 const platformName = platform ? platform[1] : null;
                 if (__DEV__) {
-                  console.log(`🔍 Mapeando ID ${id} -> "${platformName}"`);
                 }
                 return platformName;
               }).filter(Boolean);
               
               if (__DEV__) {
-                console.log(`🔍 Plataformas selecionadas mapeadas:`, selectedPlatformNames);
               }
               
               const isMatch = selectedPlatformNames.includes(platformName) &&
@@ -347,20 +316,464 @@ export default function JornadaPersonalizadaScreen() {
     }
   }, [showScrollIndicator, scrollIndicatorOpacity]);
 
+  // Criar estilos dinamicamente com base no tema
+  const styles = useMemo(() => StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: colors.background.primary,
+    },
+    container: {
+      flex: 1,
+      backgroundColor: colors.background.primary,
+    },
+    header: {
+      paddingHorizontal: spacing.md,
+      paddingTop: spacing.lg,
+      paddingBottom: spacing.sm,
+    },
+    backButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    backButtonText: {
+      fontSize: typography.fontSize.body,
+      color: colors.primary.main,
+      marginLeft: spacing.xs,
+      fontWeight: typography.fontWeight.medium,
+    },
+    scrollContainer: {
+      padding: spacing.md,
+      paddingTop: 0,
+    },
+    center: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.background.primary,
+    },
+    questionHeader: {
+      marginBottom: spacing.lg,
+      paddingHorizontal: spacing.xs,
+    },
+    question: {
+      fontSize: typography.fontSize.h2,
+      fontWeight: typography.fontWeight.bold,
+      color: colors.text.primary,
+      marginBottom: spacing.md,
+      textAlign: 'center',
+      lineHeight: typography.fontSize.h2 * typography.lineHeight.tight,
+    },
+    contextHintContainer: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      borderRadius: borderRadius.md,
+      padding: spacing.sm,
+      borderLeftWidth: 3,
+    },
+    contextHintText: {
+      flex: 1,
+      fontSize: typography.fontSize.small,
+      color: colors.text.secondary,
+      marginLeft: spacing.xs,
+      lineHeight: typography.fontSize.small * typography.lineHeight.relaxed,
+    },
+    hintContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.primary.main + '10',
+      borderRadius: borderRadius.md,
+      padding: spacing.md,
+      marginBottom: spacing.lg,
+      borderLeftWidth: 4,
+      borderLeftColor: colors.primary.main,
+    },
+    hintText: {
+      flex: 1,
+      fontSize: typography.fontSize.small,
+      color: colors.text.secondary,
+      marginLeft: spacing.sm,
+      fontStyle: 'italic',
+    },
+    option: {
+      width: '100%',
+      backgroundColor: colors.background.card,
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      marginBottom: spacing.md,
+      ...shadows.md,
+    },
+    optionText: {
+      fontSize: typography.fontSize.body,
+      fontWeight: typography.fontWeight.medium,
+      color: colors.text.primary,
+      lineHeight: typography.fontSize.body * typography.lineHeight.normal,
+    },
+    optionCardText: {
+      fontSize: typography.fontSize.body,
+      fontWeight: typography.fontWeight.semibold,
+      color: colors.text.secondary,
+      textAlign: 'center',
+      lineHeight: typography.fontSize.body * typography.lineHeight.normal,
+    },
+    genreGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+      paddingHorizontal: spacing.md,
+      marginBottom: spacing.lg,
+    },
+    genreContainer: {
+      paddingBottom: spacing.xl * 2,
+    },
+    genreOption: {
+      width: CARD_WIDTH,
+      height: CARD_HEIGHT,
+      backgroundColor: colors.background.card,
+      borderRadius: borderRadius.md,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: spacing.sm,
+      ...shadows.sm,
+    },
+    genreOptionText: {
+      fontSize: typography.fontSize.small,
+      fontWeight: typography.fontWeight.medium,
+      color: colors.text.primary,
+      textAlign: 'center',
+      paddingHorizontal: spacing.xs,
+    },
+    moviesContainer: {
+      paddingHorizontal: spacing.md,
+      paddingBottom: spacing.xl * 2,
+    },
+    moviesHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: spacing.md,
+    },
+    moviesTitle: {
+      fontSize: typography.fontSize.h3,
+      fontWeight: typography.fontWeight.bold,
+      color: colors.text.primary,
+    },
+    moviesCount: {
+      fontSize: typography.fontSize.body,
+      color: colors.text.secondary,
+    },
+    sortContainer: {
+      flexDirection: 'row',
+      marginBottom: spacing.md,
+      gap: spacing.sm,
+    },
+    sortButton: {
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+      borderRadius: borderRadius.md,
+      borderWidth: 1,
+    },
+    sortButtonActive: {
+      backgroundColor: colors.primary.main,
+      borderColor: colors.primary.main,
+    },
+    sortButtonInactive: {
+      backgroundColor: 'transparent',
+      borderColor: colors.border.light,
+    },
+    sortButtonText: {
+      fontSize: typography.fontSize.small,
+      fontWeight: typography.fontWeight.medium,
+    },
+    sortButtonTextActive: {
+      color: colors.text.inverse,
+    },
+    sortButtonTextInactive: {
+      color: colors.text.secondary,
+    },
+    movieCard: {
+      backgroundColor: colors.background.card,
+      borderRadius: borderRadius.lg,
+      padding: spacing.md,
+      marginBottom: spacing.md,
+      ...shadows.md,
+    },
+    movieCardPressed: {
+      opacity: 0.7,
+      transform: [{ scale: 0.98 }],
+    },
+    movieContent: {
+      flexDirection: 'row',
+    },
+    thumbnail: {
+      width: 100,
+      height: 150,
+      borderRadius: borderRadius.md,
+    },
+    movieHeader: {
+      flexDirection: 'row',
+      marginBottom: spacing.sm,
+    },
+    moviePoster: {
+      width: 60,
+      height: 90,
+      borderRadius: borderRadius.md,
+      marginRight: spacing.md,
+    },
+    movieInfo: {
+      flex: 1,
+      marginLeft: spacing.sm,
+      justifyContent: 'space-between',
+    },
+    movieTitle: {
+      fontSize: typography.fontSize.h4,
+      fontWeight: typography.fontWeight.semibold,
+      color: colors.text.primary,
+      marginBottom: spacing.xs,
+    },
+    yearText: {
+      fontSize: typography.fontSize.small,
+      fontWeight: typography.fontWeight.medium,
+    },
+    movieYear: {
+      fontSize: typography.fontSize.small,
+      color: colors.text.secondary,
+    },
+    movieDescription: {
+      fontSize: typography.fontSize.small,
+      color: colors.text.secondary,
+      lineHeight: typography.fontSize.small * typography.lineHeight.relaxed,
+      marginTop: spacing.sm,
+    },
+    movieDetails: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: spacing.xs,
+    },
+    ratingsContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    ratingContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginRight: spacing.md,
+    },
+    ratingText: {
+      fontSize: typography.fontSize.small,
+      color: colors.text.secondary,
+      marginLeft: 4,
+    },
+    certificationContainer: {
+      backgroundColor: colors.background.primary,
+      paddingHorizontal: spacing.xs,
+      paddingVertical: 2,
+      borderRadius: borderRadius.sm,
+    },
+    certificationText: {
+      fontSize: typography.fontSize.small,
+      color: colors.text.secondary,
+      fontWeight: typography.fontWeight.medium,
+    },
+    genresText: {
+      fontSize: typography.fontSize.small,
+      color: colors.text.secondary,
+    },
+    runtimeContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginRight: spacing.sm,
+    },
+    runtimeText: {
+      fontSize: typography.fontSize.small,
+      color: colors.text.secondary,
+      marginLeft: 4,
+    },
+    reasonContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: spacing.xs,
+      paddingTop: spacing.xs,
+      borderTopWidth: 1,
+      borderTopColor: colors.background.secondary,
+    },
+    reasonContent: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    reasonText: {
+      flex: 1,
+      fontSize: typography.fontSize.small,
+      color: colors.text.secondary,
+      fontStyle: 'italic',
+      marginLeft: spacing.xs,
+    },
+    platformBadgesContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      marginTop: spacing.xs,
+      marginBottom: spacing.sm,
+      gap: spacing.xs,
+    },
+    platformBadge: {
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xs,
+      borderRadius: borderRadius.sm,
+      borderWidth: 1,
+      borderColor: 'transparent',
+    },
+    platformBadgeText: {
+      fontSize: typography.fontSize.small,
+      fontWeight: typography.fontWeight.medium,
+      textAlign: 'center',
+    },
+    movieResultsContainer: {
+      padding: spacing.sm,
+      paddingTop: spacing.xs,
+      backgroundColor: colors.background.primary,
+    },
+    resultsHeader: {
+      marginBottom: spacing.sm,
+      alignItems: 'center',
+    },
+    optionContext: {
+      marginTop: spacing.md,
+      marginBottom: spacing.sm,
+      alignItems: 'center',
+    },
+    optionLabel: {
+      fontSize: typography.fontSize.small,
+      color: colors.text.secondary,
+      textAlign: 'center',
+      marginBottom: spacing.xs,
+      fontWeight: typography.fontWeight.medium,
+    },
+    optionText: {
+      fontSize: typography.fontSize.body,
+      color: colors.text.primary,
+      textAlign: 'center',
+      fontStyle: 'italic',
+      lineHeight: 22,
+      paddingHorizontal: spacing.md,
+    },
+    movieCountIndicator: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: spacing.xs,
+      marginBottom: spacing.xs,
+    },
+    movieCountText: {
+      fontSize: typography.fontSize.small,
+      color: colors.primary.main,
+      marginLeft: spacing.xs,
+      fontWeight: typography.fontWeight.medium,
+    },
+    sortContainer: {
+      marginTop: spacing.xs,
+      marginBottom: spacing.sm,
+      paddingHorizontal: spacing.xs,
+    },
+    sortChips: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      gap: spacing.sm,
+      flexWrap: 'nowrap',
+    },
+    sortChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xs,
+      borderRadius: borderRadius.full,
+      borderWidth: 1,
+      borderColor: colors.border.medium,
+      backgroundColor: colors.background.card,
+      gap: spacing.xs,
+    },
+    sortChipIcon: {
+      fontSize: 12,
+    },
+    sortChipText: {
+      fontSize: typography.fontSize.small,
+      color: colors.text.primary,
+      fontWeight: typography.fontWeight.medium,
+    },
+    sortChipTextActive: {
+      color: colors.text.inverse,
+      fontWeight: typography.fontWeight.semibold,
+    },
+    scrollIndicator: {
+      position: 'absolute',
+      bottom: spacing.xl,
+      alignSelf: 'center',
+      backgroundColor: colors.background.card,
+      borderRadius: borderRadius.full,
+      width: 40,
+      height: 40,
+      justifyContent: 'center',
+      alignItems: 'center',
+      ...shadows.lg,
+    },
+    loadingText: {
+      marginTop: spacing.md,
+      color: colors.primary.main,
+      fontSize: typography.fontSize.body,
+    },
+    errorText: {
+      color: colors.state.error,
+      fontSize: typography.fontSize.body,
+      marginBottom: spacing.md,
+      textAlign: 'center',
+      paddingHorizontal: spacing.md,
+    },
+    retryButton: {
+      backgroundColor: colors.primary.main,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.sm,
+      borderRadius: borderRadius.md,
+    },
+    retryButtonText: {
+      color: colors.text.inverse,
+      fontSize: typography.fontSize.body,
+      fontWeight: typography.fontWeight.medium,
+    },
+    noMoviesContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: spacing.xl,
+    },
+    noMoviesTitle: {
+      fontSize: typography.fontSize.h3,
+      fontWeight: typography.fontWeight.bold,
+      color: colors.text.primary,
+      marginBottom: spacing.md,
+      textAlign: 'center',
+    },
+    noMoviesSubtitle: {
+      fontSize: typography.fontSize.body,
+      color: colors.text.secondary,
+      textAlign: 'center',
+      marginBottom: spacing.xl,
+    },
+    backToFiltersButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.md,
+      borderRadius: borderRadius.md,
+      borderWidth: 2,
+      gap: spacing.sm,
+    },
+    backToFiltersButtonText: {
+      fontSize: typography.fontSize.body,
+      fontWeight: typography.fontWeight.semibold,
+    },
+  }), [colors]);
+
   const renderOptions = useCallback(() => {
     if (!step) return null;
-    
-    // Debug para investigar o problema específico
-    if (__DEV__) {
-      console.log('🔍 Debug renderOptions:', {
-        stepId: step.id,
-        stepStepId: step.stepId,
-        optionsCount: step.options.length,
-        sentimentId: sentimentId,
-        intentionId: intentionId,
-        firstOptionText: step.options[0]?.text?.substring(0, 50) + '...'
-      });
-    }
     
     // Layout em duas colunas para gêneros (step 38) - APENAS se for realmente gêneros
     // Verificar se é realmente um step de gêneros baseado no conteúdo, não apenas no ID
@@ -369,9 +782,6 @@ export default function JornadaPersonalizadaScreen() {
     );
     
     if (isGenreStep) {
-      if (__DEV__) {
-        console.log('🔍 Usando layout de gêneros para step:', step.stepId);
-      }
       return (
         <View style={styles.genreGrid}>
           {step.options.map(option => (
@@ -395,18 +805,7 @@ export default function JornadaPersonalizadaScreen() {
     }
 
     // Layout padrão para outras opções
-    if (__DEV__) {
-      console.log('🔍 Usando layout padrão para step:', step.stepId);
-    }
     return step.options.map(option => {
-      if (__DEV__) {
-        console.log('🔍 Renderizando opção:', {
-          id: option.id,
-          textLength: option.text.length,
-          textPreview: option.text.substring(0, 30) + '...'
-        });
-      }
-      
       return (
         <TouchableOpacity
           key={option.id}
@@ -501,10 +900,6 @@ export default function JornadaPersonalizadaScreen() {
       </View>
       </SafeAreaView>
     );
-  }
-
-  if (__DEV__) {
-    console.log('🔍 Debug renderização principal - allMovies.length:', allMovies.length, 'selectedPlatformIds.length:', selectedPlatformIds.length);
   }
 
   // Buscar o texto da opção escolhida
@@ -608,22 +1003,12 @@ export default function JornadaPersonalizadaScreen() {
             </View>
           </View>
 
-          {(() => {
-            if (__DEV__) {
-              console.log('🔍 Debug condição - allMovies.length:', allMovies.length, 'typeof:', typeof allMovies.length, '=== 0:', allMovies.length === 0);
-            }
-            return allMovies.length === 0;
-          })() && (
+          {allMovies.length === 0 && (
             <View style={styles.noMoviesContainer}>
               <Text style={styles.noMoviesTitle}>
-                {(() => {
-                  if (__DEV__) {
-                    console.log('🔍 Debug mensagem - allMovies.length:', allMovies.length, 'selectedPlatformIds.length:', selectedPlatformIds.length, 'showResults:', showResults);
-                  }
-                  return selectedPlatformIds.length > 0 
-                    ? "Nenhuma sugestão de filme encontrada." 
-                    : "Nenhum filme sugerido para este caminho.";
-                })()}
+                {selectedPlatformIds.length > 0 
+                  ? "Nenhuma sugestão de filme encontrada." 
+                  : "Nenhum filme sugerido para este caminho."}
               </Text>
               {selectedPlatformIds.length > 0 && (
                 <Text style={styles.noMoviesSubtitle}>
@@ -632,12 +1017,7 @@ export default function JornadaPersonalizadaScreen() {
               )}
               <TouchableOpacity 
                 style={[styles.backToFiltersButton, { borderColor: sentimentColor }]}
-                onPress={() => {
-                  if (__DEV__) {
-                    console.log('🔍 Botão voltar pressionado - selectedPlatformIds:', selectedPlatformIds);
-                  }
-                  router.back();
-                }}
+                onPress={() => router.back()}
                 activeOpacity={0.7}
               >
                 <Ionicons name="arrow-back" size={20} color={sentimentColor} />
@@ -656,7 +1036,7 @@ export default function JornadaPersonalizadaScreen() {
               ]}
               onPress={() => {
                 if (__DEV__) {
-                  console.log('Navegando para filme:', {
+                  console.log('🎬 Navegando para filme:', {
                     id: ms.movie.id,
                     reason: ms.reason
                   });
@@ -879,20 +1259,14 @@ export default function JornadaPersonalizadaScreen() {
         <View style={styles.container}>
           <View style={styles.noMoviesContainer}>
             <Text style={styles.noMoviesTitle}>
-              {(() => {
-                console.log('🔍 Debug mensagem - allMovies.length:', allMovies.length, 'selectedPlatformIds.length:', selectedPlatformIds.length, 'showResults:', showResults);
-                return "Nenhuma sugestão de filme encontrada.";
-              })()}
+              Nenhuma sugestão de filme encontrada.
             </Text>
             <Text style={styles.noMoviesSubtitle}>
               Tente selecionar outras plataformas de streaming ou pular o filtro.
             </Text>
             <TouchableOpacity 
               style={[styles.backToFiltersButton, { borderColor: sentimentColor }]}
-              onPress={() => {
-                console.log('🔍 Botão voltar pressionado - selectedPlatformIds:', selectedPlatformIds);
-                router.back();
-              }}
+              onPress={() => router.back()}
               activeOpacity={0.7}
             >
               <Ionicons name="arrow-back" size={20} color={sentimentColor} />
@@ -959,424 +1333,4 @@ export default function JornadaPersonalizadaScreen() {
       </View>
     </SafeAreaView>
   );
-}
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: colors.background.primary,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: colors.background.primary,
-  },
-  header: {
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.sm,
-  },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  backButtonText: {
-    fontSize: typography.fontSize.body,
-    color: colors.primary.main,
-    marginLeft: spacing.xs,
-    fontWeight: typography.fontWeight.medium,
-  },
-  scrollContainer: {
-    padding: spacing.md,
-    paddingTop: 0,
-  },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.background.primary,
-  },
-  questionHeader: {
-    marginBottom: spacing.lg,
-    paddingHorizontal: spacing.xs,
-  },
-  question: {
-    fontSize: typography.fontSize.h2,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.text.primary,
-    marginBottom: spacing.md,
-    textAlign: 'center',
-    lineHeight: typography.fontSize.h2 * typography.lineHeight.tight,
-  },
-  contextHintContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    borderRadius: borderRadius.md,
-    padding: spacing.sm,
-    borderLeftWidth: 3,
-  },
-  contextHintText: {
-    flex: 1,
-    fontSize: typography.fontSize.small,
-    color: colors.text.secondary,
-    marginLeft: spacing.xs,
-    lineHeight: typography.fontSize.small * typography.lineHeight.relaxed,
-  },
-  hintContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.primary.main + '10',
-    borderRadius: borderRadius.md,
-    padding: spacing.md,
-    marginBottom: spacing.lg,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.primary.main,
-  },
-  hintText: {
-    flex: 1,
-    fontSize: typography.fontSize.small,
-    color: colors.text.secondary,
-    marginLeft: spacing.sm,
-    fontStyle: 'italic',
-  },
-  option: {
-    width: '100%',
-    backgroundColor: colors.background.card,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    marginBottom: spacing.md,
-    alignItems: 'center',
-    borderWidth: 1,
-    ...shadows.md,
-  },
-  optionCardText: {
-    color: colors.text.primary,
-    fontSize: typography.fontSize.body,
-    fontWeight: typography.fontWeight.semibold,
-    textAlign: 'center',
-    lineHeight: typography.fontSize.body * typography.lineHeight.normal,
-  },
-  loadingText: {
-    marginTop: spacing.md,
-    color: colors.primary.main,
-    fontSize: typography.fontSize.body,
-    lineHeight: typography.fontSize.body * typography.lineHeight.normal,
-  },
-  errorText: {
-    color: colors.state.error,
-    fontSize: typography.fontSize.body,
-    lineHeight: typography.fontSize.body * typography.lineHeight.normal,
-    textAlign: 'center',
-    paddingHorizontal: spacing.md,
-  },
-  retryButton: {
-    backgroundColor: colors.primary.main,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
-    marginTop: spacing.md,
-  },
-  retryButtonText: {
-    color: colors.text.inverse,
-    fontSize: typography.fontSize.body,
-    fontWeight: typography.fontWeight.medium,
-  },
-  movieCard: {
-    width: '100%',
-           backgroundColor: colors.background.secondary, // Cinza intermediário
-    borderRadius: borderRadius.lg,
-    marginBottom: spacing.md,
-    overflow: 'hidden',
-           borderWidth: 1,
-           borderColor: colors.border.medium, // Borda equilibrada
-           ...shadows.md, // Sombra equilibrada
-  },
-  movieContent: {
-    flexDirection: 'row',
-    padding: spacing.sm,
-  },
-  thumbnail: {
-    width: 100,
-    height: 150,
-    borderRadius: borderRadius.md,
-  },
-  movieInfo: {
-    flex: 1,
-    marginLeft: spacing.sm,
-    justifyContent: 'space-between',
-  },
-  movieTitle: {
-    fontSize: typography.fontSize.h4,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.text.primary,
-    marginBottom: spacing.xs,
-  },
-  yearText: {
-    fontSize: typography.fontSize.small,
-    fontWeight: typography.fontWeight.medium,
-  },
-  movieDetails: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.xs,
-  },
-  ratingsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: spacing.md,
-  },
-  ratingText: {
-    fontSize: typography.fontSize.small,
-    color: colors.text.secondary,
-    marginLeft: 4,
-  },
-  certificationContainer: {
-    backgroundColor: colors.background.primary,
-    paddingHorizontal: spacing.xs,
-    paddingVertical: 2,
-    borderRadius: borderRadius.sm,
-  },
-  certificationText: {
-    fontSize: typography.fontSize.small,
-    color: colors.text.secondary,
-    fontWeight: typography.fontWeight.medium,
-  },
-  genresText: {
-    fontSize: typography.fontSize.small,
-    color: colors.text.secondary,
-  },
-  runtimeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: spacing.sm,
-  },
-  runtimeText: {
-    fontSize: typography.fontSize.small,
-    color: colors.text.secondary,
-    marginLeft: 4,
-  },
-  movieCardPressed: {
-    opacity: 0.7,
-    transform: [{ scale: 0.98 }],
-  },
-  reasonContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: spacing.xs,
-    paddingTop: spacing.xs,
-    borderTopWidth: 1,
-    borderTopColor: colors.background.secondary,
-  },
-  reasonContent: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  reasonText: {
-    flex: 1,
-    fontSize: typography.fontSize.small,
-    color: colors.text.secondary,
-    fontStyle: 'italic',
-    marginLeft: spacing.xs,
-  },
-  genreContainer: {
-    paddingTop: spacing.md,
-  },
-  genreGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginTop: spacing.xs,
-  },
-  genreOption: {
-    width: CARD_WIDTH,
-    height: CARD_HEIGHT,
-    backgroundColor: colors.background.card,
-    borderRadius: borderRadius.md,
-    padding: spacing.xs,
-    marginBottom: CARD_MARGIN,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...shadows.sm,
-  },
-  genreOptionText: {
-    color: colors.text.primary,
-    fontSize: typography.fontSize.small,
-    fontWeight: typography.fontWeight.semibold,
-    textAlign: 'center',
-    lineHeight: typography.fontSize.small * typography.lineHeight.normal,
-  },
-  // Novos estilos para a tela de resultados
-  movieResultsContainer: {
-    padding: spacing.sm,
-    paddingTop: spacing.xs,
-    backgroundColor: colors.background.primary,
-  },
-  resultsHeader: {
-    marginBottom: spacing.sm,
-    alignItems: 'center',
-  },
-  journeyIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
-  journeyText: {
-    fontSize: typography.fontSize.small,
-    color: colors.primary.main,
-    marginLeft: spacing.xs,
-    fontWeight: typography.fontWeight.medium,
-  },
-  resultsTitle: {
-    fontSize: typography.fontSize.h2,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.text.primary,
-    textAlign: 'center',
-    lineHeight: typography.fontSize.h2 * typography.lineHeight.tight,
-  },
-  movieCountIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: spacing.xs,
-    marginBottom: spacing.xs,
-  },
-  movieCountText: {
-    fontSize: typography.fontSize.small,
-    color: colors.primary.main,
-    marginLeft: spacing.xs,
-    fontWeight: typography.fontWeight.medium,
-  },
-         optionContext: {
-           marginTop: spacing.md,
-           marginBottom: spacing.sm,
-           alignItems: 'center',
-         },
-         optionLabel: {
-           fontSize: typography.fontSize.small,
-           color: colors.text.secondary,
-           textAlign: 'center',
-           marginBottom: spacing.xs,
-           fontWeight: typography.fontWeight.medium,
-         },
-         optionText: {
-           fontSize: typography.fontSize.body,
-           textAlign: 'center',
-           fontStyle: 'italic',
-           lineHeight: 22,
-           paddingHorizontal: spacing.md,
-         },
-         platformBadgesContainer: {
-    flexDirection: 'row',
-           flexWrap: 'wrap',
-           marginTop: spacing.xs,
-           marginBottom: spacing.sm,
-           gap: spacing.xs,
-         },
-         platformBadge: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-           borderRadius: borderRadius.sm,
-    borderWidth: 1,
-           borderColor: 'transparent',
-         },
-         verMaisBadge: {
-           // Estilos específicos para o badge "ver mais" são aplicados inline
-  },
-         platformBadgeText: {
-    fontSize: typography.fontSize.small,
-    fontWeight: typography.fontWeight.medium,
-    textAlign: 'center',
-         },
-  // Estilo para badge de contexto
-  scrollIndicator: {
-    position: 'absolute',
-    bottom: spacing.xl + 60, // Acima do footer
-    alignSelf: 'center',
-    backgroundColor: colors.background.card,
-    borderRadius: borderRadius.full,
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...shadows.lg,
-  },
-  sortContainer: {
-    marginTop: spacing.xs,
-    marginBottom: spacing.sm,
-    paddingHorizontal: spacing.xs,
-  },
-  sortLabel: {
-    fontSize: typography.fontSize.small,
-    color: colors.text.secondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: spacing.xs,
-    textAlign: 'center',
-  },
-  sortChips: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    flexWrap: 'nowrap',
-  },
-  sortChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.full,
-    borderWidth: 1,
-    borderColor: colors.border.medium,
-    backgroundColor: colors.background.card,
-    gap: spacing.xs,
-  },
-  sortChipIcon: {
-    fontSize: 12,
-  },
-  sortChipText: {
-    fontSize: typography.fontSize.small,
-    color: colors.text.primary,
-    fontWeight: typography.fontWeight.medium,
-  },
-  sortChipTextActive: {
-    color: colors.text.inverse,
-    fontWeight: typography.fontWeight.semibold,
-  },
-  noMoviesContainer: {
-    alignItems: 'center',
-    padding: spacing.xl,
-    marginTop: spacing.lg,
-  },
-  noMoviesTitle: {
-    fontSize: typography.fontSize.h4,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.text.primary,
-    textAlign: 'center',
-    marginBottom: spacing.sm,
-  },
-  noMoviesSubtitle: {
-    fontSize: typography.fontSize.body,
-    color: colors.text.secondary,
-    textAlign: 'center',
-    marginBottom: spacing.lg,
-    lineHeight: typography.fontSize.body * typography.lineHeight.normal,
-  },
-  backToFiltersButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.md,
-    borderWidth: 2,
-    backgroundColor: colors.background.card,
-    gap: spacing.sm,
-  },
-  backToFiltersButtonText: {
-    fontSize: typography.fontSize.body,
-    fontWeight: typography.fontWeight.semibold,
-  },
-}); 
+} 

@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, typography, spacing, borderRadius, shadows } from './theme';
+import { typography, spacing, borderRadius, shadows } from './theme';
+import { useTheme } from './hooks/useTheme';
 import { SentimentIcon } from './components/SentimentIcon';
 import { AppHeader } from './components/AppHeader';
-import { API_ENDPOINTS } from './config';
+import { API_ENDPOINTS, apiRequest } from './config';
 import { Sentiment } from './types';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -21,6 +22,7 @@ const sentimentDescriptions: Record<number, string> = {
 
 export default function SentimentosScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
   const [sentiments, setSentiments] = useState<Sentiment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,14 +57,39 @@ export default function SentimentosScreen() {
 
   const fetchSentiments = async () => {
     try {
-      const response = await fetch(API_ENDPOINTS.mainSentiments.summary);
+      setLoading(true);
+      setError(null);
+      
+      const response = await apiRequest(API_ENDPOINTS.mainSentiments.summary);
+      
       if (!response.ok) {
-        throw new Error('Erro ao carregar sentimentos');
+        const errorText = await response.text().catch(() => 'Erro desconhecido');
+        throw new Error(`Erro ao carregar sentimentos: ${response.status} ${response.statusText}`);
       }
+      
       const data = await response.json();
+      
+      if (__DEV__) {
+        console.log('📦 Dados recebidos:', data.length, 'sentimentos');
+      }
+      
       setSentiments(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro desconhecido');
+      const errorMessage = err instanceof Error 
+        ? err.message.includes('timeout') 
+          ? 'Tempo de conexão esgotado. Verifique sua conexão com a internet.'
+          : err.message.includes('CORS') || err.message.includes('cors')
+          ? 'Erro de conexão com o servidor. Aguarde alguns instantes e tente novamente.'
+          : err.message.includes('Network request failed') || err.message.includes('Failed to fetch')
+          ? 'Sem conexão com a internet. Verifique sua rede e tente novamente.'
+          : err.message
+        : 'Erro desconhecido ao carregar sentimentos';
+      
+      if (__DEV__) {
+        console.error('❌ Erro ao buscar sentimentos:', err);
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -82,6 +109,126 @@ export default function SentimentosScreen() {
       setShowScrollIndicator(false);
     }
   };
+
+  const styles = useMemo(() => StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: colors.background.primary,
+    },
+    container: {
+      flex: 1,
+      backgroundColor: colors.background.primary,
+      padding: spacing.md,
+      paddingTop: spacing.md,
+    },
+    center: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.background.primary,
+    },
+    header: {
+      marginBottom: spacing.xl,
+      alignItems: 'center',
+      paddingHorizontal: spacing.xs,
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: typography.fontWeight.bold,
+      color: colors.text.primary,
+      marginBottom: spacing.sm,
+      textAlign: 'center',
+      lineHeight: 24 * typography.lineHeight.tight,
+    },
+    subtitle: {
+      fontSize: typography.fontSize.body,
+      fontWeight: typography.fontWeight.regular,
+      color: colors.text.secondary,
+      textAlign: 'center',
+      lineHeight: typography.fontSize.body * typography.lineHeight.relaxed,
+    },
+    flatListContent: {
+      paddingBottom: spacing.xl * 2,
+    },
+    card: {
+      backgroundColor: colors.background.card,
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      marginBottom: spacing.md,
+      ...shadows.md,
+      minHeight: 120,
+    },
+    cardContent: {
+      flex: 1,
+    },
+    cardHeader: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+    },
+    iconCircle: {
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: spacing.md,
+    },
+    titleContainer: {
+      flex: 1,
+      justifyContent: 'center',
+    },
+    cardTitle: {
+      fontSize: typography.fontSize.h3,
+      fontWeight: typography.fontWeight.bold,
+      color: colors.text.primary,
+      marginBottom: spacing.xs,
+    },
+    cardDescription: {
+      fontSize: typography.fontSize.small,
+      fontWeight: typography.fontWeight.regular,
+      color: colors.text.secondary,
+      lineHeight: typography.fontSize.small * typography.lineHeight.relaxed,
+    },
+    loadingText: {
+      marginTop: spacing.md,
+      color: colors.primary.main,
+      fontSize: typography.fontSize.body,
+    },
+    errorText: {
+      color: colors.state.error,
+      fontSize: typography.fontSize.body,
+      marginBottom: spacing.md,
+      textAlign: 'center',
+      paddingHorizontal: spacing.md,
+    },
+    emptyText: {
+      color: colors.text.secondary,
+      fontSize: typography.fontSize.body,
+      marginBottom: spacing.md,
+    },
+    retryButton: {
+      backgroundColor: colors.primary.light,
+      paddingHorizontal: spacing.xl,
+      paddingVertical: spacing.md,
+      borderRadius: borderRadius.lg,
+      ...shadows.sm,
+    },
+    retryButtonText: {
+      color: colors.text.inverse,
+      fontSize: typography.fontSize.body,
+      fontWeight: typography.fontWeight.semibold,
+    },
+    scrollIndicator: {
+      position: 'absolute',
+      bottom: spacing.xl,
+      alignSelf: 'center',
+      backgroundColor: colors.background.card,
+      borderRadius: borderRadius.full,
+      padding: spacing.xs,
+      ...shadows.lg,
+      elevation: 8,
+    },
+  }), [colors]);
 
   if (loading) {
     return (
@@ -206,123 +353,3 @@ export default function SentimentosScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: colors.background.primary,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: colors.background.primary,
-    padding: spacing.md,
-    paddingTop: spacing.md,
-  },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.background.primary,
-  },
-  header: {
-    marginBottom: spacing.xl,
-    alignItems: 'center',
-    paddingHorizontal: spacing.xs,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.text.primary,
-    marginBottom: spacing.sm,
-    textAlign: 'center',
-    lineHeight: 24 * typography.lineHeight.tight,
-  },
-  subtitle: {
-    fontSize: typography.fontSize.body,
-    fontWeight: typography.fontWeight.regular,
-    color: colors.text.secondary,
-    textAlign: 'center',
-    lineHeight: typography.fontSize.body * typography.lineHeight.relaxed,
-  },
-  flatListContent: {
-    paddingBottom: spacing.xl * 2, // Espaço extra no final
-  },
-  card: {
-    backgroundColor: colors.background.card,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    marginBottom: spacing.md,
-    ...shadows.md,
-    minHeight: 120,
-  },
-  cardContent: {
-    flex: 1,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  iconCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: spacing.md,
-  },
-  titleContainer: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  cardTitle: {
-    fontSize: typography.fontSize.h3,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.text.primary,
-    marginBottom: spacing.xs,
-  },
-  cardDescription: {
-    fontSize: typography.fontSize.small,
-    fontWeight: typography.fontWeight.regular,
-    color: colors.text.secondary,
-    lineHeight: typography.fontSize.small * typography.lineHeight.relaxed,
-  },
-  loadingText: {
-    marginTop: spacing.md,
-    color: colors.primary.main,
-    fontSize: typography.fontSize.body,
-  },
-  errorText: {
-    color: colors.state.error,
-    fontSize: typography.fontSize.body,
-    marginBottom: spacing.md,
-    textAlign: 'center',
-    paddingHorizontal: spacing.md,
-  },
-  emptyText: {
-    color: colors.text.secondary,
-    fontSize: typography.fontSize.body,
-    marginBottom: spacing.md,
-  },
-  retryButton: {
-    backgroundColor: colors.primary.light,
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.lg,
-    ...shadows.sm,
-  },
-  retryButtonText: {
-    color: colors.text.inverse,
-    fontSize: typography.fontSize.body,
-    fontWeight: typography.fontWeight.semibold,
-  },
-  scrollIndicator: {
-    position: 'absolute',
-    bottom: spacing.xl,
-    alignSelf: 'center',
-    backgroundColor: colors.background.card,
-    borderRadius: borderRadius.full,
-    padding: spacing.xs,
-    ...shadows.lg,
-    elevation: 8,
-  },
-});
