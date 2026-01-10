@@ -66,25 +66,6 @@ export default function JornadaPersonalizadaScreen() {
     fetchPlatformsData();
   }, []);
 
-  // Lógica de rotação automática dos critérios de ordenação
-  useEffect(() => {
-    const availableFilters: ('smart' | 'rating' | 'year')[] = ['smart', 'rating', 'year'];
-
-    const timestamp = Date.now();
-    const sessionData = JSON.stringify(allMovies.length + Number(sentimentId));
-    const hash = sessionData.split('').reduce((a, b) => {
-      a = ((a << 5) - a) + b.charCodeAt(0);
-      return a & a;
-    }, 0);
-
-    const filterIndex = Math.abs(timestamp + hash) % availableFilters.length;
-    const selectedFilter = availableFilters[filterIndex];
-
-    setSortType(selectedFilter);
-    if (__DEV__) {
-      console.log(`🎲 Ordenação automática selecionada: ${selectedFilter}`);
-    }
-  }, []); // Executa apenas uma vez quando o componente é montado
 
   useEffect(() => {
     const fetchPersonalizedJourney = async () => {
