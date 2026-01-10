@@ -1,4 +1,5 @@
-// Configuração automática de ambiente baseada na versão web
+// Configuração automática de ambiente baseada no modo de desenvolvimento
+// Suporta ambientes de desenvolvimento (localhost) e produção (VPS)
 const getApiBaseUrl = () => {
   // Prioridade 1: variável de ambiente (mais alta prioridade)
   if (process.env.EXPO_PUBLIC_API_BASE_URL) {
@@ -6,16 +7,13 @@ const getApiBaseUrl = () => {
   }
   
   // Prioridade 2: Detecção automática baseada no ambiente
-  // TEMPORÁRIO: Forçar Vercel para testes (remover depois)
-  // Se quiser voltar ao ngrok, comente a linha abaixo
-  return 'https://moviesf-back.vercel.app';
+  if (__DEV__) {
+    // Desenvolvimento: usar backend local
+    return 'http://localhost:3333';
+  }
   
-  // Código original (desabilitado temporariamente):
-  // if (__DEV__) {
-  //   // Desenvolvimento: usar mesmo backend local que o frontend
-  //   return 'https://f54af3f8cdd1.ngrok-free.app';
-  // }
-  // return 'https://moviesf-back.vercel.app';
+  // Produção: usar URL de produção
+  return 'https://api.vibesfilm.com';
 };
 
 export const API_BASE_URL = getApiBaseUrl();
