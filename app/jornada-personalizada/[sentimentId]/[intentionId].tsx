@@ -872,11 +872,12 @@ export default function JornadaPersonalizadaScreen() {
       const rotationIndex = dayOfYear % 2;
       const offset = rotationIndex * DISPLAY_SIZE;
 
-      const rotatedTop = topMovies.slice(offset, offset + DISPLAY_SIZE);
+      // Rotação circular: mantém todos os 16, mas muda a ordem
+      const rotatedTop = [...topMovies.slice(offset), ...topMovies.slice(0, offset)];
       finalSorted = [...rotatedTop, ...remaining];
 
       if (__DEV__) {
-        console.log(`🔄 Rotação ativa (dia ${dayOfYear}, índice ${rotationIndex}): Mostrando filmes ${offset + 1}-${offset + DISPLAY_SIZE} do top ${TOP_POOL_SIZE}`);
+        console.log(`🔄 Rotação ativa (dia ${dayOfYear}, índice ${rotationIndex}): Top 16 rotacionado em ${offset} posições`);
       }
     }
 
