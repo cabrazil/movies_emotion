@@ -18,7 +18,7 @@ export default function IntencoesScreen() {
   const [error, setError] = useState<string | null>(null);
   const [intentions, setIntentions] = useState<EmotionalIntention[]>([]);
   const [sentiment, setSentiment] = useState<Sentiment | null>(null);
-  
+
   // Animação do indicador de scroll
   const scrollIndicatorOpacity = useRef(new Animated.Value(1)).current;
   const [showScrollIndicator, setShowScrollIndicator] = useState(false);
@@ -41,7 +41,7 @@ export default function IntencoesScreen() {
         description: '',
         keywords: []
       });
-      
+
       // Mostrar indicador se houver mais de 3 intenções
       setShowScrollIndicator(data.intentions.length > 3);
     } catch (err) {
@@ -54,7 +54,7 @@ export default function IntencoesScreen() {
   const handleIntentionPress = (intention: EmotionalIntention) => {
     router.push({
       pathname: '/jornada-personalizada/[sentimentId]/[intentionId]',
-      params: { 
+      params: {
         sentimentId: id.toString(),
         intentionId: intention.id.toString()
       }
@@ -75,7 +75,7 @@ export default function IntencoesScreen() {
 
   const handleScroll = (event: any) => {
     const scrollY = event.nativeEvent.contentOffset.y;
-    
+
     // Esconder indicador após 50px de scroll
     if (scrollY > 50 && showScrollIndicator) {
       Animated.timing(scrollIndicatorOpacity, {
@@ -86,7 +86,7 @@ export default function IntencoesScreen() {
     }
   };
 
-  const sentimentColor = useMemo(() => 
+  const sentimentColor = useMemo(() =>
     sentiment ? (colors.sentimentColors[sentiment.id] || colors.primary.main) : colors.primary.main,
     [sentiment, colors]
   );
@@ -99,9 +99,11 @@ export default function IntencoesScreen() {
     container: {
       flex: 1,
       backgroundColor: colors.background.primary,
+      paddingHorizontal: spacing.md, // Padding lateral consistente
     },
     scrollView: {
       flex: 1,
+      paddingBottom: spacing.xl,
     },
     center: {
       flex: 1,
@@ -109,106 +111,95 @@ export default function IntencoesScreen() {
       alignItems: 'center',
       backgroundColor: colors.background.primary,
     },
+    // Header atualizado
     header: {
-      padding: spacing.md,
-      paddingTop: spacing.md,
-      paddingBottom: spacing.lg,
+      paddingVertical: spacing.md,
+      marginBottom: spacing.md,
+      alignItems: 'flex-start', // Alinhado à esquerda
     },
     title: {
       fontSize: typography.fontSize.h2,
       fontWeight: typography.fontWeight.bold,
       color: colors.text.primary,
-      marginBottom: spacing.md,
-      textAlign: 'center',
-      lineHeight: typography.fontSize.h2 * typography.lineHeight.tight,
+      marginBottom: spacing.sm,
+      textAlign: 'left',
+      lineHeight: typography.fontSize.h2 * 1.2,
+    },
+    sentimentContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    sentimentLabel: {
+      fontSize: typography.fontSize.body,
+      color: colors.text.secondary,
+      marginRight: spacing.sm,
     },
     sentimentBadge: {
-      borderRadius: borderRadius.lg,
+      borderRadius: borderRadius.full, // Badge arredondado
       paddingHorizontal: spacing.md,
-      paddingVertical: spacing.sm,
+      paddingVertical: 4, // Padding vertical menor
       borderWidth: 1,
-      alignSelf: 'center',
-      marginBottom: spacing.md,
     },
     sentimentBadgeText: {
-      fontSize: typography.fontSize.body,
-      fontWeight: typography.fontWeight.semibold,
-      textAlign: 'center',
+      fontSize: typography.fontSize.small,
+      fontWeight: typography.fontWeight.bold,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
     },
-    subtitle: {
-      fontSize: typography.fontSize.body,
-      fontWeight: typography.fontWeight.regular,
-      color: colors.text.secondary,
-      textAlign: 'center',
-      marginTop: spacing.sm,
-    },
+    // Lista de Intenções
     intentionsContainer: {
-      flex: 1,
-      padding: spacing.md,
-      paddingTop: 0,
-      justifyContent: 'space-between',
+      paddingBottom: spacing.xl,
+      gap: spacing.md, // Espaçamento entre cards
     },
     intentionCard: {
       backgroundColor: colors.background.card,
       borderRadius: borderRadius.lg,
-      padding: spacing.lg,
-      marginBottom: spacing.md,
+      padding: spacing.md,
       ...shadows.md,
-    },
-    intentionHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginBottom: spacing.sm,
+      flexDirection: 'row', // Card horizontal
+      alignItems: 'center', // Alinhamento vertical centralizado
+
+      // Borda lateral sutil ou topo
+      borderLeftWidth: 4,
     },
     intentionIconContainer: {
-      width: 48,
-      height: 48,
-      borderRadius: 24,
+      width: 52,
+      height: 52,
+      borderRadius: 26,
       justifyContent: 'center',
       alignItems: 'center',
       marginRight: spacing.md,
+      flexShrink: 0, // Não encolher
+    },
+    intentionContent: {
+      flex: 1,
+      justifyContent: 'center',
     },
     intentionTitle: {
       fontSize: typography.fontSize.h3,
       fontWeight: typography.fontWeight.bold,
       color: colors.text.primary,
-      flex: 1,
+      marginBottom: 2, // Pequeno espaço
     },
     intentionDescription: {
       fontSize: typography.fontSize.small,
       color: colors.text.secondary,
-      lineHeight: typography.fontSize.small * typography.lineHeight.relaxed,
-      marginLeft: 48 + spacing.md,
+      lineHeight: typography.fontSize.small * 1.4,
     },
-    footer: {
-      padding: spacing.md,
-      paddingTop: spacing.sm,
+    arrowIcon: {
+      marginLeft: spacing.xs,
     },
-    backButton: {
-      backgroundColor: colors.background.secondary,
-      paddingVertical: spacing.md,
-      paddingHorizontal: spacing.lg,
-      borderRadius: borderRadius.md,
-      alignItems: 'center',
-    },
-    backButtonText: {
-      color: colors.text.primary,
-      fontSize: typography.fontSize.body,
-      fontWeight: typography.fontWeight.medium,
-    },
+    // States
     loadingText: {
       marginTop: spacing.md,
       color: colors.primary.main,
       fontSize: typography.fontSize.body,
-      lineHeight: typography.fontSize.body * typography.lineHeight.normal,
     },
     errorText: {
       color: colors.state.error,
       fontSize: typography.fontSize.body,
-      lineHeight: typography.fontSize.body * typography.lineHeight.normal,
       marginBottom: spacing.md,
       textAlign: 'center',
-      paddingHorizontal: spacing.md,
     },
     retryButton: {
       backgroundColor: colors.primary.main,
@@ -218,20 +209,7 @@ export default function IntencoesScreen() {
     },
     retryButtonText: {
       color: colors.text.inverse,
-      fontSize: typography.fontSize.body,
       fontWeight: typography.fontWeight.medium,
-    },
-    scrollIndicator: {
-      position: 'absolute',
-      bottom: spacing.xl,
-      alignSelf: 'center',
-      backgroundColor: colors.background.card,
-      borderRadius: borderRadius.full,
-      width: 40,
-      height: 40,
-      justifyContent: 'center',
-      alignItems: 'center',
-      ...shadows.lg,
     },
   }), [colors]);
 
@@ -241,7 +219,7 @@ export default function IntencoesScreen() {
         <AppHeader showBack={true} showLogo={true} />
         <View style={styles.center}>
           <ActivityIndicator size="large" color={colors.primary.main} />
-          <Text style={styles.loadingText}>Carregando intenções emocionais...</Text>
+          <Text style={styles.loadingText}>Carregando opções...</Text>
         </View>
       </SafeAreaView>
     );
@@ -253,10 +231,7 @@ export default function IntencoesScreen() {
         <AppHeader showBack={true} showLogo={true} />
         <View style={styles.center}>
           <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity 
-            style={styles.retryButton}
-            onPress={fetchIntentions}
-          >
+          <TouchableOpacity style={styles.retryButton} onPress={fetchIntentions}>
             <Text style={styles.retryButtonText}>Tentar novamente</Text>
           </TouchableOpacity>
         </View>
@@ -268,24 +243,27 @@ export default function IntencoesScreen() {
     <SafeAreaView style={styles.safeArea}>
       <AppHeader showBack={true} showLogo={true} />
       <View style={styles.container}>
-        <ScrollView 
+        <ScrollView
           style={styles.scrollView}
-          onScroll={handleScroll}
-          scrollEventThrottle={16}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: spacing.xl }}
         >
           <View style={styles.header}>
-            <Text style={styles.title}>O que você gostaria de fazer com esse sentimento?</Text>
+            <Text style={styles.title}>Qual a sua intenção?</Text>
+
             {sentiment && (
-              <View style={[styles.sentimentBadge, { 
-                backgroundColor: sentimentColor + '15',
-                borderColor: sentimentColor + '30',
-              }]}>
-                <Text style={[styles.sentimentBadgeText, { color: sentimentColor }]}>
-                  {sentiment.name}
-                </Text>
+              <View style={styles.sentimentContainer}>
+                <Text style={styles.sentimentLabel}>Sentindo agora:</Text>
+                <View style={[styles.sentimentBadge, {
+                  backgroundColor: sentimentColor + '10', // Fundo bem suave
+                  borderColor: sentimentColor + '40',
+                }]}>
+                  <Text style={[styles.sentimentBadgeText, { color: sentimentColor }]}>
+                    {sentiment.name}
+                  </Text>
+                </View>
               </View>
             )}
-            <Text style={styles.subtitle}>Escolha sua intenção emocional:</Text>
           </View>
 
           <View style={styles.intentionsContainer}>
@@ -300,46 +278,40 @@ export default function IntencoesScreen() {
                 <TouchableOpacity
                   key={intention.id}
                   style={[styles.intentionCard, {
-                    borderLeftWidth: 4,
                     borderLeftColor: sentimentColor,
                   }]}
                   onPress={() => handleIntentionPress(intention)}
                   activeOpacity={0.7}
                 >
-                  <View style={styles.intentionHeader}>
-                    <View style={[styles.intentionIconContainer, { 
-                      backgroundColor: sentimentColor + '20' 
-                    }]}>
-                      <IntentionIcon 
-                        intentionType={intention.type} 
-                        size={24} 
-                        color={sentimentColor} 
-                      />
-                    </View>
+                  <View style={[styles.intentionIconContainer, {
+                    backgroundColor: sentimentColor + '15'
+                  }]}>
+                    <IntentionIcon
+                      intentionType={intention.type}
+                      size={26}
+                      color={sentimentColor}
+                    />
+                  </View>
+
+                  <View style={styles.intentionContent}>
                     <Text style={styles.intentionTitle}>
                       {getIntentionLabel(intention.type)}
                     </Text>
+                    <Text style={styles.intentionDescription} numberOfLines={3}>
+                      {intention.description}
+                    </Text>
                   </View>
-                  
-                  <Text style={styles.intentionDescription}>
-                    {intention.description}
-                  </Text>
+
+                  <Ionicons
+                    name="chevron-forward"
+                    size={20}
+                    color={colors.text.light}
+                    style={styles.arrowIcon}
+                  />
                 </TouchableOpacity>
               ))}
           </View>
         </ScrollView>
-
-        {/* Indicador de scroll animado */}
-        {showScrollIndicator && (
-          <Animated.View 
-            style={[
-              styles.scrollIndicator,
-              { opacity: scrollIndicatorOpacity }
-            ]}
-          >
-            <Ionicons name="chevron-down" size={24} color={sentimentColor} />
-          </Animated.View>
-        )}
       </View>
     </SafeAreaView>
   );

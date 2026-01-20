@@ -13,22 +13,22 @@ import { NavigationFooter } from '../../../components/NavigationFooter';
 // Helper para construir URL do logo
 const getPlatformLogoUrl = (logoPath: string | null, platformName: string): string => {
   if (!logoPath) return '';
-  
+
   // Se for YouTube, usar logo local neutro
   if (platformName.toLowerCase().includes('youtube')) {
     return 'https://moviesf-back.vercel.app/platforms/youtube.png';
   }
-  
+
   // Se já for uma URL completa, retornar como está
   if (logoPath.startsWith('http://') || logoPath.startsWith('https://')) {
     return logoPath;
   }
-  
+
   // Se começar com /platforms/, é um logo local do backend
   if (logoPath.startsWith('/platforms/')) {
     return `https://moviesf-back.vercel.app${logoPath}`;
   }
-  
+
   // Caso contrário, é um caminho TMDB
   return `https://image.tmdb.org/t/p/w92${logoPath}`;
 };
@@ -46,7 +46,7 @@ export default function PlataformasStreamingScreen() {
   const [selectedOptionText, setSelectedOptionText] = useState<string>('');
 
   // Obter cor do sentimento (memoizada)
-  const sentimentColor = useMemo(() => 
+  const sentimentColor = useMemo(() =>
     colors.sentimentColors[Number(sentimentId)] || colors.primary.main,
     [sentimentId, colors]
   );
@@ -61,48 +61,48 @@ export default function PlataformasStreamingScreen() {
       // Buscar filmes da opção escolhida
       const response = await apiRequest(API_ENDPOINTS.personalizedJourney.get(sentimentId.toString(), intentionId.toString()));
       if (!response.ok) throw new Error('Erro ao carregar jornada');
-      
+
       const data = await response.json();
       const allSteps = data.steps;
       const option = allSteps
         .flatMap((s: any) => s.options)
         .find((o: any) => o.id.toString() === optionId.toString());
-      
+
       if (!option || !option.movieSuggestions) {
         if (__DEV__) {
           console.log('❌ Opção ou filmes não encontrados');
         }
         return {};
       }
-      
+
       // Armazenar o texto da opção escolhida
       setSelectedOptionText(option.text);
       if (__DEV__) {
         console.log('📝 Opção escolhida:', option.text);
       }
-      
+
       const movies = option.movieSuggestions;
       const counts: Record<number, number> = {};
-      
+
       // Contar filmes por plataforma
       platforms.forEach(platform => {
         let count = 0;
-        
+
         movies.forEach((suggestion: any) => {
           if (suggestion.movie.platforms && suggestion.movie.platforms.length > 0) {
             const hasPlatform = suggestion.movie.platforms.some((moviePlatform: any) => {
               const platformName = moviePlatform.streamingPlatform?.name;
-              return platformName === platform.name && 
-                     moviePlatform.accessType === 'INCLUDED_WITH_SUBSCRIPTION';
+              return platformName === platform.name &&
+                moviePlatform.accessType === 'INCLUDED_WITH_SUBSCRIPTION';
             });
-            
+
             if (hasPlatform) count++;
           }
         });
-        
+
         counts[platform.id] = count;
       });
-      
+
       // Log resumido apenas com plataformas que têm filmes
       if (__DEV__) {
         const platformsWithMovies = Object.entries(counts)
@@ -117,7 +117,7 @@ export default function PlataformasStreamingScreen() {
           console.log('📊 Nenhum filme encontrado nas plataformas');
         }
       }
-      
+
       setPlatformMovieCounts(counts);
       return counts;
     } catch (error) {
@@ -134,37 +134,37 @@ export default function PlataformasStreamingScreen() {
     fetchPlatforms();
   }, []);
 
-         const fetchPlatforms = async () => {
-           try {
-             const response = await apiRequest(API_ENDPOINTS.streamingPlatforms.list, {
-               headers: {
-                 'Cache-Control': 'no-cache',
-                 'Pragma': 'no-cache'
-               }
-             });
-             if (!response.ok) {
-               throw new Error('Erro ao carregar plataformas de streaming');
-             }
+  const fetchPlatforms = async () => {
+    try {
+      const response = await apiRequest(API_ENDPOINTS.streamingPlatforms.list, {
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Erro ao carregar plataformas de streaming');
+      }
       const data: StreamingPlatform[] = await response.json();
       if (__DEV__) {
         console.log('✅ Plataformas carregadas:', data.length);
       }
-      
+
       // Filtrar apenas plataformas de assinatura e que não sejam HIDDEN
       const subscriptionPlatforms = data.filter(
         p => (p.category === 'SUBSCRIPTION_PRIMARY' || p.category === 'HYBRID') &&
-             p.showFilter !== 'HIDDEN'
+          p.showFilter !== 'HIDDEN'
       );
-      
+
       if (__DEV__) {
         console.log('📺 Plataformas filtradas (assinatura + não-hidden):', subscriptionPlatforms.length);
       }
-      
+
       setPlatforms(subscriptionPlatforms);
-      
+
       // Contar filmes por plataforma
       await fetchMovieCountsByPlatform(subscriptionPlatforms);
-      
+
       // Mostrar indicador se houver muitas plataformas PRIORITY
       const priorityPlatforms = subscriptionPlatforms.filter(p => p.showFilter === 'PRIORITY');
       setShowScrollIndicator(priorityPlatforms.length > 6);
@@ -180,7 +180,7 @@ export default function PlataformasStreamingScreen() {
 
   const handleScroll = (event: any) => {
     const scrollY = event.nativeEvent.contentOffset.y;
-    
+
     // Esconder indicador após 50px de scroll
     if (scrollY > 50 && showScrollIndicator) {
       Animated.timing(scrollIndicatorOpacity, {
@@ -192,8 +192,8 @@ export default function PlataformasStreamingScreen() {
   };
 
   const togglePlatform = (platformId: number) => {
-    setSelectedPlatforms(prev => 
-      prev.includes(platformId) 
+    setSelectedPlatforms(prev =>
+      prev.includes(platformId)
         ? prev.filter(id => id !== platformId)
         : [...prev, platformId]
     );
@@ -203,8 +203,8 @@ export default function PlataformasStreamingScreen() {
     // Navegar de volta para a jornada com as plataformas selecionadas
     // A tela de jornada irá mostrar os filmes filtrados
     if (__DEV__) {
-      console.log('🔄 Retornando da tela de plataformas:', { 
-        optionId, 
+      console.log('🔄 Retornando da tela de plataformas:', {
+        optionId,
         platformsCount: selectedPlatforms.length
       });
     }
@@ -254,58 +254,53 @@ export default function PlataformasStreamingScreen() {
       backgroundColor: colors.background.primary,
     },
     header: {
-      padding: spacing.lg,
+      padding: spacing.md, // Reduzido de lg
+      paddingBottom: spacing.sm, // Ainda menor embaixo
       alignItems: 'center',
     },
     iconContainer: {
-      width: 72,
-      height: 72,
-      borderRadius: 36,
+      width: 60, // Menor
+      height: 60, // Menor
+      borderRadius: 30,
       justifyContent: 'center',
       alignItems: 'center',
-      marginBottom: spacing.md,
+      marginBottom: spacing.xs,
     },
     title: {
-      fontSize: typography.fontSize.h1,
+      fontSize: typography.fontSize.h2, // H2 em vez de H1
       fontWeight: typography.fontWeight.bold,
       color: colors.text.primary,
-      marginBottom: spacing.sm,
+      marginBottom: 2, // Mínimo
       textAlign: 'center',
     },
     subtitle: {
-      fontSize: typography.fontSize.body,
+      fontSize: typography.fontSize.small, // Menor
       color: colors.text.secondary,
       textAlign: 'center',
-      lineHeight: typography.fontSize.body * typography.lineHeight.relaxed,
     },
     optionContext: {
-      marginTop: spacing.md,
+      marginTop: spacing.xs, // Menor
       alignItems: 'center',
+      paddingHorizontal: spacing.lg,
     },
     optionLabel: {
-      fontSize: typography.fontSize.small,
-      color: colors.text.secondary,
-      textAlign: 'center',
-      marginBottom: spacing.xs,
-      fontWeight: typography.fontWeight.medium,
+      display: 'none', // Oculto pois incorporamos no texto principal
     },
     optionText: {
-      fontSize: typography.fontSize.body,
+      fontSize: typography.fontSize.small, // Menor
       color: colors.text.secondary,
       textAlign: 'center',
-      fontStyle: 'italic',
-      lineHeight: 22,
-      paddingHorizontal: spacing.md,
+      lineHeight: 18,
     },
     platformsContainer: {
       paddingHorizontal: spacing.md,
-      marginBottom: spacing.lg,
+      marginBottom: spacing.md, // Menor
     },
-    sectionTitle: {
-      fontSize: typography.fontSize.h3,
+    sectionTitle: { // Caso ainda seja usado em outro lugar
+      fontSize: typography.fontSize.body,
       fontWeight: typography.fontWeight.semibold,
       color: colors.text.primary,
-      marginBottom: spacing.md,
+      marginBottom: spacing.xs,
     },
     platformsGrid: {
       flexDirection: 'row',
@@ -498,7 +493,7 @@ export default function PlataformasStreamingScreen() {
         <AppHeader showBack={true} showLogo={true} />
         <View style={styles.center}>
           <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.retryButton}
             onPress={fetchPlatforms}
           >
@@ -517,37 +512,36 @@ export default function PlataformasStreamingScreen() {
     <SafeAreaView style={styles.safeArea}>
       <AppHeader showBack={true} showLogo={true} />
       <View style={styles.container}>
-        <ScrollView 
+        <ScrollView
           style={styles.scrollView}
           onScroll={handleScroll}
           scrollEventThrottle={16}
         >
-          {/* Header */}
+          {/* Header Compacto */}
           <View style={styles.header}>
             <Text style={styles.title}>Onde você assiste?</Text>
             {selectedOptionText ? (
               <View style={styles.optionContext}>
-                <Text style={styles.optionLabel}>Sugestões para:</Text>
-                <Text style={[styles.optionText, { color: sentimentColor }]}>
-                  "{selectedOptionText}"
+                <Text style={styles.optionText} numberOfLines={2}>
+                  Sugestões para: <Text style={{ color: sentimentColor, fontWeight: 'bold' }}>"{selectedOptionText}"</Text>
                 </Text>
               </View>
             ) : (
               <Text style={styles.subtitle}>
-                Selecione suas plataformas para ver as sugestões disponíveis
+                Selecione suas preferências
               </Text>
             )}
           </View>
 
           {/* Plataformas Principais */}
           <View style={styles.platformsContainer}>
-            <Text style={styles.sectionTitle}>Principais Plataformas</Text>
+            {/* Título removido para ganhar espaço, o Header já explica */}
             <View style={styles.platformsGrid}>
               {mainPlatforms.map((platform) => {
                 const logoUrl = getPlatformLogoUrl(platform.logoPath, platform.name);
                 const movieCount = platformMovieCounts[platform.id] || 0;
                 const hasMovies = movieCount > 0;
-                
+
                 return (
                   <TouchableOpacity
                     key={platform.id}
@@ -572,8 +566,8 @@ export default function PlataformasStreamingScreen() {
                         justifyContent: 'center',
                         alignItems: 'center',
                       }}>
-                        <Image 
-                          source={{ uri: logoUrl }} 
+                        <Image
+                          source={{ uri: logoUrl }}
                           style={[styles.platformLogo, !hasMovies && styles.platformLogoEmpty]}
                           resizeMode="contain"
                         />
@@ -583,14 +577,14 @@ export default function PlataformasStreamingScreen() {
                         {platform.name}
                       </Text>
                     )}
-                    
+
                     {/* Badge de contagem de filmes */}
                     {hasMovies && (
                       <View style={[styles.movieCountBadge, { backgroundColor: sentimentColor }]}>
                         <Text style={styles.movieCountText}>{movieCount}</Text>
                       </View>
                     )}
-                    
+
                     {selectedPlatforms.includes(platform.id) && (
                       <View style={[styles.checkmark, { backgroundColor: sentimentColor }]}>
                         <Ionicons name="checkmark" size={16} color={colors.white} />
@@ -605,7 +599,7 @@ export default function PlataformasStreamingScreen() {
           {/* Outras Plataformas (Colapsável) */}
           {otherPlatforms.length > 0 && (
             <View style={styles.platformsContainer}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.expandButton}
                 onPress={() => setShowOtherPlatforms(!showOtherPlatforms)}
                 activeOpacity={0.7}
@@ -613,10 +607,10 @@ export default function PlataformasStreamingScreen() {
                 <Text style={styles.expandButtonText}>
                   Outras Plataformas ({otherPlatforms.length})
                 </Text>
-                <Ionicons 
-                  name={showOtherPlatforms ? "chevron-up" : "chevron-down"} 
-                  size={20} 
-                  color={colors.text.primary} 
+                <Ionicons
+                  name={showOtherPlatforms ? "chevron-up" : "chevron-down"}
+                  size={20}
+                  color={colors.text.primary}
                 />
               </TouchableOpacity>
 
@@ -626,7 +620,7 @@ export default function PlataformasStreamingScreen() {
                     const logoUrl = getPlatformLogoUrl(platform.logoPath, platform.name);
                     const movieCount = platformMovieCounts[platform.id] || 0;
                     const hasMovies = movieCount > 0;
-                    
+
                     return (
                       <TouchableOpacity
                         key={platform.id}
@@ -651,8 +645,8 @@ export default function PlataformasStreamingScreen() {
                             justifyContent: 'center',
                             alignItems: 'center',
                           }}>
-                            <Image 
-                              source={{ uri: logoUrl }} 
+                            <Image
+                              source={{ uri: logoUrl }}
                               style={[styles.platformLogo, !hasMovies && styles.platformLogoEmpty]}
                               resizeMode="contain"
                             />
@@ -662,14 +656,14 @@ export default function PlataformasStreamingScreen() {
                             {platform.name}
                           </Text>
                         )}
-                        
+
                         {/* Badge de contagem de filmes */}
                         {hasMovies && (
                           <View style={[styles.movieCountBadge, { backgroundColor: sentimentColor }]}>
                             <Text style={styles.movieCountText}>{movieCount}</Text>
                           </View>
                         )}
-                        
+
                         {selectedPlatforms.includes(platform.id) && (
                           <View style={[styles.checkmark, { backgroundColor: sentimentColor }]}>
                             <Ionicons name="checkmark" size={16} color={colors.white} />
@@ -685,7 +679,7 @@ export default function PlataformasStreamingScreen() {
 
           {/* Informação sobre seleção */}
           {selectedPlatforms.length > 0 && (
-            <View style={[styles.infoBox, { 
+            <View style={[styles.infoBox, {
               backgroundColor: sentimentColor + '10',
               borderLeftColor: sentimentColor,
             }]}>
@@ -699,7 +693,7 @@ export default function PlataformasStreamingScreen() {
 
         {/* Indicador de scroll */}
         {showScrollIndicator && (
-          <Animated.View 
+          <Animated.View
             style={[
               styles.scrollIndicator,
               { opacity: scrollIndicatorOpacity }
@@ -718,7 +712,7 @@ export default function PlataformasStreamingScreen() {
           >
             <Text style={[styles.skipButtonText, { color: sentimentColor }]}>Pular esta etapa</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity
             style={[
               styles.continueButton,

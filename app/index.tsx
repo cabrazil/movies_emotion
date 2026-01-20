@@ -34,78 +34,78 @@ export default function HomeScreen() {
     },
     container: {
       flex: 1,
-      position: 'relative', // Para o botão absoluto funcionar bem
+      padding: spacing.md,
+    },
+    // Header superior com Logo e Toggle
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: spacing.xl,
+      marginTop: spacing.sm,
+    },
+    logo: {
+      height: 40,
+      width: 140,
     },
     themeToggle: {
-      position: 'absolute',
-      top: spacing.md,
-      right: spacing.md,
-      padding: spacing.sm,
-      zIndex: 10,
+      padding: spacing.xs,
       backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
       borderRadius: borderRadius.full,
     },
+
+    // Área de conteúdo central
     content: {
       flex: 1,
       justifyContent: 'center',
-      alignItems: 'center',
-      padding: spacing.xl,
-      paddingBottom: spacing.xl * 2,
+      paddingHorizontal: spacing.md,
     },
     welcomeText: {
-      fontSize: typography.fontSize.h3,
-      fontWeight: typography.fontWeight.regular,
+      fontSize: typography.fontSize.h4,
+      fontWeight: typography.fontWeight.medium,
       color: colors.text.secondary,
-      marginBottom: spacing.sm,
-      textAlign: 'center',
-    },
-    logoContainer: {
-      marginBottom: spacing.md,
-      alignItems: 'center',
-    },
-    logo: {
-      height: 80,
-      width: 250,
+      marginBottom: spacing.xs,
     },
     title: {
-      fontSize: typography.fontSize.h2,
+      fontSize: typography.fontSize.h1,
       fontWeight: typography.fontWeight.bold,
       color: colors.text.primary,
-      marginBottom: spacing.lg,
-      textAlign: 'center',
-      lineHeight: typography.fontSize.h2 * typography.lineHeight.tight,
+      marginBottom: spacing.md,
+      lineHeight: typography.fontSize.h1 * 1.2,
     },
     description: {
-      fontSize: typography.fontSize.h4,
-      fontWeight: typography.fontWeight.semibold,
+      fontSize: typography.fontSize.body,
+      fontWeight: typography.fontWeight.regular,
       color: colors.text.secondary,
       marginBottom: spacing.xl,
-      textAlign: 'center',
-      lineHeight: typography.fontSize.h4 * typography.lineHeight.relaxed,
+      lineHeight: typography.fontSize.body * 1.5,
+    },
+
+    // Rodapé com botão fixo
+    footer: {
+      paddingBottom: spacing.lg,
       paddingHorizontal: spacing.sm,
     },
     button: {
       backgroundColor: colors.primary.main,
-      borderWidth: 0,
-      paddingVertical: spacing.md + 4,
-      paddingHorizontal: spacing.xl * 1.5,
+      paddingVertical: spacing.md,
       borderRadius: borderRadius.lg,
+      alignItems: 'center',
       shadowColor: colors.primary.main,
       shadowOffset: {
         width: 0,
-        height: 2,
+        height: 4,
       },
       shadowOpacity: 0.3,
-      shadowRadius: 4,
-      elevation: 5,
-      marginTop: spacing.md,
+      shadowRadius: 8,
+      elevation: 6,
     },
     buttonText: {
       color: colors.text.inverse,
-      fontSize: typography.fontSize.body * 1.2,
+      fontSize: typography.fontSize.body,
       fontWeight: typography.fontWeight.bold,
-      textAlign: 'center',
-      letterSpacing: 0.5,
+      letterSpacing: 1,
+      textTransform: 'uppercase',
     },
   });
 
@@ -116,41 +116,44 @@ export default function HomeScreen() {
         locations={[0, 0.3, 0.7, 1]}
         style={styles.container}
       >
-        <TouchableOpacity
-          style={styles.themeToggle}
-          onPress={toggleTheme}
-          activeOpacity={0.7}
-        >
-          <Ionicons
-            name={isDark ? "sunny-outline" : "moon-outline"}
-            size={24}
-            color={isDark ? colors.yellow : colors.primary.main}
+        {/* Header: Logo e Toggle */}
+        <View style={styles.header}>
+          <Image
+            source={vibesfilmLogo}
+            style={styles.logo}
+            resizeMode="contain"
           />
-        </TouchableOpacity>
-
-        <View style={styles.content}>
-          <Text style={styles.welcomeText}>Bem-vindo(a) ao</Text>
-
-          <View style={styles.logoContainer}>
-            <Image
-              source={vibesfilmLogo}
-              style={styles.logo}
-              resizeMode="contain"
+          <TouchableOpacity
+            style={styles.themeToggle}
+            onPress={toggleTheme}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name={isDark ? "sunny-outline" : "moon-outline"}
+              size={24}
+              color={isDark ? colors.yellow : colors.primary.main}
             />
-          </View>
+          </TouchableOpacity>
+        </View>
 
-          <Text style={styles.title}>Encontre o filme perfeito para sua vibe!</Text>
-
+        {/* Conteúdo Central */}
+        <View style={styles.content}>
+          <Text style={styles.welcomeText}>Bem-vindo(a)</Text>
+          <Text style={styles.title}>Encontre o filme perfeito para sua vibe.</Text>
           <Text style={styles.description}>
             O cinema vai além de espelhar seu estado de espírito: ele pode te ajudar a processar uma emoção,
-            transformar seu humor, manter uma boa energia ou explorar novas sensações.
+            transformar seu humor ou explorar novas sensações.
           </Text>
+        </View>
 
+        {/* Rodapé: Botão de Ação */}
+        <View style={styles.footer}>
           <TouchableOpacity
             style={styles.button}
             onPress={() => router.push('/sentimentos')}
+            activeOpacity={0.8}
           >
-            <Text style={styles.buttonText}>Vamos começar</Text>
+            <Text style={styles.buttonText}>Começar Jornada</Text>
           </TouchableOpacity>
         </View>
       </LinearGradient>

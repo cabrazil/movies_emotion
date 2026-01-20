@@ -105,6 +105,14 @@ export default function JornadaPersonalizadaScreen() {
           }
           setStep(firstStep);
           setCurrentStepId(firstStep.stepId);
+
+          // Lógica de indicador de scroll inicial
+          if (firstStep.id !== 38 && firstStep.options.length >= 4) {
+            setShowScrollIndicator(true);
+            scrollIndicatorOpacity.setValue(1);
+          } else {
+            setShowScrollIndicator(false);
+          }
         } else {
           throw new Error('Nenhum passo encontrado na jornada personalizada');
         }
@@ -266,8 +274,8 @@ export default function JornadaPersonalizadaScreen() {
       setStep(next);
       setCurrentStepId(next.stepId);
 
-      // Mostrar indicador se houver mais de 4 opções (exceto para gêneros que tem layout especial)
-      if (next.id !== 38 && next.options.length > 4) {
+      // Mostrar indicador se houver 4 ou mais opções
+      if (next.id !== 38 && next.options.length >= 4) {
         setShowScrollIndicator(true);
         scrollIndicatorOpacity.setValue(1);
       } else {
@@ -287,8 +295,8 @@ export default function JornadaPersonalizadaScreen() {
   const handleScroll = useCallback((event: any) => {
     const scrollY = event.nativeEvent.contentOffset.y;
 
-    // Esconder indicador após 50px de scroll
-    if (scrollY > 50 && showScrollIndicator) {
+    // Esconder indicador após 100px de scroll (mais tolerante)
+    if (scrollY > 100 && showScrollIndicator) {
       Animated.timing(scrollIndicatorOpacity, {
         toValue: 0,
         duration: 300,
@@ -629,14 +637,7 @@ export default function JornadaPersonalizadaScreen() {
       marginBottom: spacing.xs,
       fontWeight: typography.fontWeight.medium,
     },
-    optionText: {
-      fontSize: typography.fontSize.body,
-      color: colors.text.primary,
-      textAlign: 'center',
-      fontStyle: 'italic',
-      lineHeight: 22,
-      paddingHorizontal: spacing.md,
-    },
+    // optionText removido (duplicado)
     movieCountIndicator: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -650,7 +651,8 @@ export default function JornadaPersonalizadaScreen() {
       marginLeft: spacing.xs,
       fontWeight: typography.fontWeight.medium,
     },
-    sortContainer: {
+    // sortContainer secundário removido (duplicado), usar o principal ou criar específico se necessário
+    sortContainerWrapper: {
       marginTop: spacing.xs,
       marginBottom: spacing.sm,
       paddingHorizontal: spacing.xs,
@@ -686,15 +688,17 @@ export default function JornadaPersonalizadaScreen() {
     },
     scrollIndicator: {
       position: 'absolute',
-      bottom: spacing.xl,
+      bottom: 80, // Mais alto para não bater no Footer
       alignSelf: 'center',
       backgroundColor: colors.background.card,
       borderRadius: borderRadius.full,
-      width: 40,
-      height: 40,
+      width: 44, // Levemente maior
+      height: 44,
       justifyContent: 'center',
       alignItems: 'center',
       ...shadows.lg,
+      zIndex: 999, // Garantir que flutue
+      elevation: 10,
     },
     loadingText: {
       marginTop: spacing.md,
@@ -750,6 +754,11 @@ export default function JornadaPersonalizadaScreen() {
     backToFiltersButtonText: {
       fontSize: typography.fontSize.body,
       fontWeight: typography.fontWeight.semibold,
+    },
+    bulletPoint: {
+      color: colors.text.secondary,
+      marginHorizontal: 4, // Espaçamento pequeno
+      fontSize: typography.fontSize.small,
     },
   }), [colors]);
 
@@ -1044,7 +1053,8 @@ export default function JornadaPersonalizadaScreen() {
                 key={ms.movie.id + idx}
                 style={({ pressed }) => [
                   styles.movieCard,
-                  pressed && styles.movieCardPressed
+                  pressed && styles.movieCardPressed,
+                  { borderLeftWidth: 4, borderLeftColor: sentimentColor } // Identidade visual consistente
                 ]}
                 onPress={() => {
                   if (__DEV__) {
@@ -1068,172 +1078,124 @@ export default function JornadaPersonalizadaScreen() {
                     <Image source={{ uri: ms.movie.thumbnail }} style={styles.thumbnail} resizeMode="cover" />
                   )}
                   <View style={styles.movieInfo}>
-                    <Text style={styles.movieTitle} numberOfLines={2}>
-                      {ms.movie.title}
-                      {ms.movie.year && (
-                        <Text style={[styles.yearText, { color: sentimentColor }]}>
-                          {' '}({ms.movie.year})
+                    <View>
+                      <Text style={styles.movieTitle} numberOfLines={2}>
+                        {ms.movie.title}
+                      </Text>
+
+                      {/* Metadados em linha única: Ano • Duração • Classificação • Nota */}
+                      <View style={styles.movieDetails}>
+                        <Text style={styles.yearText}>
+                          {ms.movie.year || 'N/A'}
                         </Text>
-                      )}
-                    </Text>
 
-                    {/* Badges das plataformas */}
-                    {ms.movie.platforms && ms.movie.platforms.length > 0 && (() => {
-                      // Se não há plataformas selecionadas (usuário pulou a etapa), mostrar todas as plataformas de assinatura
-                      if (selectedPlatformIds.length === 0) {
-                        const subscriptionPlatforms = ms.movie.platforms.filter(platform =>
-                          platform.accessType === 'INCLUDED_WITH_SUBSCRIPTION' &&
-                          platform.streamingPlatform?.name
-                        );
+                        {ms.movie.runtime && ms.movie.runtime > 0 && (
+                          <>
+                            <Text style={styles.bulletPoint}>•</Text>
+                            <Text style={styles.yearText}>
+                              {Math.floor(ms.movie.runtime / 60)}h {ms.movie.runtime % 60}m
+                            </Text>
+                          </>
+                        )}
 
-                        if (subscriptionPlatforms.length === 0) {
-                          return null; // Não exibir nada se não há plataformas de assinatura
+                        {ms.movie.certification && (
+                          <>
+                            <Text style={styles.bulletPoint}>•</Text>
+                            <View style={{
+                              borderWidth: 1,
+                              borderColor: colors.text.secondary,
+                              borderRadius: 2,
+                              paddingHorizontal: 2,
+                              justifyContent: 'center'
+                            }}>
+                              <Text style={[styles.yearText, { fontSize: 9, lineHeight: 11 }]}>
+                                {ms.movie.certification}
+                              </Text>
+                            </View>
+                          </>
+                        )}
+
+                        {ms.movie.vote_average && (
+                          <>
+                            <Text style={styles.bulletPoint}>•</Text>
+                            <View style={styles.ratingContainer}>
+                              <Ionicons name="star" size={10} color={colors.yellow} />
+                              <Text style={[styles.ratingText, { fontSize: 11 }]}>
+                                {typeof ms.movie.vote_average === 'number'
+                                  ? ms.movie.vote_average.toFixed(1)
+                                  : ms.movie.vote_average}
+                              </Text>
+                            </View>
+                          </>
+                        )}
+                      </View>
+                    </View>
+
+                    {/* Razão Emocional em destaque */}
+                    <View style={[styles.reasonContainer, {
+                      backgroundColor: sentimentColor + '10', // Fundo sutil
+                      borderColor: sentimentColor + '30',
+                      borderWidth: 1,
+                      borderRadius: borderRadius.md,
+                      padding: spacing.xs,
+                      marginTop: spacing.xs,
+                      borderTopWidth: 1, // Reset do estilo anterior
+                      borderTopColor: sentimentColor + '30', // Reset
+                    }]}>
+                      <View style={styles.reasonContent}>
+                        <Ionicons name="heart" size={14} color={sentimentColor} style={{ marginTop: 2 }} />
+                        <Text style={[styles.reasonText, {
+                          color: colors.text.primary,
+                          fontStyle: 'normal',
+                          fontSize: 11
+                        }]} numberOfLines={3}>
+                          {ms.reason}
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Badge de Plataforma (Lógica Simplificada) */}
+                    {(() => {
+                      // Determinar quais plataformas mostrar
+                      let platformsToShow: any[] = [];
+
+                      if (ms.movie.platforms && ms.movie.platforms.length > 0) {
+                        if (selectedPlatformIds.length === 0) {
+                          // Caso 1: Usuário não filtrou -> Mostrar todas de assinatura
+                          platformsToShow = ms.movie.platforms.filter(p =>
+                            p.accessType === 'INCLUDED_WITH_SUBSCRIPTION' && p.streamingPlatform?.name
+                          );
+                        } else {
+                          // Caso 2: Usuário filtrou -> Mostrar match
+                          const selectedPlatformNames = selectedPlatformIds.map(id => platformsData[id]).filter(Boolean);
+                          platformsToShow = ms.movie.platforms.filter(p => {
+                            const pName = p.streamingPlatform?.name || '';
+                            const isSub = p.accessType === 'INCLUDED_WITH_SUBSCRIPTION';
+                            const isMatch = selectedPlatformNames.some(sName =>
+                              pName.toLowerCase().trim().includes(sName.toLowerCase().trim())
+                            );
+                            return isSub && isMatch;
+                          });
                         }
-
-                        return (
-                          <View style={styles.platformBadgesContainer}>
-                            {/* Mostrar apenas a primeira plataforma */}
-                            {subscriptionPlatforms.length > 0 && (
-                              <View style={[styles.platformBadge, { backgroundColor: sentimentColor + '20' }]}>
-                                <Text style={[styles.platformBadgeText, { color: sentimentColor }]}>
-                                  {subscriptionPlatforms[0].streamingPlatform.name}
-                                </Text>
-                              </View>
-                            )}
-
-                            {/* Badge "ver mais" se há múltiplas plataformas */}
-                            {subscriptionPlatforms.length > 1 && (
-                              <View style={[styles.platformBadge, {
-                                backgroundColor: colors.background.secondary,
-                                borderColor: colors.border.medium,
-                                borderWidth: 1,
-                              }]}>
-                                <Text style={[styles.platformBadgeText, {
-                                  color: colors.text.primary,
-                                  fontWeight: typography.fontWeight.semibold,
-                                }]}>
-                                  +{subscriptionPlatforms.length - 1} mais
-                                </Text>
-                              </View>
-                            )}
-                          </View>
-                        );
                       }
 
-                      // Lógica original para quando há plataformas selecionadas
-                      const selectedPlatformNames = selectedPlatformIds
-                        .map(id => platformsData[id])
-                        .filter(Boolean);
-
-                      // Filtrar plataformas que estão nas selecionadas E são de assinatura
-                      const filteredPlatforms = ms.movie.platforms.filter(platform => {
-                        const platformName = platform.streamingPlatform?.name || '';
-                        const isSubscription = platform.accessType === 'INCLUDED_WITH_SUBSCRIPTION';
-                        const isSelected = selectedPlatformNames.some(selectedName => {
-                          const cleanSelected = selectedName.toLowerCase().trim();
-                          const cleanPlatform = platformName.toLowerCase().trim();
-                          return cleanPlatform.includes(cleanSelected); // Usar includes() para comparação flexível
-                        });
-
-                        return isSubscription && isSelected;
-                      });
-
-                      if (filteredPlatforms.length === 0) {
-                        return null; // Não exibir nada se não há plataformas filtradas
-                      }
+                      if (platformsToShow.length === 0) return null;
 
                       return (
                         <View style={styles.platformBadgesContainer}>
-                          {/* Mostrar apenas a primeira plataforma */}
-                          {filteredPlatforms.length > 0 && (
-                            <View style={[styles.platformBadge, { backgroundColor: sentimentColor + '20' }]}>
-                              <Text style={[styles.platformBadgeText, { color: sentimentColor }]}>
-                                {filteredPlatforms[0].streamingPlatform.name}
-                              </Text>
-                            </View>
-                          )}
-
-                          {/* Badge "ver mais" se há múltiplas plataformas */}
-                          {filteredPlatforms.length > 1 && (
-                            <View style={[styles.platformBadge, {
-                              backgroundColor: colors.background.secondary,
-                              borderColor: colors.border.medium,
-                              borderWidth: 1,
-                            }]}>
-                              <Text style={[styles.platformBadgeText, {
-                                color: colors.text.primary,
-                                fontWeight: typography.fontWeight.semibold,
-                              }]}>
-                                +{filteredPlatforms.length - 1} mais
-                              </Text>
-                            </View>
+                          <View style={[styles.platformBadge, { backgroundColor: sentimentColor + '20', borderColor: 'transparent' }]}>
+                            <Text style={[styles.platformBadgeText, { color: sentimentColor, fontSize: 10 }]}>
+                              No {platformsToShow[0].streamingPlatform.name}
+                            </Text>
+                          </View>
+                          {platformsToShow.length > 1 && (
+                            <Text style={{ fontSize: 10, color: colors.text.secondary, alignSelf: 'center', marginLeft: 4 }}>
+                              +{platformsToShow.length - 1}
+                            </Text>
                           )}
                         </View>
                       );
                     })()}
-
-                    <View style={styles.movieDetails}>
-                      <View style={styles.ratingsContainer}>
-                        {/* Nota TMDB */}
-                        {ms.movie.vote_average !== undefined && ms.movie.vote_average !== null && (
-                          <View style={styles.ratingContainer}>
-                            <Ionicons name="library" size={16} color="#01B4E4" />
-                            <Text style={styles.ratingText}>
-                              {typeof ms.movie.vote_average === 'number'
-                                ? ms.movie.vote_average.toFixed(1)
-                                : ms.movie.vote_average}
-                            </Text>
-                          </View>
-                        )}
-
-                        {/* Nota IMDb */}
-                        {((ms.movie as any).imdbRating || (ms.movie as any).imdb_rating) && (
-                          <View style={styles.ratingContainer}>
-                            <Ionicons name="film" size={16} color="#F5C518" />
-                            <Text style={styles.ratingText}>
-                              {(() => {
-                                const imdbValue = (ms.movie as any).imdbRating || (ms.movie as any).imdb_rating;
-                                return typeof imdbValue === 'number'
-                                  ? imdbValue.toFixed(1)
-                                  : imdbValue;
-                              })()}
-                            </Text>
-                          </View>
-                        )}
-                      </View>
-                      {ms.movie.runtime && (
-                        <View style={styles.runtimeContainer}>
-                          <Ionicons name="time-outline" size={16} color={colors.text.secondary} />
-                          <Text style={styles.runtimeText}>
-                            {(() => {
-                              const runtime = ms.movie.runtime;
-                              const hours = Math.floor(runtime / 60);
-                              const minutes = runtime % 60;
-                              return hours > 0 ? `${hours}h ${minutes}min` : `${minutes}min`;
-                            })()}
-                          </Text>
-                        </View>
-                      )}
-                      {ms.movie.certification && (
-                        <View style={styles.certificationContainer}>
-                          <Text style={styles.certificationText}>{ms.movie.certification}</Text>
-                        </View>
-                      )}
-                    </View>
-                    {ms.movie.genres && ms.movie.genres.length > 0 && (
-                      <Text style={styles.genresText} numberOfLines={1}>
-                        {ms.movie.genres.join(' • ')}
-                      </Text>
-                    )}
-                    <View style={styles.reasonContainer}>
-                      <View style={styles.reasonContent}>
-                        <Ionicons name="heart" size={16} color={sentimentColor} />
-                        <Text style={styles.reasonText} numberOfLines={2}>
-                          {ms.reason}
-                        </Text>
-                      </View>
-                      <Ionicons name="chevron-forward" size={20} color={colors.primary.main} />
-                    </View>
                   </View>
                 </View>
               </Pressable>

@@ -27,7 +27,7 @@ export default function SentimentosScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
-  
+
   // Animação para o indicador de scroll
   const scrollIndicatorAnim = useState(new Animated.Value(0))[0];
 
@@ -59,36 +59,36 @@ export default function SentimentosScreen() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await apiRequest(API_ENDPOINTS.mainSentiments.summary);
-      
+
       if (!response.ok) {
         const errorText = await response.text().catch(() => 'Erro desconhecido');
         throw new Error(`Erro ao carregar sentimentos: ${response.status} ${response.statusText}`);
       }
-      
+
       const data = await response.json();
-      
+
       if (__DEV__) {
         console.log('📦 Dados recebidos:', data.length, 'sentimentos');
       }
-      
+
       setSentiments(data);
     } catch (err) {
-      const errorMessage = err instanceof Error 
-        ? err.message.includes('timeout') 
+      const errorMessage = err instanceof Error
+        ? err.message.includes('timeout')
           ? 'Tempo de conexão esgotado. Verifique sua conexão com a internet.'
           : err.message.includes('CORS') || err.message.includes('cors')
-          ? 'Erro de conexão com o servidor. Aguarde alguns instantes e tente novamente.'
-          : err.message.includes('Network request failed') || err.message.includes('Failed to fetch')
-          ? 'Sem conexão com a internet. Verifique sua rede e tente novamente.'
-          : err.message
+            ? 'Erro de conexão com o servidor. Aguarde alguns instantes e tente novamente.'
+            : err.message.includes('Network request failed') || err.message.includes('Failed to fetch')
+              ? 'Sem conexão com a internet. Verifique sua rede e tente novamente.'
+              : err.message
         : 'Erro desconhecido ao carregar sentimentos';
-      
+
       if (__DEV__) {
         console.error('❌ Erro ao buscar sentimentos:', err);
       }
-      
+
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -110,16 +110,18 @@ export default function SentimentosScreen() {
     }
   };
 
+  // Estilos otimizados para Grid
   const styles = useMemo(() => StyleSheet.create({
     safeArea: {
       flex: 1,
       backgroundColor: colors.background.primary,
     },
+    // Removendo padding do container principal para o Header encostar nas bordas se quisesse, 
+    // mas mantendo consistência com a Home
     container: {
       flex: 1,
       backgroundColor: colors.background.primary,
-      padding: spacing.md,
-      paddingTop: spacing.md,
+      paddingHorizontal: spacing.md,
     },
     center: {
       flex: 1,
@@ -127,68 +129,65 @@ export default function SentimentosScreen() {
       alignItems: 'center',
       backgroundColor: colors.background.primary,
     },
+    // Header alinhado à esquerda como na Home
     header: {
-      marginBottom: spacing.xl,
-      alignItems: 'center',
-      paddingHorizontal: spacing.xs,
+      marginBottom: spacing.lg,
+      marginTop: spacing.sm,
+      alignItems: 'flex-start',
     },
     title: {
-      fontSize: 24,
+      fontSize: typography.fontSize.h2, // H2 para não brigar com o BackButton
       fontWeight: typography.fontWeight.bold,
       color: colors.text.primary,
-      marginBottom: spacing.sm,
-      textAlign: 'center',
-      lineHeight: 24 * typography.lineHeight.tight,
+      marginBottom: spacing.xs,
+      textAlign: 'left',
     },
     subtitle: {
       fontSize: typography.fontSize.body,
       fontWeight: typography.fontWeight.regular,
       color: colors.text.secondary,
-      textAlign: 'center',
-      lineHeight: typography.fontSize.body * typography.lineHeight.relaxed,
+      textAlign: 'left',
     },
+    // Grid Content
     flatListContent: {
-      paddingBottom: spacing.xl * 2,
+      paddingBottom: spacing.xl,
     },
+    columnWrapper: {
+      justifyContent: 'space-between', // Espaça os cards horizontalmente
+    },
+    // Novo Card Estilo Grid
     card: {
       backgroundColor: colors.background.card,
       borderRadius: borderRadius.lg,
-      padding: spacing.lg,
+      padding: spacing.md,
       marginBottom: spacing.md,
       ...shadows.md,
-      minHeight: 120,
+
+      // Dimensões para Grid (quase quadrado)
+      width: '48%', // Deixa um espacinho no meio (aproximadamente 4% de gap)
+      aspectRatio: 1, // Quadrado
+
+      justifyContent: 'space-between',
+      alignItems: 'flex-start', // Alinhamento interno à esquerda
+
+      // Borda visual colorida (agora no topo ou lateral fina)
+      borderTopWidth: 4,
     },
-    cardContent: {
-      flex: 1,
-    },
-    cardHeader: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-    },
-    iconCircle: {
-      width: 56,
-      height: 56,
-      borderRadius: 28,
+    iconContainer: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
       justifyContent: 'center',
       alignItems: 'center',
-      marginRight: spacing.md,
-    },
-    titleContainer: {
-      flex: 1,
-      justifyContent: 'center',
+      marginBottom: spacing.sm,
     },
     cardTitle: {
-      fontSize: typography.fontSize.h3,
+      fontSize: typography.fontSize.h4,
       fontWeight: typography.fontWeight.bold,
       color: colors.text.primary,
-      marginBottom: spacing.xs,
+      marginTop: 'auto', // Empurra para baixo se sobrar espaço
     },
-    cardDescription: {
-      fontSize: typography.fontSize.small,
-      fontWeight: typography.fontWeight.regular,
-      color: colors.text.secondary,
-      lineHeight: typography.fontSize.small * typography.lineHeight.relaxed,
-    },
+    // Loading/Error states mantidos iguais
     loadingText: {
       marginTop: spacing.md,
       color: colors.primary.main,
@@ -199,7 +198,6 @@ export default function SentimentosScreen() {
       fontSize: typography.fontSize.body,
       marginBottom: spacing.md,
       textAlign: 'center',
-      paddingHorizontal: spacing.md,
     },
     emptyText: {
       color: colors.text.secondary,
@@ -217,16 +215,6 @@ export default function SentimentosScreen() {
       color: colors.text.inverse,
       fontSize: typography.fontSize.body,
       fontWeight: typography.fontWeight.semibold,
-    },
-    scrollIndicator: {
-      position: 'absolute',
-      bottom: spacing.xl,
-      alignSelf: 'center',
-      backgroundColor: colors.background.card,
-      borderRadius: borderRadius.full,
-      padding: spacing.xs,
-      ...shadows.lg,
-      elevation: 8,
     },
   }), [colors]);
 
@@ -248,10 +236,7 @@ export default function SentimentosScreen() {
         <AppHeader showBack={true} showLogo={true} />
         <View style={styles.center}>
           <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity
-            style={styles.retryButton}
-            onPress={fetchSentiments}
-          >
+          <TouchableOpacity style={styles.retryButton} onPress={fetchSentiments}>
             <Text style={styles.retryButtonText}>Tentar novamente</Text>
           </TouchableOpacity>
         </View>
@@ -265,10 +250,7 @@ export default function SentimentosScreen() {
         <AppHeader showBack={true} showLogo={true} />
         <View style={styles.center}>
           <Text style={styles.emptyText}>Nenhum sentimento encontrado</Text>
-          <TouchableOpacity
-            style={styles.retryButton}
-            onPress={fetchSentiments}
-          >
+          <TouchableOpacity style={styles.retryButton} onPress={fetchSentiments}>
             <Text style={styles.retryButtonText}>Tentar novamente</Text>
           </TouchableOpacity>
         </View>
@@ -281,74 +263,42 @@ export default function SentimentosScreen() {
       <AppHeader showBack={true} showLogo={true} />
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Como você está se sentindo?</Text>
-          <Text style={styles.subtitle}>Escolha o sentimento que melhor descreve seu estado emocional atual.</Text>
+          <Text style={styles.title}>Como você está?</Text>
+          <Text style={styles.subtitle}>Escolha o que melhor descreve seu momento.</Text>
         </View>
+
         <FlatList
-        data={sentiments}
-        keyExtractor={item => item.id.toString()}
-        contentContainerStyle={styles.flatListContent}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-        showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => {
-          const sentimentColor = colors.sentimentColors[item.id] || colors.primary.main;
-          const description = sentimentDescriptions[item.id] || '';
-          
-          return (
-            <TouchableOpacity
-              style={[
-                styles.card,
-                { 
-                  borderLeftWidth: 4,
-                  borderLeftColor: sentimentColor,
-                }
-              ]}
-              onPress={() => handleSentimentPress(item)}
-              activeOpacity={0.7}
-            >
-              <View style={styles.cardContent}>
-                <View style={styles.cardHeader}>
-                  <View style={[styles.iconCircle, { backgroundColor: sentimentColor + '15' }]}>
-                    <SentimentIcon sentimentId={item.id} size={32} color={sentimentColor} />
-                  </View>
-                  <View style={styles.titleContainer}>
-                    <Text style={styles.cardTitle}>{item.name}</Text>
-                    {description && (
-                      <Text style={styles.cardDescription}>{description}</Text>
-                    )}
-                  </View>
+          data={sentiments}
+          keyExtractor={item => item.id.toString()}
+          contentContainerStyle={styles.flatListContent}
+
+          // Configuração de Grid
+          numColumns={2}
+          columnWrapperStyle={styles.columnWrapper}
+
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => {
+            const sentimentColor = colors.sentimentColors[item.id] || colors.primary.main;
+            // Descrição removida do card reduzido para limpeza visual
+
+            return (
+              <TouchableOpacity
+                style={[
+                  styles.card,
+                  { borderTopColor: sentimentColor } // Borda colorida no topo
+                ]}
+                onPress={() => handleSentimentPress(item)}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.iconContainer, { backgroundColor: sentimentColor + '15' }]}>
+                  <SentimentIcon sentimentId={item.id} size={28} color={sentimentColor} />
                 </View>
-              </View>
-            </TouchableOpacity>
-          );
-        }}
-      />
-      
-      {/* Indicador de scroll animado */}
-      {showScrollIndicator && sentiments.length > 4 && (
-        <Animated.View 
-          style={[
-            styles.scrollIndicator,
-            {
-              opacity: scrollIndicatorAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0.4, 1],
-              }),
-              transform: [
-                {
-                  translateY: scrollIndicatorAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0, 10],
-                  }),
-                },
-              ],
-            },
-          ]}
-        >
-          <Ionicons name="chevron-down" size={32} color={colors.primary.main} />
-        </Animated.View>
-      )}
+
+                <Text style={styles.cardTitle}>{item.name}</Text>
+              </TouchableOpacity>
+            );
+          }}
+        />
       </View>
     </SafeAreaView>
   );
