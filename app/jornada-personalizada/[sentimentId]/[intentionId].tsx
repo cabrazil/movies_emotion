@@ -17,7 +17,7 @@ const CARD_HEIGHT = 45;
 
 export default function JornadaPersonalizadaScreen() {
   const { sentimentId, intentionId, optionId, platforms, showResults } = useLocalSearchParams();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState<PersonalizedJourneyStep | null>(null);
@@ -522,10 +522,11 @@ export default function JornadaPersonalizadaScreen() {
     yearText: {
       fontSize: typography.fontSize.small,
       fontWeight: typography.fontWeight.medium,
+      color: isDark ? '#E0E0E0' : colors.text.secondary,
     },
     movieYear: {
       fontSize: typography.fontSize.small,
-      color: colors.text.secondary,
+      color: isDark ? '#E0E0E0' : colors.text.secondary,
     },
     movieDescription: {
       fontSize: typography.fontSize.small,
@@ -549,7 +550,7 @@ export default function JornadaPersonalizadaScreen() {
     },
     ratingText: {
       fontSize: typography.fontSize.small,
-      color: colors.text.secondary,
+      color: isDark ? '#E0E0E0' : colors.text.secondary,
       marginLeft: 4,
     },
     certificationContainer: {
@@ -756,11 +757,11 @@ export default function JornadaPersonalizadaScreen() {
       fontWeight: typography.fontWeight.semibold,
     },
     bulletPoint: {
-      color: colors.text.secondary,
-      marginHorizontal: 4, // Espaçamento pequeno
+      color: isDark ? colors.gray[400] : colors.text.secondary, // Mais visível no Dark
+      marginHorizontal: 4,
       fontSize: typography.fontSize.small,
     },
-  }), [colors]);
+  }), [colors, isDark]);
 
   const renderOptions = useCallback(() => {
     if (!step) return null;

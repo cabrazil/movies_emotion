@@ -52,8 +52,9 @@ export default function PlataformasStreamingScreen() {
   );
 
   // Animação do indicador de scroll
-  const scrollIndicatorOpacity = useRef(new Animated.Value(1)).current;
-  const [showScrollIndicator, setShowScrollIndicator] = useState(false);
+  // Indicador de scroll removido
+  // const scrollIndicatorOpacity = useRef(new Animated.Value(1)).current;
+  // const [showScrollIndicator, setShowScrollIndicator] = useState(false);
 
   // Função para contar filmes por plataforma
   const fetchMovieCountsByPlatform = async (platforms: StreamingPlatform[]) => {
@@ -166,8 +167,7 @@ export default function PlataformasStreamingScreen() {
       await fetchMovieCountsByPlatform(subscriptionPlatforms);
 
       // Mostrar indicador se houver muitas plataformas PRIORITY
-      const priorityPlatforms = subscriptionPlatforms.filter(p => p.showFilter === 'PRIORITY');
-      setShowScrollIndicator(priorityPlatforms.length > 6);
+      // Lógica de indicador removida
     } catch (err) {
       if (__DEV__) {
         console.error('❌ Erro ao carregar plataformas:', err);
@@ -178,18 +178,7 @@ export default function PlataformasStreamingScreen() {
     }
   };
 
-  const handleScroll = (event: any) => {
-    const scrollY = event.nativeEvent.contentOffset.y;
-
-    // Esconder indicador após 50px de scroll
-    if (scrollY > 50 && showScrollIndicator) {
-      Animated.timing(scrollIndicatorOpacity, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }).start(() => setShowScrollIndicator(false));
-    }
-  };
+  // handleScroll removido
 
   const togglePlatform = (platformId: number) => {
     setSelectedPlatforms(prev =>
@@ -254,8 +243,8 @@ export default function PlataformasStreamingScreen() {
       backgroundColor: colors.background.primary,
     },
     header: {
-      padding: spacing.md, // Reduzido de lg
-      paddingBottom: spacing.sm, // Ainda menor embaixo
+      padding: spacing.md,
+      paddingBottom: spacing.lg, // Aumentado de 'sm' para 'lg' para dar mais respiro
       alignItems: 'center',
     },
     iconContainer: {
@@ -504,9 +493,7 @@ export default function PlataformasStreamingScreen() {
     );
   }
 
-  // Separar plataformas por showFilter (PRIORITY vs SECONDARY)
-  const mainPlatforms = platforms.filter(p => p.showFilter === 'PRIORITY');
-  const otherPlatforms = platforms.filter(p => p.showFilter === 'SECONDARY');
+  // Renderização unificada de todas as plataformas
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -514,15 +501,13 @@ export default function PlataformasStreamingScreen() {
       <View style={styles.container}>
         <ScrollView
           style={styles.scrollView}
-          onScroll={handleScroll}
-          scrollEventThrottle={16}
         >
           {/* Header Compacto */}
           <View style={styles.header}>
             <Text style={styles.title}>Onde você assiste?</Text>
             {selectedOptionText ? (
               <View style={styles.optionContext}>
-                <Text style={styles.optionText} numberOfLines={2}>
+                <Text style={styles.optionText}>
                   Sugestões para: <Text style={{ color: sentimentColor, fontWeight: 'bold' }}>"{selectedOptionText}"</Text>
                 </Text>
               </View>
@@ -533,11 +518,10 @@ export default function PlataformasStreamingScreen() {
             )}
           </View>
 
-          {/* Plataformas Principais */}
+          {/* Lista Unificada de Plataformas */}
           <View style={styles.platformsContainer}>
-            {/* Título removido para ganhar espaço, o Header já explica */}
             <View style={styles.platformsGrid}>
-              {mainPlatforms.map((platform) => {
+              {platforms.map((platform) => {
                 const logoUrl = getPlatformLogoUrl(platform.logoPath, platform.name);
                 const movieCount = platformMovieCounts[platform.id] || 0;
                 const hasMovies = movieCount > 0;
@@ -596,87 +580,6 @@ export default function PlataformasStreamingScreen() {
             </View>
           </View>
 
-          {/* Outras Plataformas (Colapsável) */}
-          {otherPlatforms.length > 0 && (
-            <View style={styles.platformsContainer}>
-              <TouchableOpacity
-                style={styles.expandButton}
-                onPress={() => setShowOtherPlatforms(!showOtherPlatforms)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.expandButtonText}>
-                  Outras Plataformas ({otherPlatforms.length})
-                </Text>
-                <Ionicons
-                  name={showOtherPlatforms ? "chevron-up" : "chevron-down"}
-                  size={20}
-                  color={colors.text.primary}
-                />
-              </TouchableOpacity>
-
-              {showOtherPlatforms && (
-                <View style={styles.platformsGrid}>
-                  {otherPlatforms.map((platform) => {
-                    const logoUrl = getPlatformLogoUrl(platform.logoPath, platform.name);
-                    const movieCount = platformMovieCounts[platform.id] || 0;
-                    const hasMovies = movieCount > 0;
-
-                    return (
-                      <TouchableOpacity
-                        key={platform.id}
-                        style={[
-                          styles.platformCard,
-                          selectedPlatforms.includes(platform.id) && {
-                            borderColor: sentimentColor,
-                            borderWidth: 2,
-                            backgroundColor: sentimentColor + '10',
-                          },
-                          !hasMovies && styles.platformCardEmpty
-                        ]}
-                        onPress={() => togglePlatform(platform.id)}
-                        activeOpacity={0.7}
-                        disabled={!hasMovies}
-                      >
-                        {logoUrl ? (
-                          <View style={{
-                            backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                            borderRadius: borderRadius.sm,
-                            padding: 4,
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                          }}>
-                            <Image
-                              source={{ uri: logoUrl }}
-                              style={[styles.platformLogo, !hasMovies && styles.platformLogoEmpty]}
-                              resizeMode="contain"
-                            />
-                          </View>
-                        ) : (
-                          <Text style={[styles.platformName, !hasMovies && styles.platformNameEmpty]} numberOfLines={2}>
-                            {platform.name}
-                          </Text>
-                        )}
-
-                        {/* Badge de contagem de filmes */}
-                        {hasMovies && (
-                          <View style={[styles.movieCountBadge, { backgroundColor: sentimentColor }]}>
-                            <Text style={styles.movieCountText}>{movieCount}</Text>
-                          </View>
-                        )}
-
-                        {selectedPlatforms.includes(platform.id) && (
-                          <View style={[styles.checkmark, { backgroundColor: sentimentColor }]}>
-                            <Ionicons name="checkmark" size={16} color={colors.white} />
-                          </View>
-                        )}
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              )}
-            </View>
-          )}
-
           {/* Informação sobre seleção */}
           {selectedPlatforms.length > 0 && (
             <View style={[styles.infoBox, {
@@ -691,17 +594,7 @@ export default function PlataformasStreamingScreen() {
           )}
         </ScrollView>
 
-        {/* Indicador de scroll */}
-        {showScrollIndicator && (
-          <Animated.View
-            style={[
-              styles.scrollIndicator,
-              { opacity: scrollIndicatorOpacity }
-            ]}
-          >
-            <Ionicons name="chevron-down" size={24} color={sentimentColor} />
-          </Animated.View>
-        )}
+        {/* Indicador de scroll removido */}
 
         {/* Footer com botões de ação */}
         <View style={styles.footer}>
