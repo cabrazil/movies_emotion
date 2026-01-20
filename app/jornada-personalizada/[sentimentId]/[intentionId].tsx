@@ -809,7 +809,7 @@ export default function JornadaPersonalizadaScreen() {
 
   // Ordenar filmes baseado no critério selecionado
   const sortedMovies = useMemo(() => {
-    return [...allMovies].sort((a, b) => {
+    const sorted = [...allMovies].sort((a, b) => {
       switch (sortType) {
         case 'smart':
           // Score de diversidade (40% rating + 30% relevance + 15% year + 15% title hash)
@@ -857,6 +857,7 @@ export default function JornadaPersonalizadaScreen() {
         default:
           return 0;
       }
+      return 0;
     });
 
     // Rotação inteligente dos top filmes (apenas para relevance/smart)
@@ -882,277 +883,226 @@ export default function JornadaPersonalizadaScreen() {
     }
 
     return finalSorted;
+  }, [allMovies, sortType, step]);
 
-    if (loading) {
-      return (
-        <SafeAreaView style={styles.safeArea}>
-          <AppHeader showBack={true} showLogo={true} />
-          <View style={styles.center}>
-            <ActivityIndicator size="large" color={colors.primary.main} />
-            <Text style={styles.loadingText}>Carregando jornada personalizada...</Text>
-          </View>
-        </SafeAreaView>
-      );
-    }
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <AppHeader showBack={true} showLogo={true} />
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color={colors.primary.main} />
+          <Text style={styles.loadingText}>Carregando jornada personalizada...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
-    if (error || !step) {
-      return (
-        <SafeAreaView style={styles.safeArea}>
-          <AppHeader showBack={true} showLogo={true} />
-          <View style={styles.center}>
-            <Text style={styles.errorText}>{error || 'Jornada personalizada não encontrada'}</Text>
-            <TouchableOpacity
-              style={styles.retryButton}
-              onPress={() => router.back()}
-            >
-              <Text style={styles.retryButtonText}>Voltar</Text>
-            </TouchableOpacity>
-          </View>
-        </SafeAreaView>
-      );
-    }
+  if (error || !step) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <AppHeader showBack={true} showLogo={true} />
+        <View style={styles.center}>
+          <Text style={styles.errorText}>{error || 'Jornada personalizada não encontrada'}</Text>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={() => router.back()}
+          >
+            <Text style={styles.retryButtonText}>Voltar</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
-    // Buscar o texto da opção escolhida
-    const selectedOption = optionId ? allSteps
-      .flatMap(s => s.options)
-      .find(o => o.id.toString() === optionId.toString()) : null;
+  // Buscar o texto da opção escolhida
+  const selectedOption = optionId ? allSteps
+    .flatMap(s => s.options)
+    .find(o => o.id.toString() === optionId.toString()) : null;
 
-    if (allMovies.length > 0) {
-      return (
-        <SafeAreaView style={styles.safeArea}>
-          <AppHeader showBack={true} showLogo={true} />
-          <View style={styles.container}>
-            <ScrollView
-              contentContainerStyle={styles.movieResultsContainer}
-              onScroll={handleScroll}
-              scrollEventThrottle={16}
-            >
-              {/* Header compacto */}
-              <View style={styles.resultsHeader}>
-                {/* Título com a opção escolhida */}
-                {selectedOption && (
-                  <View style={styles.optionContext}>
-                    <Text style={styles.optionLabel}>Filmes sugeridos para:</Text>
-                    <Text style={[styles.optionText, { color: sentimentColor }]}>
-                      "{selectedOption.text}"
-                    </Text>
-                  </View>
-                )}
-
-                {/* Contador de filmes sempre visível */}
-                <View style={styles.movieCountIndicator}>
-                  <Ionicons name="film-outline" size={16} color={colors.primary.main} />
-                  <Text style={styles.movieCountText}>
-                    {totalMoviesInfo.total} filmes encontrados
+  if (allMovies.length > 0) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <AppHeader showBack={true} showLogo={true} />
+        <View style={styles.container}>
+          <ScrollView
+            contentContainerStyle={styles.movieResultsContainer}
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
+          >
+            {/* Header compacto */}
+            <View style={styles.resultsHeader}>
+              {/* Título com a opção escolhida */}
+              {selectedOption && (
+                <View style={styles.optionContext}>
+                  <Text style={styles.optionLabel}>Filmes sugeridos para:</Text>
+                  <Text style={[styles.optionText, { color: sentimentColor }]}>
+                    "{selectedOption.text}"
                   </Text>
-                </View>
-              </View>
-
-              {/* Seletor de Ordenação Compacto */}
-              <View style={styles.sortContainer}>
-                <View style={styles.sortChips}>
-                  <TouchableOpacity
-                    style={[
-                      styles.sortChip,
-                      (sortType === 'relevance' || sortType === 'smart') && {
-                        backgroundColor: colors.primary.main,
-                        borderColor: colors.primary.main
-                      }
-                    ]}
-                    onPress={() => setSortType('relevance')}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.sortChipIcon}>🎯</Text>
-                    <Text style={[
-                      styles.sortChipText,
-                      (sortType === 'relevance' || sortType === 'smart') && styles.sortChipTextActive
-                    ]}>
-                      Recomendado
-                    </Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[
-                      styles.sortChip,
-                      sortType === 'rating' && {
-                        backgroundColor: colors.primary.main,
-                        borderColor: colors.primary.main
-                      }
-                    ]}
-                    onPress={() => setSortType('rating')}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={[styles.sortChipIcon, { color: '#F5C518' }]}>★</Text>
-                    <Text style={[
-                      styles.sortChipText,
-                      sortType === 'rating' && styles.sortChipTextActive
-                    ]}>
-                      Rating
-                    </Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[
-                      styles.sortChip,
-                      sortType === 'year' && {
-                        backgroundColor: colors.primary.main,
-                        borderColor: colors.primary.main
-                      }
-                    ]}
-                    onPress={() => setSortType('year')}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.sortChipIcon}>📅</Text>
-                    <Text style={[
-                      styles.sortChipText,
-                      sortType === 'year' && styles.sortChipTextActive
-                    ]}>
-                      Ano
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {allMovies.length === 0 && (
-                <View style={styles.noMoviesContainer}>
-                  <Text style={styles.noMoviesTitle}>
-                    {selectedPlatformIds.length > 0
-                      ? "Nenhuma sugestão de filme encontrada."
-                      : "Nenhum filme sugerido para este caminho."}
-                  </Text>
-                  {selectedPlatformIds.length > 0 && (
-                    <Text style={styles.noMoviesSubtitle}>
-                      Tente selecionar outras plataformas de streaming ou pular o filtro.
-                    </Text>
-                  )}
-                  <TouchableOpacity
-                    style={[styles.backToFiltersButton, { borderColor: sentimentColor }]}
-                    onPress={() => router.back()}
-                    activeOpacity={0.7}
-                  >
-                    <Ionicons name="arrow-back" size={20} color={sentimentColor} />
-                    <Text style={[styles.backToFiltersButtonText, { color: sentimentColor }]}>
-                      {selectedPlatformIds.length > 0 ? "Voltar aos Filtros" : "Voltar"}
-                    </Text>
-                  </TouchableOpacity>
                 </View>
               )}
-              {sortedMovies.map((ms: MovieSuggestion, idx: number) => (
-                <Pressable
-                  key={ms.movie.id + idx}
-                  style={({ pressed }) => [
-                    styles.movieCard,
-                    pressed && styles.movieCardPressed
-                  ]}
-                  onPress={() => {
-                    if (__DEV__) {
-                      console.log('🎬 Navegando para filme:', {
-                        id: ms.movie.id,
-                        reason: ms.reason
-                      });
+
+              {/* Contador de filmes sempre visível */}
+              <View style={styles.movieCountIndicator}>
+                <Ionicons name="film-outline" size={16} color={colors.primary.main} />
+                <Text style={styles.movieCountText}>
+                  {totalMoviesInfo.total} filmes encontrados
+                </Text>
+              </View>
+            </View>
+
+            {/* Seletor de Ordenação Compacto */}
+            <View style={styles.sortContainer}>
+              <View style={styles.sortChips}>
+                <TouchableOpacity
+                  style={[
+                    styles.sortChip,
+                    (sortType === 'relevance' || sortType === 'smart') && {
+                      backgroundColor: colors.primary.main,
+                      borderColor: colors.primary.main
                     }
-                    router.push({
-                      pathname: '/filme/[id]',
-                      params: {
-                        id: ms.movie.id,
-                        reason: ms.reason,
-                        sentimentId: sentimentId
-                      }
-                    });
-                  }}
+                  ]}
+                  onPress={() => setSortType('relevance')}
+                  activeOpacity={0.7}
                 >
-                  <View style={styles.movieContent}>
-                    {ms.movie.thumbnail && (
-                      <Image source={{ uri: ms.movie.thumbnail }} style={styles.thumbnail} resizeMode="cover" />
-                    )}
-                    <View style={styles.movieInfo}>
-                      <Text style={styles.movieTitle} numberOfLines={2}>
-                        {ms.movie.title}
-                        {ms.movie.year && (
-                          <Text style={[styles.yearText, { color: sentimentColor }]}>
-                            {' '}({ms.movie.year})
-                          </Text>
-                        )}
-                      </Text>
+                  <Text style={styles.sortChipIcon}>🎯</Text>
+                  <Text style={[
+                    styles.sortChipText,
+                    (sortType === 'relevance' || sortType === 'smart') && styles.sortChipTextActive
+                  ]}>
+                    Recomendado
+                  </Text>
+                </TouchableOpacity>
 
-                      {/* Badges das plataformas */}
-                      {ms.movie.platforms && ms.movie.platforms.length > 0 && (() => {
-                        // Se não há plataformas selecionadas (usuário pulou a etapa), mostrar todas as plataformas de assinatura
-                        if (selectedPlatformIds.length === 0) {
-                          const subscriptionPlatforms = ms.movie.platforms.filter(platform =>
-                            platform.accessType === 'INCLUDED_WITH_SUBSCRIPTION' &&
-                            platform.streamingPlatform?.name
-                          );
+                <TouchableOpacity
+                  style={[
+                    styles.sortChip,
+                    sortType === 'rating' && {
+                      backgroundColor: colors.primary.main,
+                      borderColor: colors.primary.main
+                    }
+                  ]}
+                  onPress={() => setSortType('rating')}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.sortChipIcon, { color: '#F5C518' }]}>★</Text>
+                  <Text style={[
+                    styles.sortChipText,
+                    sortType === 'rating' && styles.sortChipTextActive
+                  ]}>
+                    Rating
+                  </Text>
+                </TouchableOpacity>
 
-                          if (subscriptionPlatforms.length === 0) {
-                            return null; // Não exibir nada se não há plataformas de assinatura
-                          }
+                <TouchableOpacity
+                  style={[
+                    styles.sortChip,
+                    sortType === 'year' && {
+                      backgroundColor: colors.primary.main,
+                      borderColor: colors.primary.main
+                    }
+                  ]}
+                  onPress={() => setSortType('year')}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.sortChipIcon}>📅</Text>
+                  <Text style={[
+                    styles.sortChipText,
+                    sortType === 'year' && styles.sortChipTextActive
+                  ]}>
+                    Ano
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
 
-                          return (
-                            <View style={styles.platformBadgesContainer}>
-                              {/* Mostrar apenas a primeira plataforma */}
-                              {subscriptionPlatforms.length > 0 && (
-                                <View style={[styles.platformBadge, { backgroundColor: sentimentColor + '20' }]}>
-                                  <Text style={[styles.platformBadgeText, { color: sentimentColor }]}>
-                                    {subscriptionPlatforms[0].streamingPlatform.name}
-                                  </Text>
-                                </View>
-                              )}
+            {allMovies.length === 0 && (
+              <View style={styles.noMoviesContainer}>
+                <Text style={styles.noMoviesTitle}>
+                  {selectedPlatformIds.length > 0
+                    ? "Nenhuma sugestão de filme encontrada."
+                    : "Nenhum filme sugerido para este caminho."}
+                </Text>
+                {selectedPlatformIds.length > 0 && (
+                  <Text style={styles.noMoviesSubtitle}>
+                    Tente selecionar outras plataformas de streaming ou pular o filtro.
+                  </Text>
+                )}
+                <TouchableOpacity
+                  style={[styles.backToFiltersButton, { borderColor: sentimentColor }]}
+                  onPress={() => router.back()}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="arrow-back" size={20} color={sentimentColor} />
+                  <Text style={[styles.backToFiltersButtonText, { color: sentimentColor }]}>
+                    {selectedPlatformIds.length > 0 ? "Voltar aos Filtros" : "Voltar"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+            {sortedMovies.map((ms: MovieSuggestion, idx: number) => (
+              <Pressable
+                key={ms.movie.id + idx}
+                style={({ pressed }) => [
+                  styles.movieCard,
+                  pressed && styles.movieCardPressed
+                ]}
+                onPress={() => {
+                  if (__DEV__) {
+                    console.log('🎬 Navegando para filme:', {
+                      id: ms.movie.id,
+                      reason: ms.reason
+                    });
+                  }
+                  router.push({
+                    pathname: '/filme/[id]',
+                    params: {
+                      id: ms.movie.id,
+                      reason: ms.reason,
+                      sentimentId: sentimentId
+                    }
+                  });
+                }}
+              >
+                <View style={styles.movieContent}>
+                  {ms.movie.thumbnail && (
+                    <Image source={{ uri: ms.movie.thumbnail }} style={styles.thumbnail} resizeMode="cover" />
+                  )}
+                  <View style={styles.movieInfo}>
+                    <Text style={styles.movieTitle} numberOfLines={2}>
+                      {ms.movie.title}
+                      {ms.movie.year && (
+                        <Text style={[styles.yearText, { color: sentimentColor }]}>
+                          {' '}({ms.movie.year})
+                        </Text>
+                      )}
+                    </Text>
 
-                              {/* Badge "ver mais" se há múltiplas plataformas */}
-                              {subscriptionPlatforms.length > 1 && (
-                                <View style={[styles.platformBadge, {
-                                  backgroundColor: colors.background.secondary,
-                                  borderColor: colors.border.medium,
-                                  borderWidth: 1,
-                                }]}>
-                                  <Text style={[styles.platformBadgeText, {
-                                    color: colors.text.primary,
-                                    fontWeight: typography.fontWeight.semibold,
-                                  }]}>
-                                    +{subscriptionPlatforms.length - 1} mais
-                                  </Text>
-                                </View>
-                              )}
-                            </View>
-                          );
-                        }
+                    {/* Badges das plataformas */}
+                    {ms.movie.platforms && ms.movie.platforms.length > 0 && (() => {
+                      // Se não há plataformas selecionadas (usuário pulou a etapa), mostrar todas as plataformas de assinatura
+                      if (selectedPlatformIds.length === 0) {
+                        const subscriptionPlatforms = ms.movie.platforms.filter(platform =>
+                          platform.accessType === 'INCLUDED_WITH_SUBSCRIPTION' &&
+                          platform.streamingPlatform?.name
+                        );
 
-                        // Lógica original para quando há plataformas selecionadas
-                        const selectedPlatformNames = selectedPlatformIds
-                          .map(id => platformsData[id])
-                          .filter(Boolean);
-
-                        // Filtrar plataformas que estão nas selecionadas E são de assinatura
-                        const filteredPlatforms = ms.movie.platforms.filter(platform => {
-                          const platformName = platform.streamingPlatform?.name || '';
-                          const isSubscription = platform.accessType === 'INCLUDED_WITH_SUBSCRIPTION';
-                          const isSelected = selectedPlatformNames.some(selectedName => {
-                            const cleanSelected = selectedName.toLowerCase().trim();
-                            const cleanPlatform = platformName.toLowerCase().trim();
-                            return cleanPlatform.includes(cleanSelected); // Usar includes() para comparação flexível
-                          });
-
-                          return isSubscription && isSelected;
-                        });
-
-                        if (filteredPlatforms.length === 0) {
-                          return null; // Não exibir nada se não há plataformas filtradas
+                        if (subscriptionPlatforms.length === 0) {
+                          return null; // Não exibir nada se não há plataformas de assinatura
                         }
 
                         return (
                           <View style={styles.platformBadgesContainer}>
                             {/* Mostrar apenas a primeira plataforma */}
-                            {filteredPlatforms.length > 0 && (
+                            {subscriptionPlatforms.length > 0 && (
                               <View style={[styles.platformBadge, { backgroundColor: sentimentColor + '20' }]}>
                                 <Text style={[styles.platformBadgeText, { color: sentimentColor }]}>
-                                  {filteredPlatforms[0].streamingPlatform.name}
+                                  {subscriptionPlatforms[0].streamingPlatform.name}
                                 </Text>
                               </View>
                             )}
 
                             {/* Badge "ver mais" se há múltiplas plataformas */}
-                            {filteredPlatforms.length > 1 && (
+                            {subscriptionPlatforms.length > 1 && (
                               <View style={[styles.platformBadge, {
                                 backgroundColor: colors.background.secondary,
                                 borderColor: colors.border.medium,
@@ -1162,173 +1112,136 @@ export default function JornadaPersonalizadaScreen() {
                                   color: colors.text.primary,
                                   fontWeight: typography.fontWeight.semibold,
                                 }]}>
-                                  +{filteredPlatforms.length - 1} mais
+                                  +{subscriptionPlatforms.length - 1} mais
                                 </Text>
                               </View>
                             )}
                           </View>
                         );
-                      })()}
+                      }
 
-                      <View style={styles.movieDetails}>
-                        <View style={styles.ratingsContainer}>
-                          {/* Nota TMDB */}
-                          {ms.movie.vote_average !== undefined && ms.movie.vote_average !== null && (
-                            <View style={styles.ratingContainer}>
-                              <Ionicons name="library" size={16} color="#01B4E4" />
-                              <Text style={styles.ratingText}>
-                                {typeof ms.movie.vote_average === 'number'
-                                  ? ms.movie.vote_average.toFixed(1)
-                                  : ms.movie.vote_average}
+                      // Lógica original para quando há plataformas selecionadas
+                      const selectedPlatformNames = selectedPlatformIds
+                        .map(id => platformsData[id])
+                        .filter(Boolean);
+
+                      // Filtrar plataformas que estão nas selecionadas E são de assinatura
+                      const filteredPlatforms = ms.movie.platforms.filter(platform => {
+                        const platformName = platform.streamingPlatform?.name || '';
+                        const isSubscription = platform.accessType === 'INCLUDED_WITH_SUBSCRIPTION';
+                        const isSelected = selectedPlatformNames.some(selectedName => {
+                          const cleanSelected = selectedName.toLowerCase().trim();
+                          const cleanPlatform = platformName.toLowerCase().trim();
+                          return cleanPlatform.includes(cleanSelected); // Usar includes() para comparação flexível
+                        });
+
+                        return isSubscription && isSelected;
+                      });
+
+                      if (filteredPlatforms.length === 0) {
+                        return null; // Não exibir nada se não há plataformas filtradas
+                      }
+
+                      return (
+                        <View style={styles.platformBadgesContainer}>
+                          {/* Mostrar apenas a primeira plataforma */}
+                          {filteredPlatforms.length > 0 && (
+                            <View style={[styles.platformBadge, { backgroundColor: sentimentColor + '20' }]}>
+                              <Text style={[styles.platformBadgeText, { color: sentimentColor }]}>
+                                {filteredPlatforms[0].streamingPlatform.name}
                               </Text>
                             </View>
                           )}
 
-                          {/* Nota IMDb */}
-                          {((ms.movie as any).imdbRating || (ms.movie as any).imdb_rating) && (
-                            <View style={styles.ratingContainer}>
-                              <Ionicons name="film" size={16} color="#F5C518" />
-                              <Text style={styles.ratingText}>
-                                {(() => {
-                                  const imdbValue = (ms.movie as any).imdbRating || (ms.movie as any).imdb_rating;
-                                  return typeof imdbValue === 'number'
-                                    ? imdbValue.toFixed(1)
-                                    : imdbValue;
-                                })()}
+                          {/* Badge "ver mais" se há múltiplas plataformas */}
+                          {filteredPlatforms.length > 1 && (
+                            <View style={[styles.platformBadge, {
+                              backgroundColor: colors.background.secondary,
+                              borderColor: colors.border.medium,
+                              borderWidth: 1,
+                            }]}>
+                              <Text style={[styles.platformBadgeText, {
+                                color: colors.text.primary,
+                                fontWeight: typography.fontWeight.semibold,
+                              }]}>
+                                +{filteredPlatforms.length - 1} mais
                               </Text>
                             </View>
                           )}
                         </View>
-                        {ms.movie.runtime && (
-                          <View style={styles.runtimeContainer}>
-                            <Ionicons name="time-outline" size={16} color={colors.text.secondary} />
-                            <Text style={styles.runtimeText}>
+                      );
+                    })()}
+
+                    <View style={styles.movieDetails}>
+                      <View style={styles.ratingsContainer}>
+                        {/* Nota TMDB */}
+                        {ms.movie.vote_average !== undefined && ms.movie.vote_average !== null && (
+                          <View style={styles.ratingContainer}>
+                            <Ionicons name="library" size={16} color="#01B4E4" />
+                            <Text style={styles.ratingText}>
+                              {typeof ms.movie.vote_average === 'number'
+                                ? ms.movie.vote_average.toFixed(1)
+                                : ms.movie.vote_average}
+                            </Text>
+                          </View>
+                        )}
+
+                        {/* Nota IMDb */}
+                        {((ms.movie as any).imdbRating || (ms.movie as any).imdb_rating) && (
+                          <View style={styles.ratingContainer}>
+                            <Ionicons name="film" size={16} color="#F5C518" />
+                            <Text style={styles.ratingText}>
                               {(() => {
-                                const runtime = ms.movie.runtime;
-                                const hours = Math.floor(runtime / 60);
-                                const minutes = runtime % 60;
-                                return hours > 0 ? `${hours}h ${minutes}min` : `${minutes}min`;
+                                const imdbValue = (ms.movie as any).imdbRating || (ms.movie as any).imdb_rating;
+                                return typeof imdbValue === 'number'
+                                  ? imdbValue.toFixed(1)
+                                  : imdbValue;
                               })()}
                             </Text>
                           </View>
                         )}
-                        {ms.movie.certification && (
-                          <View style={styles.certificationContainer}>
-                            <Text style={styles.certificationText}>{ms.movie.certification}</Text>
-                          </View>
-                        )}
                       </View>
-                      {ms.movie.genres && ms.movie.genres.length > 0 && (
-                        <Text style={styles.genresText} numberOfLines={1}>
-                          {ms.movie.genres.join(' • ')}
-                        </Text>
-                      )}
-                      <View style={styles.reasonContainer}>
-                        <View style={styles.reasonContent}>
-                          <Ionicons name="heart" size={16} color={sentimentColor} />
-                          <Text style={styles.reasonText} numberOfLines={2}>
-                            {ms.reason}
+                      {ms.movie.runtime && (
+                        <View style={styles.runtimeContainer}>
+                          <Ionicons name="time-outline" size={16} color={colors.text.secondary} />
+                          <Text style={styles.runtimeText}>
+                            {(() => {
+                              const runtime = ms.movie.runtime;
+                              const hours = Math.floor(runtime / 60);
+                              const minutes = runtime % 60;
+                              return hours > 0 ? `${hours}h ${minutes}min` : `${minutes}min`;
+                            })()}
                           </Text>
                         </View>
-                        <Ionicons name="chevron-forward" size={20} color={colors.primary.main} />
+                      )}
+                      {ms.movie.certification && (
+                        <View style={styles.certificationContainer}>
+                          <Text style={styles.certificationText}>{ms.movie.certification}</Text>
+                        </View>
+                      )}
+                    </View>
+                    {ms.movie.genres && ms.movie.genres.length > 0 && (
+                      <Text style={styles.genresText} numberOfLines={1}>
+                        {ms.movie.genres.join(' • ')}
+                      </Text>
+                    )}
+                    <View style={styles.reasonContainer}>
+                      <View style={styles.reasonContent}>
+                        <Ionicons name="heart" size={16} color={sentimentColor} />
+                        <Text style={styles.reasonText} numberOfLines={2}>
+                          {ms.reason}
+                        </Text>
                       </View>
+                      <Ionicons name="chevron-forward" size={20} color={colors.primary.main} />
                     </View>
                   </View>
-                </Pressable>
-              ))}
-            </ScrollView>
-
-            {/* Indicador de scroll animado */}
-            {allMovies.length > 6 && (
-              <Animated.View
-                style={[
-                  styles.scrollIndicator,
-                  { opacity: scrollIndicatorOpacity }
-                ]}
-              >
-                <Ionicons name="chevron-down" size={24} color={sentimentColor} />
-              </Animated.View>
-            )}
-
-            <NavigationFooter
-              backLabel="Nova Jornada"
-              showHome={true}
-              twoLineText={true}
-              customBackRoute="/sentimentos"
-            />
-          </View>
-        </SafeAreaView>
-      );
-    }
-
-    // Exibir mensagem quando não há filmes E o usuário veio de filtros de plataformas
-    if (showResults === 'true' && selectedPlatformIds.length > 0) {
-      return (
-        <SafeAreaView style={styles.safeArea}>
-          <AppHeader showBack={true} showLogo={true} />
-          <View style={styles.container}>
-            <View style={styles.noMoviesContainer}>
-              <Text style={styles.noMoviesTitle}>
-                Nenhuma sugestão de filme encontrada.
-              </Text>
-              <Text style={styles.noMoviesSubtitle}>
-                Tente selecionar outras plataformas de streaming ou pular o filtro.
-              </Text>
-              <TouchableOpacity
-                style={[styles.backToFiltersButton, { borderColor: sentimentColor }]}
-                onPress={() => router.back()}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="arrow-back" size={20} color={sentimentColor} />
-                <Text style={[styles.backToFiltersButtonText, { color: sentimentColor }]}>
-                  Voltar aos Filtros
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </SafeAreaView>
-      );
-    }
-
-    // Renderizar a jornada normal quando não há filmes (estado inicial)
-    return (
-      <SafeAreaView style={styles.safeArea}>
-        <AppHeader showBack={true} showLogo={true} />
-        <View style={styles.container}>
-          <ScrollView
-            contentContainerStyle={[
-              styles.scrollContainer,
-              step?.id === 38 && styles.genreContainer
-            ]}
-            onScroll={handleScroll}
-            scrollEventThrottle={16}
-          >
-            {/* Header da pergunta */}
-            <View style={styles.questionHeader}>
-              <Text style={styles.question}>{step?.question}</Text>
-
-              {/* Badge de contexto melhorado */}
-              {step?.contextualHint && (
-                <View style={[
-                  styles.contextHintContainer,
-                  {
-                    backgroundColor: sentimentColor + '10',
-                    borderLeftColor: sentimentColor,
-                  }
-                ]}>
-                  <Ionicons name="information-circle" size={18} color={sentimentColor} />
-                  <Text style={styles.contextHintText}>
-                    {step.contextualHint}
-                  </Text>
                 </View>
-              )}
-            </View>
-
-            {renderOptions()}
+              </Pressable>
+            ))}
           </ScrollView>
 
           {/* Indicador de scroll animado */}
-          {showScrollIndicator && (
+          {allMovies.length > 6 && (
             <Animated.View
               style={[
                 styles.scrollIndicator,
@@ -1339,8 +1252,97 @@ export default function JornadaPersonalizadaScreen() {
             </Animated.View>
           )}
 
-          <NavigationFooter backLabel="Trocar Intenção" />
+          <NavigationFooter
+            backLabel="Nova Jornada"
+            showHome={true}
+            twoLineText={true}
+            customBackRoute="/sentimentos"
+          />
         </View>
       </SafeAreaView>
     );
-  } 
+  }
+
+  // Exibir mensagem quando não há filmes E o usuário veio de filtros de plataformas
+  if (showResults === 'true' && selectedPlatformIds.length > 0) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <AppHeader showBack={true} showLogo={true} />
+        <View style={styles.container}>
+          <View style={styles.noMoviesContainer}>
+            <Text style={styles.noMoviesTitle}>
+              Nenhuma sugestão de filme encontrada.
+            </Text>
+            <Text style={styles.noMoviesSubtitle}>
+              Tente selecionar outras plataformas de streaming ou pular o filtro.
+            </Text>
+            <TouchableOpacity
+              style={[styles.backToFiltersButton, { borderColor: sentimentColor }]}
+              onPress={() => router.back()}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="arrow-back" size={20} color={sentimentColor} />
+              <Text style={[styles.backToFiltersButtonText, { color: sentimentColor }]}>
+                Voltar aos Filtros
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Renderizar a jornada normal quando não há filmes (estado inicial)
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <AppHeader showBack={true} showLogo={true} />
+      <View style={styles.container}>
+        <ScrollView
+          contentContainerStyle={[
+            styles.scrollContainer,
+            step?.id === 38 && styles.genreContainer
+          ]}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+        >
+          {/* Header da pergunta */}
+          <View style={styles.questionHeader}>
+            <Text style={styles.question}>{step?.question}</Text>
+
+            {/* Badge de contexto melhorado */}
+            {step?.contextualHint && (
+              <View style={[
+                styles.contextHintContainer,
+                {
+                  backgroundColor: sentimentColor + '10',
+                  borderLeftColor: sentimentColor,
+                }
+              ]}>
+                <Ionicons name="information-circle" size={18} color={sentimentColor} />
+                <Text style={styles.contextHintText}>
+                  {step.contextualHint}
+                </Text>
+              </View>
+            )}
+          </View>
+
+          {renderOptions()}
+        </ScrollView>
+
+        {/* Indicador de scroll animado */}
+        {showScrollIndicator && (
+          <Animated.View
+            style={[
+              styles.scrollIndicator,
+              { opacity: scrollIndicatorOpacity }
+            ]}
+          >
+            <Ionicons name="chevron-down" size={24} color={sentimentColor} />
+          </Animated.View>
+        )}
+
+        <NavigationFooter backLabel="Trocar Intenção" />
+      </View>
+    </SafeAreaView>
+  );
+} 

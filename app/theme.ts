@@ -6,36 +6,37 @@ export const colorsLight = {
     card: '#FFFFFF',       // Branco puro para cards
     secondary: '#E8EAE6',  // Cinza quente
   },
-  
+
   // Cores de destaque
   primary: {
     main: '#1e3a8a',       // Azul profundo
     light: '#3b82f6',      // Azul médio
     dark: '#1e40af',       // Azul escuro
   },
-  
+
   // Cores de texto
   text: {
     primary: '#1F1F1F',    // Cinza escuro quase preto
     secondary: '#666666',  // Cinza médio
+    tertiary: '#999999',   // Cinza mais claro para texto de menor importância
     light: '#888888',      // Cinza claro
     inverse: '#FFFFFF',    // Branco para texto sobre fundo colorido
   },
-  
+
   // Cores de borda
   border: {
     light: '#E0E0E0',      // Borda clara
     medium: '#CCCCCC',     // Borda média
     dark: '#999999',       // Borda escura
   },
-  
+
   // Cores de estado
   state: {
     error: '#FF6B6B',      // Vermelho suave
     success: '#4CAF50',    // Verde suave
     warning: '#FFB74D',    // Laranja suave
   },
-  
+
   // Cores dos ícones de sentimentos
   yellow: '#FFD700',
   gray: '#808080',
@@ -43,9 +44,9 @@ export const colorsLight = {
   red: '#FF4444',
   orange: '#FFA500',
   green: '#4CAF50',
-  teal:  '#60B2A3',
+  teal: '#60B2A3',
   white: '#FFFFFF',
-  
+
   // Cores específicas por sentimento (cards) - mantém as mesmas em ambos os modos
   sentimentColors: {
     13: '#FF8F00', // Laranja/Âmbar para Feliz/Alegre
@@ -65,36 +66,37 @@ export const colorsDark = {
     card: '#1E1E1E',       // Cinza muito escuro para cards
     secondary: '#2C2C2C',  // Cinza escuro
   },
-  
+
   // Cores de destaque
   primary: {
     main: '#3b82f6',       // Azul mais claro para contraste
     light: '#60a5fa',      // Azul claro
     dark: '#2563eb',       // Azul médio
   },
-  
+
   // Cores de texto
   text: {
     primary: '#E0E0E0',    // Cinza muito claro para texto principal (evita branco puro que cansa a vista)
     secondary: '#C8C8C8',  // Cinza claro para texto secundário (melhor contraste que #B0B0B0)
+    tertiary: '#6B7280',   // Cinza médio-escuro para texto terciário
     light: '#888888',      // Cinza médio
     inverse: '#1F1F1F',   // Preto para texto sobre fundo claro
   },
-  
+
   // Cores de borda
   border: {
     light: '#333333',      // Borda escura
     medium: '#444444',     // Borda média escura
     dark: '#555555',       // Borda mais clara
   },
-  
+
   // Cores de estado (mantém as mesmas para consistência)
   state: {
     error: '#FF6B6B',      // Vermelho suave
     success: '#4CAF50',    // Verde suave
     warning: '#FFB74D',    // Laranja suave
   },
-  
+
   // Cores dos ícones de sentimentos (mantém as mesmas)
   yellow: '#FFD700',
   gray: '#808080',
@@ -102,9 +104,9 @@ export const colorsDark = {
   red: '#FF4444',
   orange: '#FFA500',
   green: '#4CAF50',
-  teal:  '#60B2A3',
+  teal: '#60B2A3',
   white: '#FFFFFF',
-  
+
   // Cores específicas por sentimento (cards) - mantém as mesmas em ambos os modos
   sentimentColors: {
     13: '#FF8F00', // Laranja/Âmbar para Feliz/Alegre
@@ -124,7 +126,7 @@ export const typography = {
     primary: 'Inter',
     secondary: 'Inter',
   },
-  
+
   fontSize: {
     h1: 32,
     h2: 24,
@@ -135,14 +137,14 @@ export const typography = {
     small: 14,
     tiny: 12,
   },
-  
+
   fontWeight: {
     regular: '400' as const,
     medium: '500' as const,
     semibold: '600' as const,
     bold: '700' as const,
   },
-  
+
   lineHeight: {
     tight: 1.3,
     normal: 1.5,

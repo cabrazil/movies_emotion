@@ -5,13 +5,14 @@ const getApiBaseUrl = () => {
   if (process.env.EXPO_PUBLIC_API_BASE_URL) {
     return process.env.EXPO_PUBLIC_API_BASE_URL;
   }
-  
+
   // Prioridade 2: Detecção automática baseada no ambiente
   if (__DEV__) {
-    // Desenvolvimento: usar backend local
-    return 'http://localhost:3333';
+    // Desenvolvimento: usar backend local via Ngrok (Recomendado para evitar timeouts)
+    // Rode 'ngrok http 3333' e cole a URL gerada abaixo
+    return 'https://0c3b57e5fd2a.ngrok-free.app';
   }
-  
+
   // Produção: usar URL de produção
   return 'https://api.vibesfilm.com';
 };
@@ -46,7 +47,7 @@ export const apiRequest = async (url: string, options: RequestInit = {}, retries
   // Verificar cache para requisições GET
   const isGetRequest = !options.method || options.method === 'GET';
   const cacheKey = `${url}_${JSON.stringify(options)}`;
-  
+
   if (isGetRequest && requestCache.has(cacheKey)) {
     const cached = requestCache.get(cacheKey)!;
     if (Date.now() - cached.timestamp < CACHE_TTL) {
@@ -69,7 +70,7 @@ export const apiRequest = async (url: string, options: RequestInit = {}, retries
 
   // Timeout mais agressivo em desenvolvimento (tunnel adiciona latência)
   // Em dev: 10s, 20s | Em prod: 15s, 30s, 60s
-  const timeoutDuration = __DEV__ 
+  const timeoutDuration = __DEV__
     ? (retries === 2 ? 10000 : 20000)
     : (retries === 3 ? 15000 : retries === 2 ? 30000 : 60000);
 
@@ -136,14 +137,14 @@ export const apiRequest = async (url: string, options: RequestInit = {}, retries
     // Se for timeout ou erro de rede e ainda há tentativas, tentar novamente
     const isTimeout = error instanceof Error && (error.message.includes('timeout') || error.message.includes('Timeout'));
     const isNetworkError = error instanceof Error && (
-      error.message.includes('network') || 
+      error.message.includes('network') ||
       error.message.includes('fetch') ||
       error.message.includes('Network request failed') ||
       error.message.includes('Failed to fetch') ||
       error.message.includes('CORS') ||
       error.message.includes('cors')
     );
-    
+
     if (retries > 0 && (isTimeout || isNetworkError)) {
       // Backoff mais rápido em desenvolvimento (tunnel já adiciona latência)
       const delay = __DEV__ ? 500 : Math.pow(2, 3 - retries) * 1000;
@@ -156,7 +157,7 @@ export const apiRequest = async (url: string, options: RequestInit = {}, retries
       await new Promise(resolve => setTimeout(resolve, delay));
       return apiRequest(url, options, retries - 1);
     }
-    
+
     if (__DEV__) {
       console.error(`❌ Falha final após todas as tentativas: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
       console.error(`📍 URL: ${url}`);
@@ -179,7 +180,7 @@ export const API_ENDPOINTS = {
     list: (sentimentId: number | string) => `${API_BASE_URL}/api/emotional-intentions/${sentimentId}`,
   },
   personalizedJourney: {
-    get: (sentimentId: number | string, intentionId: number | string) => 
+    get: (sentimentId: number | string, intentionId: number | string) =>
       `${API_BASE_URL}/api/personalized-journey/${sentimentId}/${intentionId}`,
   },
   streamingPlatforms: {

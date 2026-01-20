@@ -33,14 +33,14 @@ export const EmotionalAnalysis: React.FC<EmotionalAnalysisProps> = React.memo(({
 
   const personalizedReason = useMemo(() => {
     if (!sentimentId || !reason) {
-      return landingPageHook ? 
-        landingPageHook.replace(/<[^>]*>/g, '') : 
+      return landingPageHook ?
+        landingPageHook.replace(/<[^>]*>/g, '') :
         "Este filme oferece uma experiência cinematográfica única que vale a pena assistir.";
     }
 
     const sentimentNames: { [key: number]: string } = {
       13: "Feliz / Alegre",
-      14: "Triste", 
+      14: "Triste",
       15: "Calmo(a)",
       16: "Ansioso(a)",
       17: "Animado(a)",
@@ -54,7 +54,7 @@ export const EmotionalAnalysis: React.FC<EmotionalAnalysisProps> = React.memo(({
     return `Para quem está ${sentimentName} e quer Processar, este filme traz ${formattedReason}`;
   }, [sentimentId, reason, landingPageHook]);
 
-  const showContentWarning = contentWarnings && 
+  const showContentWarning = contentWarnings &&
     contentWarnings !== 'Atenção: nenhum alerta de conteúdo significativo.';
 
   const styles = useMemo(() => StyleSheet.create({
@@ -149,9 +149,9 @@ export const EmotionalAnalysis: React.FC<EmotionalAnalysisProps> = React.memo(({
     <>
       <View style={styles.emotionalAnalysisSection}>
         <Text style={styles.sectionTitle}>A Análise Emocional do Vibesfilm</Text>
-        
+
         {/* Alerta de Conteúdo */}
-        {showContentWarning && (
+        {showContentWarning ? (
           <View style={styles.contentAlert}>
             <View style={styles.alertHeader}>
               <Ionicons name="warning" size={20} color={colors.state.warning} />
@@ -162,30 +162,40 @@ export const EmotionalAnalysis: React.FC<EmotionalAnalysisProps> = React.memo(({
               {contentWarnings.replace('Atenção: ', '')}
             </Text>
           </View>
+        ) : (
+          <View style={[styles.contentAlert, { backgroundColor: '#E8F5E9', borderLeftColor: '#4CAF50' }]}>
+            <View style={styles.alertHeader}>
+              <Ionicons name="checkmark-circle" size={20} color={'#4CAF50'} />
+              <Text style={[styles.alertTitle, { color: '#4CAF50' }]}>Verificação de Conteúdo</Text>
+            </View>
+            <Text style={styles.alertText}>
+              Nenhum alerta de conteúdo significativo identificado.
+            </Text>
+          </View>
         )}
-        
+
         {/* A Vibe do Filme */}
         <View style={[styles.vibeSection, { borderColor: sentimentColor }]}>
           <Text style={styles.subsectionTitle}>A Vibe do Filme</Text>
           <Text style={styles.vibeText}>
-            {landingPageHook ? 
+            {landingPageHook ?
               landingPageHook.replace(/<[^>]*>/g, '') :
               `Prepare-se para uma experiência cinematográfica única com ${title}, um filme que oferece uma narrativa envolvente e personagens profundos.`
             }
           </Text>
         </View>
-        
+
         {/* Para Quem Recomendamos */}
         <View style={[styles.recommendationSection, { borderColor: sentimentColor }]}>
           <Text style={styles.subsectionTitle}>Para Quem Recomendamos?</Text>
           <Text style={styles.recommendationText}>
-            {targetAudienceForLP ? 
+            {targetAudienceForLP ?
               targetAudienceForLP :
               "Este filme pode ser perfeito para quem busca uma experiência cinematográfica única e envolvente."
             }
           </Text>
         </View>
-        
+
         {/* Por que recomendamos para você */}
         <View style={[styles.recommendationSection, { borderColor: sentimentColor }]}>
           <Text style={styles.subsectionTitle}>Por que recomendamos para você?</Text>
@@ -194,7 +204,7 @@ export const EmotionalAnalysis: React.FC<EmotionalAnalysisProps> = React.memo(({
           </Text>
         </View>
       </View>
-      
+
       {/* Tags Emocionais Chave */}
       {emotionalTags && emotionalTags.length > 0 && (
         <View style={styles.emotionalTagsSection}>

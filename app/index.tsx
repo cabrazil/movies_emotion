@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { typography, spacing, borderRadius, shadows } from './theme';
 import { useTheme } from './hooks/useTheme';
 
@@ -11,20 +12,20 @@ const vibesfilmLogoDark = require('../assets/logo_header_dark.png');
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { colors, isDark } = useTheme();
-  
+  const { colors, isDark, toggleTheme } = useTheme();
+
   // Log para debug - aparecerá no console do dispositivo
   if (__DEV__) {
     console.log('🏠 HomeScreen carregada');
   }
-  
+
   // Escolher o logo baseado no tema
   const vibesfilmLogo = isDark ? vibesfilmLogoDark : vibesfilmLogoLight;
-  
+
   // Gradientes diferentes para light e dark mode
-  const gradientColors = isDark 
-    ? ['#121212', '#1E1E1E', '#2A2A2A', '#1E1E1E']
-    : ['#FFFFFF', '#F8F9FA', '#F0F2F5', '#E8EAE6'];
+  const gradientColors = isDark
+    ? ['#121212', '#1E1E1E', '#2A2A2A', '#1E1E1E'] as const
+    : ['#FFFFFF', '#F8F9FA', '#F0F2F5', '#E8EAE6'] as const;
 
   const styles = StyleSheet.create({
     safeArea: {
@@ -33,6 +34,16 @@ export default function HomeScreen() {
     },
     container: {
       flex: 1,
+      position: 'relative', // Para o botão absoluto funcionar bem
+    },
+    themeToggle: {
+      position: 'absolute',
+      top: spacing.md,
+      right: spacing.md,
+      padding: spacing.sm,
+      zIndex: 10,
+      backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+      borderRadius: borderRadius.full,
     },
     content: {
       flex: 1,
@@ -105,30 +116,42 @@ export default function HomeScreen() {
         locations={[0, 0.3, 0.7, 1]}
         style={styles.container}
       >
-        <View style={styles.content}>
-        <Text style={styles.welcomeText}>Bem-vindo(a) ao</Text>
-        
-        <View style={styles.logoContainer}>
-          <Image 
-            source={vibesfilmLogo} 
-            style={styles.logo}
-            resizeMode="contain"
-          />
-        </View>
-        
-        <Text style={styles.title}>Encontre o filme perfeito para sua vibe!</Text>
-        
-        <Text style={styles.description}>
-          O cinema vai além de espelhar seu estado de espírito: ele pode te ajudar a processar uma emoção, 
-          transformar seu humor, manter uma boa energia ou explorar novas sensações.
-        </Text>
-        
         <TouchableOpacity
-          style={styles.button}
-          onPress={() => router.push('/sentimentos')}
+          style={styles.themeToggle}
+          onPress={toggleTheme}
+          activeOpacity={0.7}
         >
-          <Text style={styles.buttonText}>Vamos começar</Text>
+          <Ionicons
+            name={isDark ? "sunny-outline" : "moon-outline"}
+            size={24}
+            color={isDark ? colors.yellow : colors.primary.main}
+          />
         </TouchableOpacity>
+
+        <View style={styles.content}>
+          <Text style={styles.welcomeText}>Bem-vindo(a) ao</Text>
+
+          <View style={styles.logoContainer}>
+            <Image
+              source={vibesfilmLogo}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+          </View>
+
+          <Text style={styles.title}>Encontre o filme perfeito para sua vibe!</Text>
+
+          <Text style={styles.description}>
+            O cinema vai além de espelhar seu estado de espírito: ele pode te ajudar a processar uma emoção,
+            transformar seu humor, manter uma boa energia ou explorar novas sensações.
+          </Text>
+
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => router.push('/sentimentos')}
+          >
+            <Text style={styles.buttonText}>Vamos começar</Text>
+          </TouchableOpacity>
         </View>
       </LinearGradient>
     </SafeAreaView>

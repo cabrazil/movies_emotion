@@ -120,14 +120,14 @@ export const MovieHeader: React.FC<MovieHeaderProps> = React.memo(({
     <View style={styles.movieHeader}>
       {thumbnail && (
         <View style={styles.posterContainer}>
-          <Image 
-            source={{ uri: thumbnail }} 
-            style={styles.poster} 
+          <Image
+            source={{ uri: thumbnail }}
+            style={styles.poster}
             resizeMode="cover"
           />
         </View>
       )}
-      
+
       <View style={styles.movieInfo}>
         <View style={styles.titleSection}>
           <Text style={styles.movieTitle}>{title}</Text>
@@ -135,15 +135,15 @@ export const MovieHeader: React.FC<MovieHeaderProps> = React.memo(({
             <Text style={[styles.movieYear, { color: sentimentColor }]}>({year})</Text>
           )}
           {original_title && (
-            <Text style={styles.originalTitle}>Título Original: {original_title}</Text>
+            <Text style={styles.originalTitle}>Título Original: <Text style={{ fontWeight: '600', color: sentimentColor }}>{original_title}</Text></Text>
           )}
         </View>
-        
+
         <View style={styles.movieMeta}>
           {director && (
             <Text style={styles.metaText}>Diretor: {director}</Text>
           )}
-          
+
           <View style={styles.runtimeCertificationRow}>
             {runtime && (
               <Text style={styles.metaText}>
@@ -160,9 +160,9 @@ export const MovieHeader: React.FC<MovieHeaderProps> = React.memo(({
             )}
           </View>
         </View>
-        
-        <TouchableOpacity 
-          style={[styles.trailerButton, { backgroundColor: sentimentColor }]} 
+
+        <TouchableOpacity
+          style={[styles.trailerButton, { backgroundColor: sentimentColor }]}
           onPress={onTrailerPress}
         >
           <Ionicons name="play-circle" size={20} color={colors.text.inverse} />
