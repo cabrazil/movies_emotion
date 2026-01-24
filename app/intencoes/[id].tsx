@@ -149,18 +149,26 @@ export default function IntencoesScreen() {
     // Lista de Intenções
     intentionsContainer: {
       paddingBottom: spacing.xl,
-      gap: spacing.md, // Espaçamento entre cards
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+      gap: spacing.md, // Funciona nas versões novas do RN, senão usamos margem negativa
     },
     intentionCard: {
       backgroundColor: colors.background.card,
       borderRadius: borderRadius.lg,
       padding: spacing.md,
       ...shadows.md,
-      flexDirection: 'row', // Card horizontal
-      alignItems: 'center', // Alinhamento vertical centralizado
+      width: '47%', // Reduzido levemente para garantir 2 colunas
+      // aspectRatio: 0.85, // Removido para permitir crescimento vertical conforme texto
+      minHeight: 180, // Altura mínima garantida
+      flexDirection: 'column', // Vertical
+      alignItems: 'center',
+      justifyContent: 'center',
 
-      // Borda lateral sutil ou topo
-      borderLeftWidth: 4,
+      // Borda visual (opcional, pode ser top ou removida se preferir clean)
+      borderTopWidth: 4,
+      borderLeftWidth: 0,
     },
     intentionIconContainer: {
       width: 52,
@@ -168,23 +176,27 @@ export default function IntencoesScreen() {
       borderRadius: 26,
       justifyContent: 'center',
       alignItems: 'center',
-      marginRight: spacing.md,
+      marginRight: 0, // Remover margem direita
+      marginBottom: spacing.sm, // Adicionar margem inferior
       flexShrink: 0, // Não encolher
     },
     intentionContent: {
       flex: 1,
-      justifyContent: 'center',
+      justifyContent: 'flex-start',
+      alignItems: 'center', // Centralizar texto
     },
     intentionTitle: {
       fontSize: typography.fontSize.h3,
       fontWeight: typography.fontWeight.bold,
       color: colors.text.primary,
-      marginBottom: 2, // Pequeno espaço
+      marginBottom: 4,
+      textAlign: 'center', // Centralizar
     },
     intentionDescription: {
       fontSize: typography.fontSize.small,
       color: colors.text.secondary,
-      lineHeight: typography.fontSize.small * 1.4,
+      lineHeight: typography.fontSize.small * 1.3,
+      textAlign: 'center', // Centralizar
     },
     arrowIcon: {
       marginLeft: spacing.xs,
@@ -269,7 +281,7 @@ export default function IntencoesScreen() {
           <View style={styles.intentionsContainer}>
             {intentions
               .sort((a, b) => {
-                const order = ['PROCESS', 'TRANSFORM', 'MAINTAIN', 'EXPLORE'];
+                const order = ['MAINTAIN', 'PROCESS', 'TRANSFORM', 'EXPLORE'];
                 const indexA = order.indexOf(a.type);
                 const indexB = order.indexOf(b.type);
                 return indexA - indexB;
@@ -278,7 +290,7 @@ export default function IntencoesScreen() {
                 <TouchableOpacity
                   key={intention.id}
                   style={[styles.intentionCard, {
-                    borderLeftColor: sentimentColor,
+                    borderTopColor: sentimentColor,
                   }]}
                   onPress={() => handleIntentionPress(intention)}
                   activeOpacity={0.7}
@@ -297,17 +309,12 @@ export default function IntencoesScreen() {
                     <Text style={styles.intentionTitle}>
                       {getIntentionLabel(intention.type)}
                     </Text>
-                    <Text style={styles.intentionDescription} numberOfLines={3}>
+                    <Text style={styles.intentionDescription} numberOfLines={5}>
                       {intention.description}
                     </Text>
                   </View>
 
-                  <Ionicons
-                    name="chevron-forward"
-                    size={20}
-                    color={colors.text.light}
-                    style={styles.arrowIcon}
-                  />
+
                 </TouchableOpacity>
               ))}
           </View>
