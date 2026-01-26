@@ -1,23 +1,20 @@
 // Helper para construir URL do logo
-export const getPlatformLogoUrl = (logoPath: string | null, platformName: string): string => {
-  // Caso especial: YouTube sempre usa ícone do Ionicons
-  if (platformName.toLowerCase().includes('youtube')) {
-    return 'YOUTUBE_ICON'; // String especial para identificar YouTube
-  }
-  
+export const getPlatformLogoUrl = (logoPath: string | null): string => {
+
+
   // Para outras plataformas, usar logoPath do Supabase
   if (!logoPath) return '';
-  
+
   // Se já for uma URL completa, retornar como está
   if (logoPath.startsWith('http://') || logoPath.startsWith('https://')) {
     return logoPath;
   }
-  
+
   // Se é um path do TMDB, constrói a URL completa
   if (logoPath.startsWith('/') && (logoPath.includes('.jpg') || logoPath.includes('.png') || logoPath.includes('.jpeg'))) {
     return `https://image.tmdb.org/t/p/w92${logoPath}`;
   }
-  
+
   // Caso contrário, retornar o logoPath como está (pode ser uma URL do Supabase)
   return logoPath;
 };

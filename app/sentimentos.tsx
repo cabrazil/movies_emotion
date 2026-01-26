@@ -279,7 +279,6 @@ export default function SentimentosScreen() {
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => {
             const sentimentColor = colors.sentimentColors[item.id] || colors.primary.main;
-            // Descrição removida do card reduzido para limpeza visual
 
             return (
               <TouchableOpacity

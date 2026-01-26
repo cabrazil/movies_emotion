@@ -30,7 +30,7 @@ export const StreamingPlatforms: React.FC<StreamingPlatformsProps> = React.memo(
 }) => {
   const { colors } = useTheme();
 
-  const subscriptionPlatforms = useMemo(() => 
+  const subscriptionPlatforms = useMemo(() =>
     platforms?.filter(p => p.accessType === 'INCLUDED_WITH_SUBSCRIPTION') || [],
     [platforms]
   );
@@ -40,14 +40,14 @@ export const StreamingPlatforms: React.FC<StreamingPlatformsProps> = React.memo(
     const filtered = platforms.filter(p => p.accessType === 'RENTAL' || p.accessType === 'PURCHASE');
     // Unificar plataformas - uma por plataforma, mesmo que tenha múltiplos accessTypes
     const uniquePlatforms = new Map<number, Platform>();
-    
+
     filtered.forEach(platform => {
       const platformId = (platform.streamingPlatform || platform).id;
       if (platformId && !uniquePlatforms.has(platformId)) {
         uniquePlatforms.set(platformId, platform);
       }
     });
-    
+
     return Array.from(uniquePlatforms.values());
   }, [platforms]);
 
@@ -62,7 +62,7 @@ export const StreamingPlatforms: React.FC<StreamingPlatformsProps> = React.memo(
     try {
       // Verificar se a URL é válida
       const canOpen = await Linking.canOpenURL(baseUrl);
-      
+
       if (canOpen) {
         await Linking.openURL(baseUrl);
         if (__DEV__) {
@@ -72,7 +72,7 @@ export const StreamingPlatforms: React.FC<StreamingPlatformsProps> = React.memo(
         // Tentar adicionar https:// se não tiver protocolo
         const urlWithProtocol = baseUrl.startsWith('http') ? baseUrl : `https://${baseUrl}`;
         const canOpenWithProtocol = await Linking.canOpenURL(urlWithProtocol);
-        
+
         if (canOpenWithProtocol) {
           await Linking.openURL(urlWithProtocol);
         } else {
@@ -97,23 +97,19 @@ export const StreamingPlatforms: React.FC<StreamingPlatformsProps> = React.memo(
 
   const renderPlatformLogo = (platform: Platform) => {
     const platformData = platform.streamingPlatform || platform;
-    const logoUrl = getPlatformLogoUrl(platformData.logoPath || null, platformData.name || '');
-    
-    if (logoUrl === 'YOUTUBE_ICON') {
-      return <Ionicons name="logo-youtube" size={32} color="#FF0000" />;
-    }
-    
+    const logoUrl = getPlatformLogoUrl(platformData.logoPath || null);
+
     return logoUrl ? (
-      <Image 
-        source={{ uri: logoUrl }} 
+      <Image
+        source={{ uri: logoUrl }}
         style={styles.platformLogoImage}
         resizeMode="contain"
       />
     ) : (
-      <Ionicons 
-        name={platform.accessType === 'INCLUDED_WITH_SUBSCRIPTION' ? 'tv' : 'card'} 
-        size={32} 
-        color={sentimentColor} 
+      <Ionicons
+        name={platform.accessType === 'INCLUDED_WITH_SUBSCRIPTION' ? 'tv' : 'card'}
+        size={32}
+        color={sentimentColor}
       />
     );
   };
@@ -193,7 +189,7 @@ export const StreamingPlatforms: React.FC<StreamingPlatformsProps> = React.memo(
   return (
     <View style={styles.streamingSection}>
       <Text style={styles.sectionTitle}>Onde assistir hoje?</Text>
-      
+
       <View style={styles.platformsContainer}>
         {/* Plataformas de Assinatura */}
         {subscriptionPlatforms.length > 0 && (
@@ -203,8 +199,8 @@ export const StreamingPlatforms: React.FC<StreamingPlatformsProps> = React.memo(
               {subscriptionPlatforms.map((platform, index) => {
                 const platformData = platform.streamingPlatform || platform;
                 return (
-                  <TouchableOpacity 
-                    key={index} 
+                  <TouchableOpacity
+                    key={index}
                     style={[styles.platformLogoItem, { borderColor: sentimentColor + '40' }]}
                     onPress={() => handlePlatformPress(platformData.baseUrl)}
                   >
@@ -217,7 +213,7 @@ export const StreamingPlatforms: React.FC<StreamingPlatformsProps> = React.memo(
             </View>
           </View>
         )}
-        
+
         {/* Plataformas de Aluguel ou Compra */}
         {rentalPurchasePlatforms.length > 0 && (
           <View style={styles.rentalPlatforms}>
@@ -226,8 +222,8 @@ export const StreamingPlatforms: React.FC<StreamingPlatformsProps> = React.memo(
               {rentalPurchasePlatforms.map((platform, index) => {
                 const platformData = platform.streamingPlatform || platform;
                 return (
-                  <TouchableOpacity 
-                    key={index} 
+                  <TouchableOpacity
+                    key={index}
                     style={[styles.platformLogoItem, { borderColor: sentimentColor + '40' }]}
                     onPress={() => handlePlatformPress(platformData.baseUrl)}
                   >
@@ -250,7 +246,7 @@ export const StreamingPlatforms: React.FC<StreamingPlatformsProps> = React.memo(
           </Text>
         </View>
       )}
-    
+
       <Text style={styles.disclaimerText}>
         * Os períodos e termos de teste grátis podem variar. Consulte a plataforma para detalhes atualizados.
       </Text>

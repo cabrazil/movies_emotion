@@ -10,7 +10,7 @@ const getApiBaseUrl = () => {
   if (__DEV__) {
     // Desenvolvimento: usar backend local via Ngrok (Recomendado para evitar timeouts)
     // Rode 'ngrok http 3333' e cole a URL gerada abaixo
-    return 'https://211c97ccaa05.ngrok-free.app';
+    return 'https://68255b6129ec.ngrok-free.app';
   }
 
   // Produção: usar URL de produção

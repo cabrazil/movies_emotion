@@ -17,6 +17,7 @@ export interface Sentiment {
   id: number;
   name: string;
   description: string;
+  shortDescription?: string;
   keywords: string[];
   createdAt?: string;
   updatedAt?: string;
