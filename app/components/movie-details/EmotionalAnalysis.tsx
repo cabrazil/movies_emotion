@@ -208,7 +208,7 @@ export const EmotionalAnalysis: React.FC<EmotionalAnalysisProps> = React.memo(({
       {/* Tags Emocionais Chave */}
       {emotionalTags && emotionalTags.length > 0 && (
         <View style={styles.emotionalTagsSection}>
-          <Text style={styles.subsectionTitle}>Tags Emocionais Chave:</Text>
+          <Text style={styles.subsectionTitle}>Este filme ressoa com quem busca:</Text>
           <View style={styles.tagsContainer}>
             {emotionalTags
               .sort((a, b) => b.relevance - a.relevance) // Ordenar por relevância (maior para menor)
