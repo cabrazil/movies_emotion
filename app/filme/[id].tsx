@@ -87,7 +87,7 @@ interface Movie {
 }
 
 export default function MovieDetailsScreen() {
-  const { id, reason, sentimentId } = useLocalSearchParams();
+  const { id, reason, sentimentId, intentionId } = useLocalSearchParams();
   const [movie, setMovie] = useState<Movie | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -98,7 +98,7 @@ export default function MovieDetailsScreen() {
   const { colors } = useTheme();
 
   // Obter cor do sentimento (memoizada)
-  const sentimentColor = useMemo(() => 
+  const sentimentColor = useMemo(() =>
     sentimentId ? (colors.sentimentColors[Number(sentimentId)] || colors.primary.main) : colors.primary.main,
     [sentimentId, colors]
   );
@@ -110,9 +110,9 @@ export default function MovieDetailsScreen() {
           console.log('🎬 Buscando filme:', id);
         }
         const url = `${API_ENDPOINTS.movies.detail(id.toString())}`;
-        
+
         const res = await apiRequest(url);
-        
+
         if (!res.ok) {
           const errorData = await res.json().catch(() => null);
           if (__DEV__) {
@@ -120,17 +120,17 @@ export default function MovieDetailsScreen() {
           }
           throw new Error(errorData?.error || 'Erro ao carregar filme');
         }
-        
+
         const data = await res.json();
-        
+
         // O endpoint /api/movie/{id}/details retorna { movie: {...}, subscriptionPlatforms: [...] }
         const movieData = data.movie || data;
         const platforms = data.subscriptionPlatforms || data.platforms || [];
-        
+
         if (__DEV__) {
           console.log('✅ Filme carregado:', movieData.title || movieData.original_title);
         }
-        
+
         // Mapear os dados para o formato esperado pelo mobile
         const processedMovieData = {
           id: movieData.id,
@@ -158,7 +158,7 @@ export default function MovieDetailsScreen() {
           mainTrailer: movieData.mainTrailer,
           emotionalTags: movieData.emotionalTags,
         };
-        
+
         setMovie(processedMovieData);
         setLoading(false);
       } catch (err) {
@@ -180,14 +180,14 @@ export default function MovieDetailsScreen() {
       const timer = setTimeout(() => {
         setShowScrollIndicator(true);
       }, 500);
-      
+
       return () => clearTimeout(timer);
     }
   }, [movie, loading]);
 
   const handleShare = useCallback(async () => {
     if (!movie) return;
-    
+
     try {
       await Share.share({
         message: `Confira o filme "${movie.title}" (${movie.year}) - ${movie.description}`,
@@ -212,16 +212,16 @@ export default function MovieDetailsScreen() {
 
     const { mainTrailer } = movie;
     const trailerKey = mainTrailer.key;
-    
+
     // Construir URL do YouTube
     // Tentar abrir no app do YouTube primeiro, depois no navegador
     const youtubeAppUrl = `vnd.youtube:${trailerKey}`;
     const youtubeWebUrl = `https://www.youtube.com/watch?v=${trailerKey}`;
-    
+
     try {
       // Tentar abrir no app do YouTube
       const canOpen = await Linking.canOpenURL(youtubeAppUrl);
-      
+
       if (canOpen) {
         await Linking.openURL(youtubeAppUrl);
       } else {
@@ -232,7 +232,7 @@ export default function MovieDetailsScreen() {
       if (__DEV__) {
         console.error('Erro ao abrir trailer:', error);
       }
-      
+
       // Fallback: tentar abrir no navegador diretamente
       try {
         await Linking.openURL(youtubeWebUrl);
@@ -250,7 +250,7 @@ export default function MovieDetailsScreen() {
   const handleScroll = useCallback((event: any) => {
     const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
     const isScrolledToBottom = contentOffset.y + layoutMeasurement.height >= contentSize.height - 20;
-    
+
     if (isScrolledToBottom) {
       // Fazer o indicador desaparecer suavemente
       Animated.timing(scrollIndicatorOpacity, {
@@ -344,9 +344,9 @@ export default function MovieDetailsScreen() {
     return (
       <SafeAreaView style={styles.safeArea}>
         <AppHeader showBack={true} showLogo={true} />
-      <View style={styles.center}>
-        <Text style={styles.loadingText}>Carregando filme...</Text>
-      </View>
+        <View style={styles.center}>
+          <Text style={styles.loadingText}>Carregando filme...</Text>
+        </View>
       </SafeAreaView>
     );
   }
@@ -355,9 +355,9 @@ export default function MovieDetailsScreen() {
     return (
       <SafeAreaView style={styles.safeArea}>
         <AppHeader showBack={true} showLogo={true} />
-      <View style={styles.center}>
-        <Text style={styles.errorText}>{error || 'Filme não encontrado'}</Text>
-      </View>
+        <View style={styles.center}>
+          <Text style={styles.errorText}>{error || 'Filme não encontrado'}</Text>
+        </View>
       </SafeAreaView>
     );
   }
@@ -365,94 +365,95 @@ export default function MovieDetailsScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <AppHeader showBack={true} showLogo={true} />
-    <View style={styles.fullContainer}>
-      <ScrollView 
-        ref={scrollViewRef}
-        style={styles.container}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-      >
-        <MovieHeader
-          thumbnail={movie.thumbnail}
-          title={movie.title}
-          year={movie.year}
-          original_title={movie.original_title}
-          director={movie.director}
-          runtime={movie.runtime}
-          certification={movie.certification}
-          sentimentColor={sentimentColor}
-          onTrailerPress={handleTrailer}
-        />
+      <View style={styles.fullContainer}>
+        <ScrollView
+          ref={scrollViewRef}
+          style={styles.container}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+        >
+          <MovieHeader
+            thumbnail={movie.thumbnail}
+            title={movie.title}
+            year={movie.year}
+            original_title={movie.original_title}
+            director={movie.director}
+            runtime={movie.runtime}
+            certification={movie.certification}
+            sentimentColor={sentimentColor}
+            onTrailerPress={handleTrailer}
+          />
 
-        <StreamingPlatforms
-          platforms={movie.platforms}
-          sentimentColor={sentimentColor}
-        />
+          <StreamingPlatforms
+            platforms={movie.platforms}
+            sentimentColor={sentimentColor}
+          />
 
-        <EmotionalAnalysis
-          title={movie.title}
-          contentWarnings={movie.contentWarnings}
-          landingPageHook={movie.landingPageHook}
-          targetAudienceForLP={movie.targetAudienceForLP}
-          sentimentId={sentimentId}
-          reason={reason}
-          sentimentColor={sentimentColor}
-          emotionalTags={movie.emotionalTags}
-        />
+          <EmotionalAnalysis
+            title={movie.title}
+            contentWarnings={movie.contentWarnings}
+            landingPageHook={movie.landingPageHook}
+            targetAudienceForLP={movie.targetAudienceForLP}
+            sentimentId={sentimentId}
+            intentionId={typeof intentionId === 'string' ? intentionId : undefined}
+            reason={reason}
+            sentimentColor={sentimentColor}
+            emotionalTags={movie.emotionalTags}
+          />
 
-        <MovieSynopsis
-          description={movie.description}
-          sentimentColor={sentimentColor}
-        />
+          <MovieSynopsis
+            description={movie.description}
+            sentimentColor={sentimentColor}
+          />
 
-        <RatingsAndGenres
-          vote_average={movie.vote_average}
-          imdbRating={movie.imdbRating}
-          imdb_rating={movie.imdb_rating}
-          rottenTomatoesRating={movie.rottenTomatoesRating}
-          metacriticRating={movie.metacriticRating}
-          genres={movie.genres}
-          sentimentColor={sentimentColor}
-        />
+          <RatingsAndGenres
+            vote_average={movie.vote_average}
+            imdbRating={movie.imdbRating}
+            imdb_rating={movie.imdb_rating}
+            rottenTomatoesRating={movie.rottenTomatoesRating}
+            metacriticRating={movie.metacriticRating}
+            genres={movie.genres}
+            sentimentColor={sentimentColor}
+          />
 
-        <MovieCast
-          mainCast={movie.mainCast}
-          sentimentColor={sentimentColor}
-        />
+          <MovieCast
+            mainCast={movie.mainCast}
+            sentimentColor={sentimentColor}
+          />
 
-        <MovieAwards
-          title={movie.title}
-          oscarAwards={movie.oscarAwards}
-          awardsSummary={movie.awardsSummary}
-          sentimentColor={sentimentColor}
-        />
+          <MovieAwards
+            title={movie.title}
+            oscarAwards={movie.oscarAwards}
+            awardsSummary={movie.awardsSummary}
+            sentimentColor={sentimentColor}
+          />
 
-        {/* Botão de Compartilhar */}
+          {/* Botão de Compartilhar */}
           <View style={styles.actionsContainer}>
             <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
               <Ionicons name="share-outline" size={24} color={colors.primary.main} />
               <Text style={styles.actionButtonText}>Compartilhar</Text>
             </TouchableOpacity>
-        </View>
-      </ScrollView>
-      
-      {/* Indicador de Scroll */}
-      {showScrollIndicator && (
-        <Animated.View 
-          style={[
-            styles.scrollIndicator,
-            { 
-              opacity: scrollIndicatorOpacity,
-              borderColor: sentimentColor + '40'
-            }
-          ]}
-        >
-          <Ionicons name="chevron-down" size={24} color={sentimentColor} />
-        </Animated.View>
-      )}
-        
-      <NavigationFooter backLabel="Filmes" showHome={true} />
-    </View>
+          </View>
+        </ScrollView>
+
+        {/* Indicador de Scroll */}
+        {showScrollIndicator && (
+          <Animated.View
+            style={[
+              styles.scrollIndicator,
+              {
+                opacity: scrollIndicatorOpacity,
+                borderColor: sentimentColor + '40'
+              }
+            ]}
+          >
+            <Ionicons name="chevron-down" size={24} color={sentimentColor} />
+          </Animated.View>
+        )}
+
+        <NavigationFooter backLabel="Filmes" showHome={true} />
+      </View>
     </SafeAreaView>
   );
 } 

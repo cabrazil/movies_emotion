@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, typography, spacing } from '../theme';
+import { typography, spacing } from '../theme';
+import { useTheme } from '../hooks/useTheme';
 
 // Importar apenas os ícones PNG que funcionam no React Native
 const tmdbIcon = require('../../assets/ratings/themoviedb.png');
@@ -15,11 +16,13 @@ interface RatingIconProps {
   size?: number;
 }
 
-export const RatingIcon: React.FC<RatingIconProps> = ({ 
-  type, 
-  rating, 
-  size = 40 
+export const RatingIcon: React.FC<RatingIconProps> = ({
+  type,
+  rating,
+  size = 40
 }) => {
+  const { colors } = useTheme();
+
   const getIconConfig = () => {
     switch (type) {
       case 'tmdb':
@@ -80,11 +83,30 @@ export const RatingIcon: React.FC<RatingIconProps> = ({
 
   const iconSize = getIconSize();
 
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginRight: spacing.md,
+      paddingVertical: spacing.xs,
+    },
+    iconImage: {
+      width: 40,
+      height: 40,
+      marginRight: spacing.sm,
+    },
+    ratingText: {
+      fontSize: typography.fontSize.body,
+      fontWeight: typography.fontWeight.semibold,
+      color: colors.text.primary,
+    },
+  }), [colors]);
+
   return (
     <View style={styles.container}>
       {config.realIcon ? (
-        <Image 
-          source={config.realIcon} 
+        <Image
+          source={config.realIcon}
           style={[styles.iconImage, { width: iconSize, height: iconSize }]}
           resizeMode="contain"
           onError={(error) => {
@@ -94,10 +116,10 @@ export const RatingIcon: React.FC<RatingIconProps> = ({
           }}
         />
       ) : (
-        <Ionicons 
-          name={config.fallbackIcon} 
-          size={iconSize} 
-          color={config.fallbackColor} 
+        <Ionicons
+          name={config.fallbackIcon}
+          size={iconSize}
+          color={config.fallbackColor}
         />
       )}
       <Text style={styles.ratingText}>{rating}</Text>
@@ -116,6 +138,17 @@ interface RatingRowProps {
 }
 
 export const RatingRow: React.FC<RatingRowProps> = ({ ratings }) => {
+  const { colors } = useTheme();
+
+  const styles = useMemo(() => StyleSheet.create({
+    rowContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
+  }), []);
+
   return (
     <View style={styles.rowContainer}>
       {ratings.tmdb && <RatingIcon type="tmdb" rating={ratings.tmdb} />}
@@ -125,28 +158,3 @@ export const RatingRow: React.FC<RatingRowProps> = ({ ratings }) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: spacing.md,
-    paddingVertical: spacing.xs,
-  },
-  iconImage: {
-    width: 40,
-    height: 40,
-    marginRight: spacing.sm,
-  },
-  ratingText: {
-    fontSize: typography.fontSize.body,
-    fontWeight: typography.fontWeight.semiBold,
-    color: colors.text.primary,
-  },
-  rowContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-});

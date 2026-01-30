@@ -4,12 +4,31 @@ import { Ionicons } from '@expo/vector-icons';
 import { typography, spacing, borderRadius } from '../../theme';
 import { useTheme } from '../../hooks/useTheme';
 
+// Mapas de Intenção (Hardcoded para consistência mobile)
+const INTENTION_ID_TO_TYPE: { [key: number]: string } = {
+  6: "PROCESS", 7: "TRANSFORM", 8: "MAINTAIN", 9: "EXPLORE",  // Cansado
+  10: "MAINTAIN", 11: "EXPLORE", 12: "PROCESS", 13: "TRANSFORM", // Ansioso
+  14: "MAINTAIN", 15: "EXPLORE", 16: "PROCESS", 17: "TRANSFORM", // Triste
+  18: "MAINTAIN", 19: "EXPLORE", 20: "TRANSFORM", 21: "PROCESS", // Feliz
+  22: "MAINTAIN", 23: "EXPLORE", 24: "PROCESS", 25: "TRANSFORM", // Animado
+  26: "MAINTAIN", 27: "EXPLORE" // Calmo
+};
+
+const INTENTION_NAMES: { [key: string]: string } = {
+  "PROCESS": "Processar",
+  "MAINTAIN": "Manter",
+  "TRANSFORM": "Transformar",
+  "REPLACE": "Substituir",
+  "EXPLORE": "Explorar"
+};
+
 interface EmotionalAnalysisProps {
   title: string;
   contentWarnings?: string | null;
   landingPageHook?: string | null;
   targetAudienceForLP?: string | null;
   sentimentId?: string | string[];
+  intentionId?: string | undefined; // Novo prop
   reason?: string | string[];
   sentimentColor: string;
   emotionalTags?: Array<{
@@ -25,6 +44,7 @@ export const EmotionalAnalysis: React.FC<EmotionalAnalysisProps> = React.memo(({
   landingPageHook,
   targetAudienceForLP,
   sentimentId,
+  intentionId,
   reason,
   sentimentColor,
   emotionalTags
@@ -49,10 +69,19 @@ export const EmotionalAnalysis: React.FC<EmotionalAnalysisProps> = React.memo(({
 
     const sentimentName = sentimentNames[Number(sentimentId)] || "emocional";
     const reasonText = Array.isArray(reason) ? reason[0] : reason;
-    const formattedReason = reasonText.charAt(0).toLowerCase() + reasonText.slice(1);
 
-    return `Para quem está ${sentimentName} e quer Processar, este filme traz ${formattedReason}`;
-  }, [sentimentId, reason, landingPageHook]);
+    // Resolver nome da intenção
+    let intentionName = "Processar"; // Fallback
+    if (intentionId) {
+      const id = Number(intentionId);
+      const type = INTENTION_ID_TO_TYPE[id];
+      if (type && INTENTION_NAMES[type]) {
+        intentionName = INTENTION_NAMES[type];
+      }
+    }
+
+    return `Para quem está ${sentimentName} e quer ${intentionName}: ${reasonText}`;
+  }, [sentimentId, intentionId, reason, landingPageHook]);
 
   const showContentWarning = contentWarnings &&
     contentWarnings !== 'Atenção: nenhum alerta de conteúdo significativo.';
@@ -186,7 +215,7 @@ export const EmotionalAnalysis: React.FC<EmotionalAnalysisProps> = React.memo(({
         </View>
 
         {/* Para Quem Recomendamos */}
-        <View style={[styles.recommendationSection, { borderColor: sentimentColor }]}>
+        {/* <View style={[styles.recommendationSection, { borderColor: sentimentColor }]}>
           <Text style={styles.subsectionTitle}>Para Quem Recomendamos?</Text>
           <Text style={styles.recommendationText}>
             {targetAudienceForLP ?
@@ -194,7 +223,7 @@ export const EmotionalAnalysis: React.FC<EmotionalAnalysisProps> = React.memo(({
               "Este filme pode ser perfeito para quem busca uma experiência cinematográfica única e envolvente."
             }
           </Text>
-        </View>
+        </View> */}
 
         {/* Por que recomendamos para você */}
         <View style={[styles.recommendationSection, { borderColor: sentimentColor }]}>

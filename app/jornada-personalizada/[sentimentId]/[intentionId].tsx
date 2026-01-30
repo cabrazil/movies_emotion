@@ -1069,7 +1069,8 @@ export default function JornadaPersonalizadaScreen() {
                     params: {
                       id: ms.movie.id,
                       reason: ms.reason,
-                      sentimentId: sentimentId
+                      sentimentId: sentimentId,
+                      intentionId: intentionId.toString()
                     }
                   });
                 }}
