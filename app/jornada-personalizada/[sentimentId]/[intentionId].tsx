@@ -1171,33 +1171,57 @@ export default function JornadaPersonalizadaScreen() {
                       </View>
                     </View>
 
-                    {/* Badge de Plataforma (Lógica Simplificada) */}
+                    {/* Badge de Plataforma */}
                     {(() => {
-                      // Determinar quais plataformas mostrar
-                      let platformsToShow: any[] = [];
+                      const allPlatforms = ms.movie.platforms ?? [];
 
-                      if (ms.movie.platforms && ms.movie.platforms.length > 0) {
-                        if (selectedPlatformIds.length === 0) {
-                          // Caso 1: Usuário não filtrou -> Mostrar todas de assinatura
-                          platformsToShow = ms.movie.platforms.filter(p =>
-                            p.accessType === 'INCLUDED_WITH_SUBSCRIPTION' && p.streamingPlatform?.name
-                          );
-                        } else {
-                          // Caso 2: Usuário filtrou -> Mostrar match
-                          const selectedPlatformNames = selectedPlatformIds.map(id => platformsData[id]).filter(Boolean);
-                          platformsToShow = ms.movie.platforms.filter(p => {
-                            const pName = p.streamingPlatform?.name || '';
-                            const isSub = p.accessType === 'INCLUDED_WITH_SUBSCRIPTION';
-                            const isMatch = selectedPlatformNames.some(sName =>
-                              pName.toLowerCase().trim().includes(sName.toLowerCase().trim())
-                            );
-                            return isSub && isMatch;
-                          });
-                        }
+                      // Sem plataformas cadastradas → não disponível
+                      if (allPlatforms.length === 0) {
+                        return (
+                          <View style={styles.platformBadgesContainer}>
+                            <View style={[styles.platformBadge, { backgroundColor: colors.background.secondary, borderColor: 'transparent' }]}>
+                              <Text style={[styles.platformBadgeText, { color: colors.text.secondary, fontSize: 10 }]}>
+                                Não disponível no momento
+                              </Text>
+                            </View>
+                          </View>
+                        );
                       }
 
-                      if (platformsToShow.length === 0) return null;
+                      // Determinar plataformas de assinatura elegíveis
+                      let platformsToShow: any[] = [];
+                      if (selectedPlatformIds.length === 0) {
+                        // Sem filtro: mostrar todas de assinatura
+                        platformsToShow = allPlatforms.filter(p =>
+                          p.accessType === 'INCLUDED_WITH_SUBSCRIPTION' && p.streamingPlatform?.name
+                        );
+                      } else {
+                        // Com filtro: mostrar só as que batem
+                        const selectedPlatformNames = selectedPlatformIds.map(id => platformsData[id]).filter(Boolean);
+                        platformsToShow = allPlatforms.filter(p => {
+                          const pName = p.streamingPlatform?.name || '';
+                          const isSub = p.accessType === 'INCLUDED_WITH_SUBSCRIPTION';
+                          const isMatch = selectedPlatformNames.some(sName =>
+                            pName.toLowerCase().trim().includes(sName.toLowerCase().trim())
+                          );
+                          return isSub && isMatch;
+                        });
+                      }
 
+                      // Tem plataformas mas nenhuma de assinatura → somente aluguel/compra
+                      if (platformsToShow.length === 0) {
+                        return (
+                          <View style={styles.platformBadgesContainer}>
+                            <View style={[styles.platformBadge, { backgroundColor: colors.background.secondary, borderColor: 'transparent' }]}>
+                              <Text style={[styles.platformBadgeText, { color: colors.text.secondary, fontSize: 10 }]}>
+                                Somente aluguel/compra
+                              </Text>
+                            </View>
+                          </View>
+                        );
+                      }
+
+                      // Exibir badge de assinatura normalmente
                       return (
                         <View style={styles.platformBadgesContainer}>
                           <View style={[styles.platformBadge, { backgroundColor: sentimentColor + '20', borderColor: 'transparent' }]}>
