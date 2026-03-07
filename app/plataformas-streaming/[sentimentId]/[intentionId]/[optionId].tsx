@@ -518,6 +518,13 @@ export default function PlataformasStreamingScreen() {
             )}
           </View>
 
+          {/* Microcopy educativo */}
+          <View style={{ paddingHorizontal: spacing.md, marginBottom: spacing.md }}>
+            <Text style={{ fontSize: typography.fontSize.small, color: colors.text.secondary, textAlign: 'center' }}>
+              Filtre por streaming ou veja todos os filmes.
+            </Text>
+          </View>
+
           {/* Lista Unificada de Plataformas */}
           <View style={styles.platformsContainer}>
             <View style={styles.platformsGrid}>
@@ -603,7 +610,7 @@ export default function PlataformasStreamingScreen() {
             onPress={handleSkip}
             activeOpacity={0.7}
           >
-            <Text style={[styles.skipButtonText, { color: sentimentColor }]}>Pular esta etapa</Text>
+            <Text style={[styles.skipButtonText, { color: sentimentColor }]}>Ver todos os filmes</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
