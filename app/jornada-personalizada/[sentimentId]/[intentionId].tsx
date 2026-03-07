@@ -26,7 +26,8 @@ export default function JornadaPersonalizadaScreen() {
   const [allMovies, setAllMovies] = useState<MovieSuggestion[]>([]);
   const [selectedPlatformIds, setSelectedPlatformIds] = useState<number[]>([]);
   const [platformsData, setPlatformsData] = useState<Record<number, string>>({});
-  const [sortType, setSortType] = useState<'smart' | 'rating' | 'year' | 'relevance'>('relevance');
+  const [sortType, setSortType] = useState<'smart' | 'rating' | 'year' | 'relevance'>('year');
+  const [visibleCount, setVisibleCount] = useState(12);
   const router = useRouter();
 
   // Obter cor do sentimento (memoizada)
@@ -228,6 +229,11 @@ export default function JornadaPersonalizadaScreen() {
       }
     }
   }, [showResults, optionId, platforms, allSteps]);
+
+  // Reset pagination when sort type or movies change
+  useEffect(() => {
+    setVisibleCount(12);
+  }, [sortType, allMovies]);
 
   const handleOption = useCallback((option: JourneyOption) => {
     if (__DEV__) {
@@ -819,6 +825,36 @@ export default function JornadaPersonalizadaScreen() {
 
   // Ordenar filmes baseado no critério selecionado
   const sortedMovies = useMemo(() => {
+    // Lógica específica para "Recomendado" (Shuffle de Elite)
+    if (sortType === 'relevance') {
+      let moviesToShuffle = [];
+
+      if (allMovies.length > 12) {
+        // Modo Elite restrito
+        // 1. Filtrar por relevância >= 6.5 (Piso de qualidade de elite)
+        const eliteCandidates = allMovies.filter(s => ((s as any).relevanceScore ?? 0) >= 6.5);
+
+        // 2. Ordenar por relevância (descendente) para pegar os melhores
+        eliteCandidates.sort((a, b) => ((b as any).relevanceScore ?? 0) - ((a as any).relevanceScore ?? 0));
+
+        // 3. Pegar apenas os top 12
+        moviesToShuffle = eliteCandidates.slice(0, 12);
+      } else {
+        // Poucos filmes: mostrar todos disponíveis
+        moviesToShuffle = [...allMovies];
+      }
+
+      // 4. Embaralhar (Shuffle)
+      const shuffled = [...moviesToShuffle];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+
+      return shuffled;
+    }
+
+    // Outras ordenações
     const sorted = [...allMovies].sort((a, b) => {
       switch (sortType) {
         case 'smart':
@@ -858,42 +894,21 @@ export default function JornadaPersonalizadaScreen() {
           const bYear = b.movie.year || 0;
           return bYear - aYear;
 
-        case 'relevance':
-          const aRelevance = (a as any).relevanceScore ? Number((a as any).relevanceScore) : 0;
-          const bRelevance = (b as any).relevanceScore ? Number((b as any).relevanceScore) : 0;
-          if (bRelevance !== aRelevance) return bRelevance - aRelevance;
-          break;
-
         default:
           return 0;
       }
-      return 0;
     });
 
-    // Rotação inteligente dos top filmes (apenas para relevance/smart)
-    let finalSorted = sorted;
-    if ((sortType === 'relevance' || sortType === 'smart') && sorted.length >= 16) {
-      const TOP_POOL_SIZE = 16;
-      const DISPLAY_SIZE = 8;
-
-      const topMovies = sorted.slice(0, TOP_POOL_SIZE);
-      const remaining = sorted.slice(TOP_POOL_SIZE);
-
-      const dayOfYear = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
-      const rotationIndex = dayOfYear % 2;
-      const offset = rotationIndex * DISPLAY_SIZE;
-
-      // Rotação circular: mantém todos os 16, mas muda a ordem
-      const rotatedTop = [...topMovies.slice(offset), ...topMovies.slice(0, offset)];
-      finalSorted = [...rotatedTop, ...remaining];
-
-      if (__DEV__) {
-        console.log(`🔄 Rotação ativa (dia ${dayOfYear}, índice ${rotationIndex}): Top 16 rotacionado em ${offset} posições`);
-      }
-    }
-
-    return finalSorted;
+    return sorted;
   }, [allMovies, sortType, step]);
+
+  const visibleMovies = useMemo(() => {
+    return sortedMovies.slice(0, visibleCount);
+  }, [sortedMovies, visibleCount]);
+
+  const handleLoadMore = () => {
+    setVisibleCount(prev => prev + 12);
+  };
 
   if (loading) {
     return (
@@ -1049,7 +1064,7 @@ export default function JornadaPersonalizadaScreen() {
                 </TouchableOpacity>
               </View>
             )}
-            {sortedMovies.map((ms: MovieSuggestion, idx: number) => (
+            {visibleMovies.map((ms: MovieSuggestion, idx: number) => (
               <Pressable
                 key={ms.movie.id + idx}
                 style={({ pressed }) => [
@@ -1202,6 +1217,54 @@ export default function JornadaPersonalizadaScreen() {
                 </View>
               </Pressable>
             ))}
+
+            {/* Mensagem educativa para o Shuffle de Elite */}
+            {sortType === 'relevance' && (
+              <View style={{ padding: spacing.md, alignItems: 'center' }}>
+                <Text style={{
+                  color: colors.text.secondary,
+                  fontSize: typography.fontSize.small,
+                  textAlign: 'center',
+                  fontStyle: 'italic'
+                }}>
+                  {allMovies.length > 12
+                    ? "Top 12 selecionados. Para ver todos, ordene por Ano ou Rating."
+                    : `${allMovies.length} filmes disponíveis com os filtros atuais`}
+                </Text>
+              </View>
+            )}
+
+
+            {/* Botão Ver Mais */}
+            {visibleMovies.length < sortedMovies.length && (
+              <View style={{ alignItems: 'center', marginVertical: spacing.md }}>
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: colors.background.card,
+                    paddingHorizontal: spacing.lg,
+                    paddingVertical: spacing.md,
+                    borderRadius: borderRadius.full,
+                    borderWidth: 1,
+                    borderColor: sentimentColor,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    ...shadows.sm
+                  }}
+                  onPress={handleLoadMore}
+                  activeOpacity={0.7}
+                >
+                  <Text style={{
+                    color: sentimentColor,
+                    fontWeight: typography.fontWeight.semibold,
+                    fontSize: typography.fontSize.body,
+                    marginRight: spacing.xs
+                  }}>
+                    Ver mais
+                  </Text>
+                  <Ionicons name="chevron-down" size={16} color={sentimentColor} />
+                </TouchableOpacity>
+              </View>
+            )}
           </ScrollView>
 
           {/* Indicador de scroll animado */}
