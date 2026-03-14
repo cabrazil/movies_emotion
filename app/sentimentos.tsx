@@ -293,7 +293,13 @@ export default function SentimentosScreen() {
                   <SentimentIcon sentimentId={item.id} size={28} color={sentimentColor} />
                 </View>
 
-                <Text style={styles.cardTitle}>{item.name}</Text>
+                <Text
+                  style={styles.cardTitle}
+                  adjustsFontSizeToFit={true}
+                  numberOfLines={1}
+                >
+                  {item.name}
+                </Text>
               </TouchableOpacity>
             );
           }}

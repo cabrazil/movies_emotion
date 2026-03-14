@@ -239,7 +239,7 @@ export default function JornadaPersonalizadaScreen() {
     if (__DEV__) {
       console.log('🎯 Opção selecionada:', {
         optionId: option.id,
-        text: option.text,
+        text: option.mobileText || option.text,
         nextStepId: option.nextStepId,
         isEndState: option.isEndState,
         hasMovieSuggestions: option.movieSuggestions?.length || 0
@@ -351,12 +351,12 @@ export default function JornadaPersonalizadaScreen() {
       paddingHorizontal: spacing.xs,
     },
     question: {
-      fontSize: typography.fontSize.h2,
+      fontSize: typography.fontSize.h3,
       fontWeight: typography.fontWeight.bold,
       color: colors.text.primary,
       marginBottom: spacing.md,
       textAlign: 'center',
-      lineHeight: typography.fontSize.h2 * typography.lineHeight.tight,
+      lineHeight: typography.fontSize.h3 * typography.lineHeight.tight,
     },
     contextHintContainer: {
       flexDirection: 'row',
@@ -401,6 +401,7 @@ export default function JornadaPersonalizadaScreen() {
       fontSize: typography.fontSize.body,
       fontWeight: typography.fontWeight.medium,
       color: colors.text.primary,
+      textAlign: 'center',
       lineHeight: typography.fontSize.body * typography.lineHeight.normal,
     },
     optionCardText: {
@@ -775,7 +776,7 @@ export default function JornadaPersonalizadaScreen() {
     // Layout em duas colunas para gêneros (step 38) - APENAS se for realmente gêneros
     // Verificar se é realmente um step de gêneros baseado no conteúdo, não apenas no ID
     const isGenreStep = step.id === 38 && step.options.every(option =>
-      option.text.length < 30 // Gêneros são textos curtos
+      (option.mobileText || option.text).length < 30 // Gêneros são textos curtos
     );
 
     if (isGenreStep) {
@@ -794,7 +795,13 @@ export default function JornadaPersonalizadaScreen() {
               onPress={() => handleOption(option)}
               activeOpacity={0.7}
             >
-              <Text style={styles.genreOptionText} numberOfLines={1}>{option.text}</Text>
+              <Text
+                style={styles.genreOptionText}
+                numberOfLines={1}
+                adjustsFontSizeToFit={true}
+              >
+                {option.mobileText || option.text}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -817,7 +824,7 @@ export default function JornadaPersonalizadaScreen() {
           onPress={() => handleOption(option)}
           activeOpacity={0.7}
         >
-          <Text style={styles.optionCardText}>{option.text}</Text>
+          <Text style={styles.optionCardText}>{option.mobileText || option.text}</Text>
         </TouchableOpacity>
       );
     });
@@ -961,7 +968,7 @@ export default function JornadaPersonalizadaScreen() {
                 <View style={styles.optionContext}>
                   <Text style={styles.optionLabel}>Filmes sugeridos para:</Text>
                   <Text style={[styles.optionText, { color: sentimentColor }]}>
-                    "{selectedOption.text}"
+                    "{selectedOption.mobileText || selectedOption.text}"
                   </Text>
                 </View>
               )}
@@ -1358,7 +1365,7 @@ export default function JornadaPersonalizadaScreen() {
         >
           {/* Header da pergunta */}
           <View style={styles.questionHeader}>
-            <Text style={styles.question}>{step?.question}</Text>
+            <Text style={styles.question}>{step?.mobileQuestion || step?.question}</Text>
 
             {/* Badge de contexto melhorado */}
             {step?.contextualHint && (

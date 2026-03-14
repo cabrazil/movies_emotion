@@ -507,7 +507,11 @@ export default function PlataformasStreamingScreen() {
             <Text style={styles.title}>Onde você assiste?</Text>
             {selectedOptionText ? (
               <View style={styles.optionContext}>
-                <Text style={styles.optionText}>
+                <Text
+                  style={styles.optionText}
+                  adjustsFontSizeToFit={true}
+                  numberOfLines={2}
+                >
                   Sugestões para: <Text style={{ color: sentimentColor, fontWeight: 'bold' }}>"{selectedOptionText}"</Text>
                 </Text>
               </View>

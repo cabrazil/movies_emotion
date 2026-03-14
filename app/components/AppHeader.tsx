@@ -18,7 +18,7 @@ interface AppHeaderProps {
 export function AppHeader({ showBack = false, title = 'Vibesfilm', showLogo = false, onBackPress }: AppHeaderProps) {
   const router = useRouter();
   const { colors, isDark } = useTheme();
-  
+
   // Escolher o logo baseado no tema
   const vibesfilmLogo = isDark ? vibesfilmLogoDark : vibesfilmLogoLight;
 
@@ -41,8 +41,8 @@ export function AppHeader({ showBack = false, title = 'Vibesfilm', showLogo = fa
       justifyContent: 'space-between',
       paddingHorizontal: spacing.lg,
       paddingTop: spacing.sm + 4, // Reduzido para ficar próximo ao status bar
-      paddingBottom: spacing.lg,
-      minHeight: 60, // Reduzido também
+      paddingBottom: spacing.sm, // Reduzido para dar mais espaço de tela
+      minHeight: 48, // Reduzido para economizar espaço
     },
     backButton: {
       width: 36,
@@ -59,8 +59,8 @@ export function AppHeader({ showBack = false, title = 'Vibesfilm', showLogo = fa
       letterSpacing: 0.3,
     },
     logo: {
-      height: 56,
-      width: 180,
+      height: 40,
+      width: 150,
     },
     logoContainer: {
       alignItems: 'center',
@@ -77,7 +77,7 @@ export function AppHeader({ showBack = false, title = 'Vibesfilm', showLogo = fa
     <View style={styles.container}>
       <View style={styles.content}>
         {showBack ? (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.backButton}
             onPress={handleBackPress}
             activeOpacity={0.6}
@@ -90,8 +90,8 @@ export function AppHeader({ showBack = false, title = 'Vibesfilm', showLogo = fa
 
         {showLogo ? (
           <View style={styles.logoContainer}>
-            <Image 
-              source={vibesfilmLogo} 
+            <Image
+              source={vibesfilmLogo}
               style={styles.logo}
               resizeMode="contain"
               onError={(error) => {

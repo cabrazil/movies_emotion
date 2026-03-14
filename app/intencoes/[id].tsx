@@ -309,7 +309,12 @@ export default function IntencoesScreen() {
                     <Text style={styles.intentionTitle}>
                       {getIntentionLabel(intention.type)}
                     </Text>
-                    <Text style={styles.intentionDescription} numberOfLines={5}>
+                    <Text
+                      style={styles.intentionDescription}
+                      numberOfLines={5}
+                      adjustsFontSizeToFit={true}
+                      minimumFontScale={0.8}
+                    >
                       {intention.description}
                     </Text>
                   </View>

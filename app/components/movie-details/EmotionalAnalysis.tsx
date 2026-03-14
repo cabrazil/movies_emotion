@@ -184,7 +184,13 @@ export const EmotionalAnalysis: React.FC<EmotionalAnalysisProps> = React.memo(({
           <View style={styles.contentAlert}>
             <View style={styles.alertHeader}>
               <Ionicons name="warning" size={20} color={colors.state.warning} />
-              <Text style={styles.alertTitle}>Alerta de Conteúdo</Text>
+              <Text
+                style={styles.alertTitle}
+                adjustsFontSizeToFit={true}
+                numberOfLines={1}
+              >
+                Alerta de Conteúdo
+              </Text>
             </View>
             <Text style={styles.alertText}>
               <Text style={styles.alertBold}>Atenção: </Text>

@@ -57,6 +57,7 @@ export interface MovieSuggestion {
 export interface JourneyOption {
   id: number;
   text: string;
+  mobileText?: string | null;
   nextStepId: string | null;
   isEndState: boolean;
   movieSuggestions?: MovieSuggestion[];
@@ -69,6 +70,7 @@ export interface PersonalizedJourneyStep {
   stepId: string;
   order: number;
   question: string;
+  mobileQuestion?: string | null;
   priority?: number;
   contextualHint?: string;
   isRequired?: boolean;
