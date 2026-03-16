@@ -171,13 +171,18 @@ export const MovieAwards: React.FC<MovieAwardsProps> = React.memo(({
   }
 
   // Layout para premiações gerais
+  // Sanitiza palavras duplicadas consecutivas que podem vir do banco de dados (ex: "no no total" → "no total")
+  const sanitizedSummary = awardsSummary
+    ? awardsSummary.trim().replace(/\b(\w+)\s+\1\b/gi, '$1')
+    : '';
+
   return (
     <View style={styles.awardsSection}>
       <Text style={styles.sectionTitle}>Premiações e Reconhecimento</Text>
       <View style={styles.generalAwardsContainer}>
         <Text style={styles.generalAwardsText}>
-          {awardsSummary && awardsSummary.trim() !== '' && !awardsSummary.toLowerCase().includes('oscar')
-            ? `Este filme recebeu "${awardsSummary}" em outras cerimônias de premiações.`
+          {sanitizedSummary !== '' && !sanitizedSummary.toLowerCase().includes('oscar')
+            ? `Este filme recebeu ${sanitizedSummary} em outras cerimônias de premiações.`
             : 'Este filme pode ter recebido outros reconhecimentos importantes em festivais e premiações especializadas.'
           }
         </Text>

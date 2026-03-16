@@ -138,11 +138,17 @@ export default function HomeScreen() {
 
         {/* Conteúdo Central */}
         <View style={styles.content}>
-          <Text style={styles.welcomeText}>Bem-vindo(a)</Text>
-          <Text style={styles.title}>Encontre o filme perfeito para sua vibe.</Text>
+          <Text style={styles.title}>Cada emoção tem um filme.</Text>
           <Text style={styles.description}>
-            O cinema vai além de espelhar seu estado de espírito: ele pode te ajudar a processar uma emoção,
-            transformar seu humor ou explorar novas sensações.
+            O cinema é a bússola para o que você sente. Encontre a obra certa para o seu momento, seja para{' '}
+            <Text style={{ color: colors.primary.main, fontWeight: typography.fontWeight.bold }}>processar</Text>
+            {' '}uma emoção,{' '}
+            <Text style={{ color: colors.primary.main, fontWeight: typography.fontWeight.bold }}>transformar</Text>
+            {' '}seu humor,{' '}
+            <Text style={{ color: colors.primary.main, fontWeight: typography.fontWeight.bold }}>manter</Text>
+            {' '}sua energia ou{' '}
+            <Text style={{ color: colors.primary.main, fontWeight: typography.fontWeight.bold }}>explorar</Text>
+            {' '}novas sensações.
           </Text>
         </View>
 

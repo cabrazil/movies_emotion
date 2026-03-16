@@ -16,7 +16,7 @@ const CARD_WIDTH = (SCREEN_WIDTH - (2 * spacing.md) - CARD_MARGIN) / 2;
 const CARD_HEIGHT = 45;
 
 export default function JornadaPersonalizadaScreen() {
-  const { sentimentId, intentionId, optionId, platforms, showResults } = useLocalSearchParams();
+  const { sentimentId, intentionId, optionId, platforms, showResults, optionText } = useLocalSearchParams();
   const { colors, isDark } = useTheme();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -459,6 +459,7 @@ export default function JornadaPersonalizadaScreen() {
     },
     sortContainer: {
       flexDirection: 'row',
+      justifyContent: 'center',
       marginBottom: spacing.md,
       gap: spacing.sm,
     },
@@ -1092,7 +1093,8 @@ export default function JornadaPersonalizadaScreen() {
                       id: ms.movie.id,
                       reason: ms.reason,
                       sentimentId: sentimentId,
-                      intentionId: intentionId.toString()
+                      intentionId: intentionId.toString(),
+                      optionText: optionText ? optionText.toString() : ''
                     }
                   });
                 }}

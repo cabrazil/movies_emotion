@@ -204,7 +204,8 @@ export default function PlataformasStreamingScreen() {
         intentionId: intentionId.toString(),
         optionId: optionId.toString(),
         platforms: selectedPlatforms.join(','),
-        showResults: 'true'
+        showResults: 'true',
+        optionText: selectedOptionText
       }
     });
   };
@@ -218,7 +219,8 @@ export default function PlataformasStreamingScreen() {
         intentionId: intentionId.toString(),
         optionId: optionId.toString(),
         platforms: '',
-        showResults: 'true'
+        showResults: 'true',
+        optionText: selectedOptionText
       }
     });
   };
@@ -295,7 +297,7 @@ export default function PlataformasStreamingScreen() {
       flexDirection: 'row',
       flexWrap: 'wrap',
       gap: spacing.sm,
-      justifyContent: 'flex-start',
+      justifyContent: 'center',
     },
     platformCard: {
       width: 70,
@@ -636,4 +638,5 @@ export default function PlataformasStreamingScreen() {
     </SafeAreaView>
   );
 }
+
 
