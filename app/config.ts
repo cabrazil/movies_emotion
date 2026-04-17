@@ -10,7 +10,7 @@ const getApiBaseUrl = () => {
   if (__DEV__) {
     // Desenvolvimento: usar backend local via Ngrok (Recomendado para evitar timeouts)
     // Rode 'ngrok http 3333' e cole a URL gerada abaixo
-    return 'https://a352-179-83-15-178.ngrok-free.app';
+    return 'https://f31a-187-255-43-93.ngrok-free.app';
   }
 
   // Produção: usar URL de produção
@@ -69,10 +69,10 @@ export const apiRequest = async (url: string, options: RequestInit = {}, retries
   }
 
   // Timeout mais agressivo em desenvolvimento (tunnel adiciona latência)
-  // Em dev: 10s, 20s | Em prod: 15s, 30s, 60s
+  // Em dev: 10s, 20s | Em prod: 10s, 20s
   const timeoutDuration = __DEV__
     ? (retries === 2 ? 10000 : 20000)
-    : (retries === 3 ? 15000 : retries === 2 ? 30000 : 60000);
+    : (retries === 2 ? 10000 : 20000);
 
   try {
     // Usar Promise.race para timeout (mais compatível com React Native)

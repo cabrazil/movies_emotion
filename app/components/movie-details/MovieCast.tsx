@@ -26,19 +26,25 @@ export const MovieCast: React.FC<MovieCastProps> = React.memo(({
     return null;
   }
 
-  const displayCast = showFullCast ? mainCast : mainCast.slice(0, initialCount);
-  const hasMore = mainCast.length > initialCount;
+  // Ficha Premium: apenas os 4 primeiros
+  const displayCast = mainCast.slice(0, 4);
 
   const styles = useMemo(() => StyleSheet.create({
     castSection: {
-      padding: spacing.md,
-      backgroundColor: colors.background.secondary,
+      marginHorizontal: spacing.md,
       marginBottom: spacing.md,
+      padding: spacing.md,
+      backgroundColor: colors.background.card,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.border.light,
     },
     sectionTitle: {
-      fontSize: typography.fontSize.h4,
-      fontWeight: typography.fontWeight.semibold,
-      color: colors.text.primary,
+      fontSize: typography.fontSize.tiny,
+      fontWeight: typography.fontWeight.bold,
+      color: colors.text.secondary,
+      textTransform: 'uppercase',
+      letterSpacing: 1.5,
       marginBottom: spacing.md,
     },
     castContainer: {
@@ -53,28 +59,18 @@ export const MovieCast: React.FC<MovieCastProps> = React.memo(({
       fontWeight: typography.fontWeight.medium,
     },
     characterName: {
-      fontSize: typography.fontSize.body,
+      fontSize: typography.fontSize.small,
       color: colors.text.secondary,
       fontWeight: typography.fontWeight.regular,
     },
     asText: {
       fontStyle: 'italic',
     },
-    castToggleContainer: {
-      marginTop: spacing.sm,
-      alignItems: 'flex-start',
-    },
-    castToggleText: {
-      fontSize: typography.fontSize.small,
-      fontWeight: typography.fontWeight.semibold,
-      textDecorationLine: 'underline',
-    },
   }), [colors]);
 
   return (
     <View style={styles.castSection}>
       <Text style={styles.sectionTitle}>Elenco Principal</Text>
-      
       <View style={styles.castContainer}>
         {displayCast.map((actor, index) => (
           <View key={index} style={styles.castItem}>
@@ -89,19 +85,6 @@ export const MovieCast: React.FC<MovieCastProps> = React.memo(({
             </Text>
           </View>
         ))}
-        
-        {hasMore && (
-          <View style={styles.castToggleContainer}>
-            <TouchableOpacity onPress={() => setShowFullCast(!showFullCast)}>
-              <Text style={[styles.castToggleText, { color: sentimentColor }]}>
-                {showFullCast 
-                  ? 'Ver menos...' 
-                  : `Ver mais... (${mainCast.length - initialCount} atores)`
-                }
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
       </View>
     </View>
   );

@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { StreamingPlatform } from '../../../types';
 import { AppHeader } from '../../../components/AppHeader';
 import { NavigationFooter } from '../../../components/NavigationFooter';
+import { getCloudflareImageUrl } from '../../../components/movie-details/movieHelpers';
 
 export default function PlataformasStreamingScreen() {
   const { sentimentId, intentionId, optionId } = useLocalSearchParams();
@@ -191,7 +192,7 @@ export default function PlataformasStreamingScreen() {
                 >
                   {platform.logoPath ? (
                     <Image 
-                      source={{ uri: platform.logoPath }} 
+                      source={{ uri: getCloudflareImageUrl(platform.logoPath) }} 
                       style={styles.platformLogo}
                       resizeMode="contain"
                     />
@@ -246,7 +247,7 @@ export default function PlataformasStreamingScreen() {
                     >
                       {platform.logoPath ? (
                         <Image 
-                          source={{ uri: platform.logoPath }} 
+                          source={{ uri: getCloudflareImageUrl(platform.logoPath) }} 
                           style={styles.platformLogo}
                           resizeMode="contain"
                         />

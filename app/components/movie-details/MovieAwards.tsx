@@ -48,145 +48,60 @@ export const MovieAwards: React.FC<MovieAwardsProps> = React.memo(({
 
   const styles = useMemo(() => StyleSheet.create({
     awardsSection: {
-      padding: spacing.md,
-      backgroundColor: colors.background.secondary,
+      marginHorizontal: spacing.md,
       marginBottom: spacing.md,
+      padding: spacing.md,
+      backgroundColor: colors.background.card,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.border.light,
     },
     sectionTitle: {
-      fontSize: typography.fontSize.h4,
-      fontWeight: typography.fontWeight.semibold,
-      color: colors.text.primary,
+      fontSize: typography.fontSize.tiny,
+      fontWeight: typography.fontWeight.bold,
+      color: colors.text.secondary,
+      textTransform: 'uppercase',
+      letterSpacing: 1.5,
       marginBottom: spacing.md,
     },
-    oscarAwardsContainer: {
-      gap: spacing.sm,
-    },
-    awardsIntroText: {
+    summaryText: {
       fontSize: typography.fontSize.body,
-      color: colors.text.secondary,
-      marginBottom: spacing.sm,
-      lineHeight: typography.fontSize.body * typography.lineHeight.normal,
-    },
-    awardsList: {
-      gap: spacing.xs,
-      marginBottom: spacing.sm,
-    },
-    nominationsList: {
-      gap: spacing.xs,
-      marginBottom: spacing.sm,
-    },
-    awardItem: {
+      fontWeight: typography.fontWeight.semibold,
+      color: '#FFD700',
+      lineHeight: typography.fontSize.body * 1.5,
       marginBottom: spacing.xs,
     },
-    awardText: {
-      fontSize: typography.fontSize.body,
-      color: colors.text.primary,
-      lineHeight: typography.fontSize.body * typography.lineHeight.normal,
-    },
-    awardForText: {
+    nominationsText: {
+      fontSize: typography.fontSize.small,
       color: colors.text.secondary,
       fontStyle: 'italic',
     },
-    awardPersonText: {
-      fontWeight: typography.fontWeight.semibold,
-      color: colors.text.primary,
-    },
-    awardsToggleContainer: {
-      marginTop: spacing.sm,
-      alignItems: 'flex-start',
-    },
-    awardsToggleText: {
-      fontSize: typography.fontSize.small,
-      fontWeight: typography.fontWeight.semibold,
-      textDecorationLine: 'underline',
-    },
-    generalAwardsContainer: {
-      padding: spacing.md,
-      backgroundColor: colors.background.primary,
-      borderRadius: spacing.sm,
-    },
-    generalAwardsText: {
-      fontSize: typography.fontSize.body,
-      color: colors.text.secondary,
-      lineHeight: typography.fontSize.body * typography.lineHeight.normal,
-      textAlign: 'center',
-    },
   }), [colors]);
 
-  if (hasOscarAwards) {
+  // Sem Oscar: verifica awardsSummary genérico
+  if (!hasOscarAwards) {
+    if (!awardsSummary) return null;
     return (
       <View style={styles.awardsSection}>
-        <Text style={styles.sectionTitle}>Premiações e Reconhecimento</Text>
-        
-        <View style={styles.oscarAwardsContainer}>
-          <Text style={styles.awardsIntroText}>{introText}</Text>
-
-          {/* Vitórias no Oscar - sempre visíveis */}
-          {oscarAwards.wins && oscarAwards.wins.length > 0 && (
-            <View style={styles.awardsList}>
-              {oscarAwards.wins.map((win, index) => (
-                <View key={index} style={styles.awardItem}>
-                  <Text style={styles.awardText}>
-                    {translateOscarCategory(win.categoryName || win.category || '')}{' '}
-                    <Text style={styles.awardForText}>para</Text>{' '}
-                    <Text style={styles.awardPersonText}>{win.personName}</Text>
-                  </Text>
-                </View>
-              ))}
-            </View>
-          )}
-
-          {/* Indicações que não venceram - só aparecem no "Ver mais" */}
-          {oscarAwards.nominations && oscarAwards.nominations.length > 0 && (
-            <>
-              {showFullNominations && (
-                <View style={styles.nominationsList}>
-                  {oscarAwards.nominations.map((nomination, index) => (
-                    <View key={index} style={styles.awardItem}>
-                      <Text style={styles.awardText}>
-                        {translateOscarCategory(nomination.categoryName || nomination.category || '')}{' '}
-                        <Text style={styles.awardForText}>para</Text>{' '}
-                        <Text style={styles.awardPersonText}>{nomination.personName}</Text>
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-              )}
-
-              <View style={styles.awardsToggleContainer}>
-                <TouchableOpacity onPress={() => setShowFullNominations(!showFullNominations)}>
-                  <Text style={[styles.awardsToggleText, { color: sentimentColor }]}>
-                    {showFullNominations 
-                      ? 'Ver menos...' 
-                      : `Ver mais... (${oscarAwards.nominations.length} ${oscarAwards.nominations.length > 1 ? 'indicações' : 'indicação'})`
-                    }
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </>
-          )}
-        </View>
+        <Text style={styles.sectionTitle}>Reconhecimento</Text>
+        <Text style={styles.nominationsText}>{awardsSummary}</Text>
       </View>
     );
   }
 
-  // Layout para premiações gerais
-  // Sanitiza palavras duplicadas consecutivas que podem vir do banco de dados (ex: "no no total" → "no total")
-  const sanitizedSummary = awardsSummary
-    ? awardsSummary.trim().replace(/\b(\w+)\s+\1\b/gi, '$1')
-    : '';
+  const wins = oscarAwards!.wins.length;
+  const nominations = oscarAwards!.nominations.length;
+  const year = wins > 0 ? oscarAwards!.wins[0].year : oscarAwards!.nominations[0]?.year;
+
+  const summaryLine = wins > 0
+    ? `Vencedor de ${wins} Oscar${wins > 1 ? 's' : ''}${nominations > 0 ? ` (e ${nominations} indicaç${nominations > 1 ? 'ões' : 'ão'})` : ''}`
+    : `Indicado a ${nominations} Oscar${nominations > 1 ? 's' : ''}`;
 
   return (
     <View style={styles.awardsSection}>
-      <Text style={styles.sectionTitle}>Premiações e Reconhecimento</Text>
-      <View style={styles.generalAwardsContainer}>
-        <Text style={styles.generalAwardsText}>
-          {sanitizedSummary !== '' && !sanitizedSummary.toLowerCase().includes('oscar')
-            ? `Este filme recebeu ${sanitizedSummary} em outras cerimônias de premiações.`
-            : 'Este filme pode ter recebido outros reconhecimentos importantes em festivais e premiações especializadas.'
-          }
-        </Text>
-      </View>
+      <Text style={styles.sectionTitle}>Reconhecimento</Text>
+      <Text style={styles.summaryText}>🏆 {summaryLine}</Text>
+      {year && <Text style={styles.nominationsText}>Cerimônia de {year}</Text>}
     </View>
   );
 });

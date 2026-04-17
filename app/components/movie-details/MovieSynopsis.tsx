@@ -1,75 +1,108 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { typography, spacing } from '../../theme';
+import { typography, spacing, borderRadius } from '../../theme';
 import { useTheme } from '../../hooks/useTheme';
 
 interface MovieSynopsisProps {
   description?: string | null;
+  director?: string | null;
   sentimentColor: string;
 }
 
 export const MovieSynopsis: React.FC<MovieSynopsisProps> = React.memo(({
   description,
-  sentimentColor
+  director,
+  sentimentColor,
 }) => {
   const { colors } = useTheme();
-  const [showFullSynopsis, setShowFullSynopsis] = useState(false);
-  const maxLength = 200;
+  const [expanded, setExpanded] = useState(false);
+  const MAX_LENGTH = 220;
 
-  const synopsis = description || 'Sinopse não disponível.';
-  const shouldShowToggle = synopsis.length > maxLength;
+  const text = description || 'Sinopse não disponível.';
+  const needsToggle = text.length > MAX_LENGTH;
   const displayText = useMemo(() => {
-    if (synopsis.length <= maxLength || showFullSynopsis) {
-      return synopsis;
-    }
-    return synopsis.substring(0, maxLength) + '...';
-  }, [synopsis, showFullSynopsis, maxLength]);
+    if (!needsToggle || expanded) return text;
+    return text.substring(0, MAX_LENGTH) + '…';
+  }, [text, expanded, needsToggle]);
 
   const styles = useMemo(() => StyleSheet.create({
-    synopsisSection: {
-      padding: spacing.md,
-      backgroundColor: colors.background.secondary,
+    container: {
+      marginHorizontal: spacing.md,
       marginBottom: spacing.md,
+      padding: spacing.md,
+      backgroundColor: colors.background.card,
+      borderRadius: borderRadius.lg,
+      borderWidth: 1,
+      borderColor: colors.border.light,
     },
     sectionTitle: {
-      fontSize: typography.fontSize.h4,
-      fontWeight: typography.fontWeight.semibold,
-      color: colors.text.primary,
-      marginBottom: spacing.md,
+      fontSize: typography.fontSize.small,
+      fontWeight: typography.fontWeight.bold,
+      color: colors.text.secondary,
+      textTransform: 'uppercase',
+      letterSpacing: 1.5,
+      marginBottom: spacing.sm,
     },
     synopsisText: {
-      fontSize: typography.fontSize.body,
-      color: colors.text.secondary,
-      lineHeight: typography.fontSize.body * typography.lineHeight.relaxed,
+      fontSize: typography.fontSize.small,
+      color: colors.text.primary,
+      lineHeight: typography.fontSize.small * 1.65,
+      fontWeight: typography.fontWeight.regular,
     },
-    verMaisButton: {
-      marginTop: spacing.sm,
+    toggleButton: {
+      marginTop: spacing.xs,
       alignSelf: 'flex-start',
     },
-    verMaisText: {
+    toggleText: {
       fontSize: typography.fontSize.small,
-      fontWeight: '600',
-      textDecorationLine: 'underline',
+      fontWeight: typography.fontWeight.semibold,
+    },
+    divider: {
+      height: 1,
+      backgroundColor: colors.border.light,
+      marginTop: spacing.md,
+      marginBottom: spacing.sm,
+    },
+    directorRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+    },
+    directorLabel: {
+      fontSize: typography.fontSize.small,
+      color: colors.text.secondary,
+    },
+    directorName: {
+      fontSize: typography.fontSize.small,
+      fontWeight: typography.fontWeight.semibold,
+      color: colors.text.primary,
     },
   }), [colors]);
 
   return (
-    <View style={styles.synopsisSection}>
+    <View style={styles.container}>
       <Text style={styles.sectionTitle}>Sinopse</Text>
       <Text style={styles.synopsisText}>{displayText}</Text>
-      {shouldShowToggle && (
-        <TouchableOpacity 
-          style={styles.verMaisButton}
-          onPress={() => setShowFullSynopsis(!showFullSynopsis)}
-        >
-          <Text style={[styles.verMaisText, { color: sentimentColor }]}>
-            {showFullSynopsis ? 'Ver menos' : 'Ver mais'}
+
+      {needsToggle && (
+        <TouchableOpacity style={styles.toggleButton} onPress={() => setExpanded(!expanded)}>
+          <Text style={[styles.toggleText, { color: sentimentColor }]}>
+            {expanded ? 'Ler menos ↑' : 'Ler mais…'}
           </Text>
         </TouchableOpacity>
+      )}
+
+      {director && (
+        <>
+          <View style={styles.divider} />
+          <View style={styles.directorRow}>
+            <Text style={styles.directorLabel}>Direção:</Text>
+            <Text style={styles.directorName}>{director}</Text>
+          </View>
+        </>
       )}
     </View>
   );
 });
 
 MovieSynopsis.displayName = 'MovieSynopsis';
-

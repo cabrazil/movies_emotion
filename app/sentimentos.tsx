@@ -159,33 +159,39 @@ export default function SentimentosScreen() {
     card: {
       backgroundColor: colors.background.card,
       borderRadius: borderRadius.lg,
-      padding: spacing.md,
-      marginBottom: spacing.md,
+      padding: spacing.sm,
+      marginBottom: spacing.sm,
       ...shadows.md,
 
-      // Dimensões para Grid (quase quadrado)
-      width: '48%', // Deixa um espacinho no meio (aproximadamente 4% de gap)
-      aspectRatio: 1, // Quadrado
+      // Dimensões para Grid
+      width: '48%',
+      aspectRatio: 0.88,
 
-      justifyContent: 'space-between',
-      alignItems: 'flex-start', // Alinhamento interno à esquerda
+      justifyContent: 'flex-start',
+      alignItems: 'flex-start',
 
-      // Borda visual colorida (agora no topo ou lateral fina)
-      borderTopWidth: 4,
+      // Borda colorida envolvendo todo o card
+      borderWidth: 2,
+    },
+    cardDescription: {
+      fontSize: typography.fontSize.tiny,
+      color: colors.text.primary,
+      lineHeight: 16,
+      marginTop: 2,
     },
     iconContainer: {
-      width: 48,
-      height: 48,
-      borderRadius: 24,
+      width: 40,
+      height: 40,
+      borderRadius: 20,
       justifyContent: 'center',
       alignItems: 'center',
-      marginBottom: spacing.sm,
+      marginBottom: 4,
     },
     cardTitle: {
-      fontSize: typography.fontSize.h4,
+      fontSize: typography.fontSize.body,
       fontWeight: typography.fontWeight.bold,
       color: colors.text.primary,
-      marginTop: 'auto', // Empurra para baixo se sobrar espaço
+      marginTop: 2,
     },
     // Loading/Error states mantidos iguais
     loadingText: {
@@ -279,27 +285,38 @@ export default function SentimentosScreen() {
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => {
             const sentimentColor = colors.sentimentColors[item.id] || colors.primary.main;
+            const description = item.shortDescription || sentimentDescriptions[item.id];
 
             return (
               <TouchableOpacity
                 style={[
                   styles.card,
-                  { borderTopColor: sentimentColor } // Borda colorida no topo
+                  { borderColor: sentimentColor }
                 ]}
                 onPress={() => handleSentimentPress(item)}
                 activeOpacity={0.7}
               >
-                <View style={[styles.iconContainer, { backgroundColor: sentimentColor + '15' }]}>
-                  <SentimentIcon sentimentId={item.id} size={28} color={sentimentColor} />
+                <View style={[styles.iconContainer, { backgroundColor: sentimentColor + '20' }]}>
+                  <SentimentIcon sentimentId={item.id} size={25} color={sentimentColor} />
                 </View>
 
-                <Text
-                  style={styles.cardTitle}
-                  adjustsFontSizeToFit={true}
-                  numberOfLines={1}
-                >
-                  {item.name}
-                </Text>
+                <View>
+                  <Text
+                    style={styles.cardTitle}
+                    adjustsFontSizeToFit={true}
+                    numberOfLines={1}
+                  >
+                    {item.name}
+                  </Text>
+                  {description && (
+                    <Text
+                      style={styles.cardDescription}
+                      numberOfLines={3}
+                    >
+                      {description}
+                    </Text>
+                  )}
+                </View>
               </TouchableOpacity>
             );
           }}

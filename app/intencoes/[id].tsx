@@ -152,7 +152,8 @@ export default function IntencoesScreen() {
       flexDirection: 'row',
       flexWrap: 'wrap',
       justifyContent: 'space-between',
-      gap: spacing.md, // Funciona nas versões novas do RN, senão usamos margem negativa
+      rowGap: spacing.lg,
+      columnGap: spacing.sm,
     },
     intentionCard: {
       backgroundColor: colors.background.card,
@@ -166,9 +167,8 @@ export default function IntencoesScreen() {
       alignItems: 'center',
       justifyContent: 'center',
 
-      // Borda visual (opcional, pode ser top ou removida se preferir clean)
-      borderTopWidth: 4,
-      borderLeftWidth: 0,
+      // Borda visual envolvendo todo o card
+      borderWidth: 2,
     },
     intentionIconContainer: {
       width: 52,
@@ -194,9 +194,9 @@ export default function IntencoesScreen() {
     },
     intentionDescription: {
       fontSize: typography.fontSize.small,
-      color: colors.text.secondary,
+      color: colors.text.primary,
       lineHeight: typography.fontSize.small * 1.3,
-      textAlign: 'center', // Centralizar
+      textAlign: 'center',
     },
     arrowIcon: {
       marginLeft: spacing.xs,
@@ -290,7 +290,7 @@ export default function IntencoesScreen() {
                 <TouchableOpacity
                   key={intention.id}
                   style={[styles.intentionCard, {
-                    borderTopColor: sentimentColor,
+                    borderColor: sentimentColor,
                   }]}
                   onPress={() => handleIntentionPress(intention)}
                   activeOpacity={0.7}

@@ -10,9 +10,8 @@ import { NavigationFooter } from '../components/NavigationFooter';
 import { AppHeader } from '../components/AppHeader';
 import { MovieHeader } from '../components/movie-details/MovieHeader';
 import { StreamingPlatforms } from '../components/movie-details/StreamingPlatforms';
-import { EmotionalAnalysis } from '../components/movie-details/EmotionalAnalysis';
+import { CuradoriaCard } from '../components/movie-details/CuradoriaCard';
 import { MovieSynopsis } from '../components/movie-details/MovieSynopsis';
-import { RatingsAndGenres } from '../components/movie-details/RatingsAndGenres';
 import { MovieCast } from '../components/movie-details/MovieCast';
 import { MovieAwards } from '../components/movie-details/MovieAwards';
 
@@ -422,6 +421,7 @@ export default function MovieDetailsScreen() {
           onScroll={handleScroll}
           scrollEventThrottle={16}
         >
+          {/* 1. Hero: Pôster + Título + Título Original + Ano + Duração + Classificação */}
           <MovieHeader
             thumbnail={movie.thumbnail}
             title={movie.title}
@@ -431,46 +431,152 @@ export default function MovieDetailsScreen() {
             runtime={movie.runtime}
             certification={movie.certification}
             sentimentColor={sentimentColor}
-            onTrailerPress={handleTrailer}
           />
 
+          {/* 2. Gêneros */}
+          {movie.genres && movie.genres.length > 0 && (
+            <View style={{
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              gap: 8,
+              paddingHorizontal: 16,
+              paddingBottom: 16,
+            }}>
+              {movie.genres.map((g) => (
+                <View key={g} style={{
+                  paddingHorizontal: 12,
+                  paddingVertical: 5,
+                  borderRadius: 20,
+                  backgroundColor: sentimentColor + '18',
+                  borderWidth: 1,
+                  borderColor: sentimentColor + '40',
+                }}>
+                  <Text style={{ fontSize: 13, fontWeight: '500', color: sentimentColor }}>{g}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* 3. A Vibe do Filme */}
+          {movie.landingPageHook && (() => {
+            const hook = movie.landingPageHook!.replace(/<[^>]*>/g, '').trim();
+            return hook ? (
+              <View style={{
+                marginHorizontal: 16,
+                marginBottom: 20,
+                paddingLeft: 14,
+                borderLeftWidth: 3,
+                borderLeftColor: sentimentColor,
+              }}>
+                <Text style={{
+                  fontSize: 11,
+                  fontWeight: '700',
+                  textTransform: 'uppercase',
+                  letterSpacing: 1.5,
+                  color: sentimentColor,
+                  marginBottom: 4,
+                }}>A Vibe do Filme</Text>
+                <Text style={{
+                  fontSize: 16,
+                  fontStyle: 'italic',
+                  lineHeight: 24,
+                  color: colors.text.primary,
+                }}>"{hook}"</Text>
+              </View>
+            ) : null;
+          })()}
+
+          {/* Botão Assistir Trailer */}
+          <TouchableOpacity
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              marginHorizontal: 16,
+              marginBottom: 20,
+              paddingVertical: 12,
+              borderRadius: 10,
+              backgroundColor: sentimentColor,
+            }}
+            onPress={handleTrailer}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="play-circle" size={20} color="#fff" />
+            <Text style={{ fontSize: 15, fontWeight: '600', color: '#fff' }}>Assistir Trailer</Text>
+          </TouchableOpacity>
+
+          {/* 4. Onde Assistir */}
           <StreamingPlatforms
             platforms={movie.platforms}
             sentimentColor={sentimentColor}
           />
 
-          <EmotionalAnalysis
-            title={movie.title}
-            contentWarnings={movie.contentWarnings}
-            landingPageHook={movie.landingPageHook}
-            targetAudienceForLP={movie.targetAudienceForLP}
+          {/* 4b. Alerta de Conteúdo */}
+          {movie.contentWarnings && (() => {
+            const hasWarning = movie.contentWarnings !== 'Atenção: nenhum alerta de conteúdo significativo.';
+            return (
+              <View style={{
+                marginHorizontal: 16,
+                marginBottom: 16,
+                padding: 14,
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: hasWarning ? colors.state.warning + '60' : '#4CAF5060',
+                backgroundColor: hasWarning ? colors.state.warning + '12' : '#4CAF5012',
+                flexDirection: 'row',
+                alignItems: 'flex-start',
+                gap: 10,
+              }}>
+                <Text style={{ fontSize: 16, marginTop: 1 }}>
+                  {hasWarning ? '⚠️' : '✅'}
+                </Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={{
+                    fontSize: 11,
+                    fontWeight: '700',
+                    textTransform: 'uppercase',
+                    letterSpacing: 1.2,
+                    color: hasWarning ? colors.state.warning : '#4CAF50',
+                    marginBottom: 4,
+                  }}>
+                    {hasWarning ? 'Alerta de Conteúdo' : 'Verificação de Conteúdo'}
+                  </Text>
+                  <Text style={{ fontSize: 13, color: colors.text.secondary, lineHeight: 19 }}>
+                    {hasWarning
+                      ? (() => { const t = movie.contentWarnings!.replace('Atenção: ', '').replace('atenção: ', ''); return t.charAt(0).toUpperCase() + t.slice(1); })()
+                      : 'Nenhum alerta de conteúdo significativo identificado.'}
+                  </Text>
+                </View>
+              </View>
+            );
+          })()}
+
+          {/* 5. Curadoria VibesFilm */}
+          <CuradoriaCard
             sentimentId={sentimentId}
             intentionId={typeof intentionId === 'string' ? intentionId : undefined}
+            optionText={optionText}
             reason={reason}
+            imdbRating={movie.imdbRating}
+            vote_average={movie.vote_average}
             sentimentColor={sentimentColor}
-            emotionalTags={movie.emotionalTags}
           />
 
+          {/* 6. Sinopse + Direção */}
           <MovieSynopsis
             description={movie.description}
+            director={movie.director}
             sentimentColor={sentimentColor}
           />
 
-          <RatingsAndGenres
-            vote_average={movie.vote_average}
-            imdbRating={movie.imdbRating}
-            imdb_rating={movie.imdb_rating}
-            rottenTomatoesRating={movie.rottenTomatoesRating}
-            metacriticRating={movie.metacriticRating}
-            genres={movie.genres}
-            sentimentColor={sentimentColor}
-          />
-
+          {/* 7. Elenco Principal (4 nomes) */}
           <MovieCast
             mainCast={movie.mainCast}
             sentimentColor={sentimentColor}
           />
 
+          {/* 8. Reconhecimento (Oscar) */}
           <MovieAwards
             title={movie.title}
             oscarAwards={movie.oscarAwards}
@@ -478,7 +584,7 @@ export default function MovieDetailsScreen() {
             sentimentColor={sentimentColor}
           />
 
-          {/* Botão de Compartilhar */}
+          {/* Compartilhar */}
           <View style={styles.actionsContainer}>
             <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
               <Ionicons name="share-outline" size={24} color={colors.primary.main} />
@@ -487,15 +593,11 @@ export default function MovieDetailsScreen() {
           </View>
         </ScrollView>
 
-        {/* Indicador de Scroll */}
         {showScrollIndicator && (
           <Animated.View
             style={[
               styles.scrollIndicator,
-              {
-                opacity: scrollIndicatorOpacity,
-                borderColor: sentimentColor + '40'
-              }
+              { opacity: scrollIndicatorOpacity, borderColor: sentimentColor + '40' }
             ]}
           >
             <Ionicons name="chevron-down" size={24} color={sentimentColor} />

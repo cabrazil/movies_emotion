@@ -21,6 +21,12 @@ const getPlatformLogoUrl = (logoPath: string | null, platformName: string): stri
 
   // Se já for uma URL completa, retornar como está
   if (logoPath.startsWith('http://') || logoPath.startsWith('https://')) {
+    if (logoPath.includes('dadrodpfylduydjbdxpy.supabase.co')) {
+      return logoPath.replace(
+        'https://dadrodpfylduydjbdxpy.supabase.co/storage/v1/object/public/movie-images',
+        'https://images.vibesfilm.com'
+      );
+    }
     return logoPath;
   }
 

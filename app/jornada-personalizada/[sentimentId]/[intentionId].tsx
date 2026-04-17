@@ -9,6 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { PersonalizedJourneyResponse, PersonalizedJourneyStep, JourneyOption, MovieSuggestion } from '../../types';
 import { NavigationFooter } from '../../components/NavigationFooter';
 import { AppHeader } from '../../components/AppHeader';
+import { getCloudflareImageUrl } from '../../components/movie-details/movieHelpers';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_MARGIN = spacing.xs;
@@ -1101,7 +1102,7 @@ export default function JornadaPersonalizadaScreen() {
               >
                 <View style={styles.movieContent}>
                   {ms.movie.thumbnail && (
-                    <Image source={{ uri: ms.movie.thumbnail }} style={styles.thumbnail} resizeMode="cover" />
+                    <Image source={{ uri: getCloudflareImageUrl(ms.movie.thumbnail) }} style={styles.thumbnail} resizeMode="cover" />
                   )}
                   <View style={styles.movieInfo}>
                     <View>

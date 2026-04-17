@@ -1,13 +1,21 @@
+export const getCloudflareImageUrl = (imageUrl: string | undefined | null): string => {
+  if (!imageUrl) return '';
+  if (imageUrl.includes('dadrodpfylduydjbdxpy.supabase.co')) {
+    return imageUrl.replace(
+      'https://dadrodpfylduydjbdxpy.supabase.co/storage/v1/object/public/movie-images',
+      'https://images.vibesfilm.com'
+    );
+  }
+  return imageUrl;
+};
+
 // Helper para construir URL do logo
 export const getPlatformLogoUrl = (logoPath: string | null): string => {
-
-
-  // Para outras plataformas, usar logoPath do Supabase
   if (!logoPath) return '';
 
-  // Se já for uma URL completa, retornar como está
+  // Se já for uma URL completa, retornar passando pelo proxy
   if (logoPath.startsWith('http://') || logoPath.startsWith('https://')) {
-    return logoPath;
+    return getCloudflareImageUrl(logoPath);
   }
 
   // Se é um path do TMDB, constrói a URL completa
@@ -15,8 +23,8 @@ export const getPlatformLogoUrl = (logoPath: string | null): string => {
     return `https://image.tmdb.org/t/p/w92${logoPath}`;
   }
 
-  // Caso contrário, retornar o logoPath como está (pode ser uma URL do Supabase)
-  return logoPath;
+  // Caso contrário, retornar o logoPath com proxy aplicado (pode ser uma URL do Supabase)
+  return getCloudflareImageUrl(logoPath);
 };
 
 // Função para traduzir categorias do Oscar

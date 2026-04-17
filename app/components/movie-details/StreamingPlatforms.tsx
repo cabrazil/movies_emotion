@@ -118,14 +118,20 @@ export const StreamingPlatforms: React.FC<StreamingPlatformsProps> = React.memo(
 
   const styles = useMemo(() => StyleSheet.create({
     streamingSection: {
-      padding: spacing.md,
-      backgroundColor: colors.background.secondary,
+      marginHorizontal: spacing.md,
       marginBottom: spacing.md,
+      padding: spacing.md,
+      backgroundColor: colors.background.card,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.border.light,
     },
     sectionTitle: {
-      fontSize: typography.fontSize.h4,
+      fontSize: typography.fontSize.tiny,
       fontWeight: typography.fontWeight.bold,
-      color: colors.text.primary,
+      color: colors.text.secondary,
+      textTransform: 'uppercase',
+      letterSpacing: 1.5,
       marginBottom: spacing.md,
     },
     platformsContainer: {

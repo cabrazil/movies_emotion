@@ -152,21 +152,21 @@ export const EmotionalAnalysis: React.FC<EmotionalAnalysisProps> = React.memo(({
       lineHeight: typography.fontSize.body * typography.lineHeight.normal,
     },
     emotionalTagsSection: {
-      padding: spacing.md,
-      backgroundColor: colors.background.secondary,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.md,
+      backgroundColor: colors.background.primary,
       marginBottom: spacing.md,
     },
     tagsContainer: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
+      flexDirection: 'column',
       gap: spacing.sm,
     },
     emotionalTag: {
-      backgroundColor: colors.primary.main + '20',
-      borderWidth: 1,
       paddingHorizontal: spacing.md,
       paddingVertical: spacing.sm,
-      borderRadius: borderRadius.md,
+      borderRadius: borderRadius.sm,
+      borderLeftWidth: 3,
+      backgroundColor: colors.primary.main + '10',
     },
     tagText: {
       fontSize: typography.fontSize.small,

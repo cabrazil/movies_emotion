@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, Text, StyleSheet, Image } from 'react-native';
 import { typography, spacing, borderRadius } from '../../theme';
 import { useTheme } from '../../hooks/useTheme';
+import { getCloudflareImageUrl } from './movieHelpers';
 
 interface MovieHeaderProps {
   thumbnail?: string | null;
@@ -13,7 +13,6 @@ interface MovieHeaderProps {
   runtime?: number | null;
   certification?: string | null;
   sentimentColor: string;
-  onTrailerPress: () => void;
 }
 
 export const MovieHeader: React.FC<MovieHeaderProps> = React.memo(({
@@ -21,11 +20,9 @@ export const MovieHeader: React.FC<MovieHeaderProps> = React.memo(({
   title,
   year,
   original_title,
-  director,
   runtime,
   certification,
   sentimentColor,
-  onTrailerPress
 }) => {
   const { colors } = useTheme();
 
@@ -36,142 +33,103 @@ export const MovieHeader: React.FC<MovieHeaderProps> = React.memo(({
   };
 
   const styles = useMemo(() => StyleSheet.create({
-    movieHeader: {
+    container: {
       flexDirection: 'row',
       padding: spacing.md,
+      gap: spacing.md,
+      alignItems: 'flex-start',
       backgroundColor: colors.background.primary,
     },
-    posterContainer: {
-      marginRight: spacing.md,
-    },
     poster: {
-      width: 120,
-      height: 180,
+      width: 110,
+      height: 165,
       borderRadius: borderRadius.md,
       backgroundColor: colors.background.secondary,
     },
-    movieInfo: {
+    info: {
       flex: 1,
-      justifyContent: 'space-between',
+      paddingTop: spacing.xs,
     },
-    titleSection: {
-      marginBottom: spacing.sm,
-    },
-    movieTitle: {
+    title: {
       fontSize: typography.fontSize.h3,
       fontWeight: typography.fontWeight.bold,
       color: colors.text.primary,
+      lineHeight: typography.fontSize.h3 * 1.25,
       marginBottom: spacing.xs,
     },
-    movieYear: {
-      fontSize: typography.fontSize.body,
-      color: colors.text.secondary,
-      fontWeight: typography.fontWeight.medium,
-    },
     originalTitle: {
-      fontSize: typography.fontSize.small,
-      color: colors.text.secondary,
-      fontWeight: typography.fontWeight.regular,
-      marginTop: spacing.sm,
+      fontSize: typography.fontSize.tiny,
       fontStyle: 'italic',
+      color: colors.text.secondary,
+      marginBottom: spacing.sm,
     },
-    movieMeta: {
-      marginBottom: spacing.md,
+    metaRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      alignItems: 'center',
+      gap: spacing.xs,
     },
     metaText: {
       fontSize: typography.fontSize.small,
       color: colors.text.secondary,
-      marginBottom: spacing.xs,
     },
-    runtimeCertificationRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginTop: spacing.xs,
-      flexWrap: 'wrap',
-    },
-    metaSeparator: {
-      fontSize: typography.fontSize.small,
+    metaDot: {
+      fontSize: typography.fontSize.tiny,
       color: colors.text.secondary,
-      marginHorizontal: spacing.sm,
+      opacity: 0.4,
     },
-    certificationText: {
-      fontSize: typography.fontSize.small,
-      fontWeight: typography.fontWeight.medium,
+    certBadge: {
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      borderRadius: 4,
+      borderWidth: 1,
+      borderColor: colors.border.medium,
     },
-    trailerButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingHorizontal: spacing.md,
-      paddingVertical: spacing.sm,
-      borderRadius: borderRadius.md,
-      alignSelf: 'center',
-      width: '100%',
-    },
-    trailerButtonText: {
-      fontSize: typography.fontSize.body,
+    certText: {
+      fontSize: typography.fontSize.tiny,
       fontWeight: typography.fontWeight.semibold,
-      color: colors.text.inverse,
-      marginLeft: spacing.xs,
+      color: colors.text.secondary,
+    },
+    yearText: {
+      fontSize: typography.fontSize.small,
+      fontWeight: typography.fontWeight.semibold,
     },
   }), [colors]);
 
   return (
-    <View style={styles.movieHeader}>
+    <View style={styles.container}>
       {thumbnail && (
-        <View style={styles.posterContainer}>
-          <Image
-            source={{ uri: thumbnail }}
-            style={styles.poster}
-            resizeMode="cover"
-          />
-        </View>
+        <Image source={{ uri: getCloudflareImageUrl(thumbnail) }} style={styles.poster} resizeMode="cover" />
       )}
+      <View style={styles.info}>
+        <Text style={styles.title}>{title}</Text>
 
-      <View style={styles.movieInfo}>
-        <View style={styles.titleSection}>
-          <Text style={styles.movieTitle}>{title}</Text>
+        {original_title && original_title !== title && (
+          <Text style={styles.originalTitle}>"{original_title}"</Text>
+        )}
+
+        <View style={styles.metaRow}>
           {year && (
-            <Text style={[styles.movieYear, { color: sentimentColor }]}>({year})</Text>
+            <Text style={[styles.yearText, { color: sentimentColor }]}>{year}</Text>
           )}
-          {original_title && (
-            <Text style={styles.originalTitle}>Título Original: <Text style={{ fontWeight: '600', color: sentimentColor }}>{original_title}</Text></Text>
+          {runtime && runtime > 0 && (
+            <>
+              <Text style={styles.metaDot}>·</Text>
+              <Text style={styles.metaText}>{formatRuntime(runtime)}</Text>
+            </>
+          )}
+          {certification && (
+            <>
+              <Text style={styles.metaDot}>·</Text>
+              <View style={styles.certBadge}>
+                <Text style={styles.certText}>{certification}</Text>
+              </View>
+            </>
           )}
         </View>
-
-        <View style={styles.movieMeta}>
-          {director && (
-            <Text style={styles.metaText}>Diretor: {director}</Text>
-          )}
-
-          <View style={styles.runtimeCertificationRow}>
-            {runtime && (
-              <Text style={styles.metaText}>
-                {formatRuntime(runtime)}
-              </Text>
-            )}
-            {certification && (
-              <>
-                <Text style={styles.metaSeparator}>|</Text>
-                <Text style={[styles.certificationText, { color: sentimentColor }]}>
-                  {certification}
-                </Text>
-              </>
-            )}
-          </View>
-        </View>
-
-        <TouchableOpacity
-          style={[styles.trailerButton, { backgroundColor: sentimentColor }]}
-          onPress={onTrailerPress}
-        >
-          <Ionicons name="play-circle" size={20} color={colors.text.inverse} />
-          <Text style={styles.trailerButtonText}>Assistir Trailer</Text>
-        </TouchableOpacity>
       </View>
     </View>
   );
 });
 
 MovieHeader.displayName = 'MovieHeader';
-
