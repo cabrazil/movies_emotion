@@ -23,12 +23,21 @@
       "android": {
         "buildType": "app-bundle"
       },
+      "ios": {
+        "simulator": false
+      },
       "env": {
         "EXPO_PUBLIC_API_BASE_URL": "https://api.vibesfilm.com"
       }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "appleId": "SEU_APPLE_ID@email.com",
+        "ascAppId": "SEU_APP_STORE_CONNECT_APP_ID",
+        "appleTeamId": "SEU_TEAM_ID"
+      }
+    }
   }
 }
