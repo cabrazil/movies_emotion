@@ -8,6 +8,7 @@ interface CuradoriaCardProps {
   intentionId?: string;
   optionText?: string | string[];
   reason?: string | string[];
+  relevanceScore?: number | null;
   imdbRating?: number | null;
   vote_average?: number | null;
   sentimentColor: string;
@@ -47,6 +48,7 @@ export const CuradoriaCard: React.FC<CuradoriaCardProps> = React.memo(({
   intentionId,
   optionText,
   reason,
+  relevanceScore,
   imdbRating,
   vote_average,
   sentimentColor,
@@ -54,8 +56,23 @@ export const CuradoriaCard: React.FC<CuradoriaCardProps> = React.memo(({
   const { colors } = useTheme();
 
   const rawScore = imdbRating ?? (vote_average != null ? vote_average * 10 : null);
-  const score = rawScore != null && isFinite(Number(rawScore)) ? Number(rawScore) : null;
-  const isExcellent = score !== null && score >= 7.5;
+  
+  // Priorizar o relevanceScore (igual na web). Se não houver, cai pro fallback (imdb/tmdb)
+  const score = relevanceScore != null && isFinite(Number(relevanceScore)) 
+    ? Number(relevanceScore) 
+    : (rawScore != null && isFinite(Number(rawScore)) ? Number(rawScore) : null);
+        
+  // UX logic para as cores da badge
+  let scoreColor = '#EF4444'; // Red default para menor que 6.0
+  if (score !== null) {
+    if (score >= 8.5) {
+      scoreColor = '#2563EB'; // Azul Premium / Masterpiece
+    } else if (score >= 7.5) {
+      scoreColor = '#10B981'; // Verde Padrão / Excelente 
+    } else if (score >= 6.0) {
+      scoreColor = '#D97706'; // Laranja / Bom 
+    }
+  }
 
   const sentimentName = sentimentId ? SENTIMENT_NAMES[Number(sentimentId)] : null;
   const intentionType = intentionId ? INTENTION_ID_TO_TYPE[Number(intentionId)] : null;
@@ -80,7 +97,7 @@ export const CuradoriaCard: React.FC<CuradoriaCardProps> = React.memo(({
     },
     topBar: {
       height: 3,
-      backgroundColor: isExcellent ? '#059669' : '#D97706',
+      backgroundColor: scoreColor,
     },
     inner: {
       padding: spacing.md,
@@ -104,7 +121,7 @@ export const CuradoriaCard: React.FC<CuradoriaCardProps> = React.memo(({
       paddingHorizontal: 10,
       paddingVertical: 6,
       borderRadius: borderRadius.md,
-      backgroundColor: isExcellent ? '#059669' : '#D97706',
+      backgroundColor: scoreColor,
     },
     scoreText: {
       fontSize: typography.fontSize.h4,
@@ -143,7 +160,7 @@ export const CuradoriaCard: React.FC<CuradoriaCardProps> = React.memo(({
       color: colors.text.secondary,
       lineHeight: typography.fontSize.small * 1.6,
     },
-  }), [colors, isExcellent]);
+  }), [colors, scoreColor]);
 
   if (!sentimentName && !reasonText) return null;
 
@@ -156,7 +173,7 @@ export const CuradoriaCard: React.FC<CuradoriaCardProps> = React.memo(({
         <View style={styles.scoreRow}>
           {score !== null && (
             <View style={styles.scoreBadge}>
-              <Text style={styles.scoreText}>{score.toFixed(1)}</Text>
+              <Text style={styles.scoreText}>{score.toFixed(2)}</Text>
             </View>
           )}
           <View style={styles.context}>

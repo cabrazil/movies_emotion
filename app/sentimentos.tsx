@@ -177,7 +177,7 @@ export default function SentimentosScreen() {
       fontSize: typography.fontSize.tiny,
       color: colors.text.primary,
       lineHeight: 16,
-      marginTop: 2,
+      marginTop: 8,
     },
     iconContainer: {
       width: 40,

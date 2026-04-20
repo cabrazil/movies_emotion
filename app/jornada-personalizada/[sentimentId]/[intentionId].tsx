@@ -1095,7 +1095,8 @@ export default function JornadaPersonalizadaScreen() {
                       reason: ms.reason,
                       sentimentId: sentimentId,
                       intentionId: intentionId.toString(),
-                      optionText: optionText ? optionText.toString() : ''
+                      optionText: optionText ? optionText.toString() : '',
+                      relevanceScore: ms.relevanceScore?.toString() || ((ms as any).relevanceScore)?.toString() || ''
                     }
                   });
                 }}

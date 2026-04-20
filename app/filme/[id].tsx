@@ -86,7 +86,7 @@ interface Movie {
 }
 
 export default function MovieDetailsScreen() {
-  const { id, reason, sentimentId, intentionId, optionText } = useLocalSearchParams();
+  const { id, reason, sentimentId, intentionId, optionText, relevanceScore } = useLocalSearchParams();
   const [movie, setMovie] = useState<Movie | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -558,6 +558,7 @@ export default function MovieDetailsScreen() {
             intentionId={typeof intentionId === 'string' ? intentionId : undefined}
             optionText={optionText}
             reason={reason}
+            relevanceScore={relevanceScore ? Number(relevanceScore) : null}
             imdbRating={movie.imdbRating}
             vote_average={movie.vote_average}
             sentimentColor={sentimentColor}
