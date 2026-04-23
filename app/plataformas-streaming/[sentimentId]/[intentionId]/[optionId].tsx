@@ -91,24 +91,43 @@ export default function PlataformasStreamingScreen() {
       const movies = option.movieSuggestions;
       const counts: Record<number, number> = {};
 
-      // Contar filmes por plataforma
-      platforms.forEach(platform => {
-        let count = 0;
+        // Contar filmes por plataforma
+        platforms.forEach(platform => {
+          let count = 0;
 
-        movies.forEach((suggestion: any) => {
-          if (suggestion.movie.platforms && suggestion.movie.platforms.length > 0) {
-            const hasPlatform = suggestion.movie.platforms.some((moviePlatform: any) => {
-              const platformName = moviePlatform.streamingPlatform?.name;
-              return platformName === platform.name &&
-                moviePlatform.accessType === 'INCLUDED_WITH_SUBSCRIPTION';
-            });
+          movies.forEach((suggestion: any) => {
+            if (suggestion.movie.platforms && suggestion.movie.platforms.length > 0) {
+              const hasPlatform = suggestion.movie.platforms.some((moviePlatform: any) => {
+                const platformName = moviePlatform.streamingPlatform?.name;
+                const moviePlatformCategory = (moviePlatform.streamingPlatform?.category || '').toUpperCase().trim();
+                const targetPlatformCategory = (platform.category || '').toUpperCase().trim();
+                
+                const isKnownRentalPlatform = 
+                  platform.name.toLowerCase().includes('mercado') || 
+                  platform.name.toLowerCase().includes('apple tv') ||
+                  (platformName || '').toLowerCase().includes('mercado') || 
+                  (platformName || '').toLowerCase().includes('apple tv');
 
-            if (hasPlatform) count++;
-          }
+                const isRentalPurchasePlatform = 
+                  moviePlatformCategory === 'FREE_PRIMARY' || 
+                  moviePlatformCategory === 'RENTAL_PURCHASE_PRIMARY' ||
+                  targetPlatformCategory === 'FREE_PRIMARY' ||
+                  targetPlatformCategory === 'RENTAL_PURCHASE_PRIMARY' ||
+                  isKnownRentalPlatform;
+
+                return platformName === platform.name && (
+                  moviePlatform.accessType === 'INCLUDED_WITH_SUBSCRIPTION' ||
+                  moviePlatform.accessType === 'FREE_WITH_ADS' ||
+                  (isRentalPurchasePlatform && (moviePlatform.accessType === 'RENTAL' || moviePlatform.accessType === 'PURCHASE'))
+                );
+              });
+
+              if (hasPlatform) count++;
+            }
+          });
+
+          counts[platform.id] = count;
         });
-
-        counts[platform.id] = count;
-      });
 
       // Log resumido apenas com plataformas que têm filmes
       if (__DEV__) {
@@ -157,9 +176,9 @@ export default function PlataformasStreamingScreen() {
         console.log('✅ Plataformas carregadas:', data.length);
       }
 
-      // Filtrar apenas plataformas de assinatura e que não sejam HIDDEN
+      // Filtrar plataformas relevantes (assinatura, híbridas e gratuitas) que não sejam HIDDEN
       const subscriptionPlatforms = data.filter(
-        p => (p.category === 'SUBSCRIPTION_PRIMARY' || p.category === 'HYBRID') &&
+        p => (p.category === 'SUBSCRIPTION_PRIMARY' || p.category === 'HYBRID' || p.category === 'FREE_PRIMARY') &&
           p.showFilter !== 'HIDDEN'
       );
 

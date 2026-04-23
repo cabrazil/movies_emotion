@@ -26,7 +26,7 @@ export default function JornadaPersonalizadaScreen() {
   const [currentStepId, setCurrentStepId] = useState<string | null>(null);
   const [allMovies, setAllMovies] = useState<MovieSuggestion[]>([]);
   const [selectedPlatformIds, setSelectedPlatformIds] = useState<number[]>([]);
-  const [platformsData, setPlatformsData] = useState<Record<number, string>>({});
+  const [platformsData, setPlatformsData] = useState<Record<number, { name: string, category: string }>>({});
   const [sortType, setSortType] = useState<'smart' | 'rating' | 'year' | 'relevance'>('year');
   const [visibleCount, setVisibleCount] = useState(12);
   const router = useRouter();
@@ -54,7 +54,7 @@ export default function JornadaPersonalizadaScreen() {
           const platforms = await response.json();
           const platformsMap: Record<number, string> = {};
           platforms.forEach((platform: any) => {
-            platformsMap[platform.id] = platform.name;
+            platformsMap[platform.id] = { name: platform.name, category: platform.category };
           });
           setPlatformsData(platformsMap);
         }
@@ -186,37 +186,36 @@ export default function JornadaPersonalizadaScreen() {
               }
 
               // Mapear IDs para nomes das plataformas selecionadas usando dados reais
-              const selectedPlatformNames = platformIds.map(id => {
-                // Buscar o nome da plataforma nos dados carregados
-                const platform = Object.entries(platformsData).find(([platformId, name]) =>
-                  parseInt(platformId) === id
-                );
-                const platformName = platform ? platform[1] : null;
-                if (__DEV__) {
-                }
-                return platformName;
+              const selectedPlatformInfos = platformIds.map(id => {
+                // Buscar o nome e categoria da plataforma nos dados carregados
+                return platformsData[id];
               }).filter(Boolean);
 
-              if (__DEV__) {
-              }
+              const isMatch = selectedPlatformInfos.some(info => {
+                const isNameMatch = info.name === platformName;
+                const moviePlatformCategory = (platform.streamingPlatform?.category || '').toUpperCase().trim();
+                const filterPlatformCategory = (info.category || '').toUpperCase().trim();
+                
+                const isKnownRentalPlatform = 
+                  platformName.toLowerCase().includes('mercado') || 
+                  platformName.toLowerCase().includes('apple tv');
 
-              const isMatch = selectedPlatformNames.includes(platformName) &&
-                platform.accessType === 'INCLUDED_WITH_SUBSCRIPTION';
-
-              if (__DEV__ && isMatch) {
-                console.log(`✅ Match encontrado: Filme "${suggestion.movie.title}" - Plataforma "${platformName}"`);
-              }
+                const isRentalPurchasePlatform = 
+                  moviePlatformCategory === 'FREE_PRIMARY' || 
+                  moviePlatformCategory === 'RENTAL_PURCHASE_PRIMARY' ||
+                  filterPlatformCategory === 'FREE_PRIMARY' ||
+                  filterPlatformCategory === 'RENTAL_PURCHASE_PRIMARY' ||
+                  isKnownRentalPlatform;
+                
+                return isNameMatch && (
+                  platform.accessType === 'INCLUDED_WITH_SUBSCRIPTION' ||
+                  platform.accessType === 'FREE_WITH_ADS' ||
+                  (isRentalPurchasePlatform && (platform.accessType === 'RENTAL' || platform.accessType === 'PURCHASE'))
+                );
+              });
 
               return isMatch;
             });
-
-            if (__DEV__) {
-              if (hasSelectedPlatform) {
-                console.log(`✅ Filme "${suggestion.movie.title}" disponível em plataforma selecionada`);
-              } else {
-                console.log(`❌ Filme "${suggestion.movie.title}" não disponível nas plataformas selecionadas`);
-              }
-            }
 
             return hasSelectedPlatform;
           });
@@ -1204,18 +1203,37 @@ export default function JornadaPersonalizadaScreen() {
                       if (selectedPlatformIds.length === 0) {
                         // Sem filtro: mostrar todas de assinatura
                         platformsToShow = allPlatforms.filter(p =>
-                          p.accessType === 'INCLUDED_WITH_SUBSCRIPTION' && p.streamingPlatform?.name
+                          (p.accessType === 'INCLUDED_WITH_SUBSCRIPTION' || p.accessType === 'FREE_WITH_ADS') && 
+                          p.streamingPlatform?.name
                         );
                       } else {
                         // Com filtro: mostrar só as que batem
-                        const selectedPlatformNames = selectedPlatformIds.map(id => platformsData[id]).filter(Boolean);
+                        const selectedPlatformInfos = selectedPlatformIds.map(id => platformsData[id]).filter(Boolean);
                         platformsToShow = allPlatforms.filter(p => {
                           const pName = p.streamingPlatform?.name || '';
-                          const isSub = p.accessType === 'INCLUDED_WITH_SUBSCRIPTION';
-                          const isMatch = selectedPlatformNames.some(sName =>
-                            pName.toLowerCase().trim().includes(sName.toLowerCase().trim())
-                          );
-                          return isSub && isMatch;
+                          
+                          return selectedPlatformInfos.some(info => {
+                            const isNameMatch = pName.toLowerCase().trim().includes(info.name.toLowerCase().trim());
+                            const moviePlatformCategory = (p.streamingPlatform?.category || '').toUpperCase().trim();
+                            const filterPlatformCategory = (info.category || '').toUpperCase().trim();
+                            
+                            const isKnownRentalPlatform = 
+                              pName.toLowerCase().includes('mercado') || 
+                              pName.toLowerCase().includes('apple tv');
+
+                            const isRentalPurchasePlatform = 
+                              moviePlatformCategory === 'FREE_PRIMARY' || 
+                              moviePlatformCategory === 'RENTAL_PURCHASE_PRIMARY' ||
+                              filterPlatformCategory === 'FREE_PRIMARY' ||
+                              filterPlatformCategory === 'RENTAL_PURCHASE_PRIMARY' ||
+                              isKnownRentalPlatform;
+                            
+                            return isNameMatch && (
+                              p.accessType === 'INCLUDED_WITH_SUBSCRIPTION' || 
+                              p.accessType === 'FREE_WITH_ADS' ||
+                              (isRentalPurchasePlatform && (p.accessType === 'RENTAL' || p.accessType === 'PURCHASE'))
+                            );
+                          });
                         });
                       }
 

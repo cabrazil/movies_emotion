@@ -31,7 +31,7 @@ export const StreamingPlatforms: React.FC<StreamingPlatformsProps> = React.memo(
   const { colors } = useTheme();
 
   const subscriptionPlatforms = useMemo(() =>
-    platforms?.filter(p => p.accessType === 'INCLUDED_WITH_SUBSCRIPTION') || [],
+    platforms?.filter(p => p.accessType === 'INCLUDED_WITH_SUBSCRIPTION' || p.accessType === 'FREE_WITH_ADS') || [],
     [platforms]
   );
 
@@ -107,7 +107,7 @@ export const StreamingPlatforms: React.FC<StreamingPlatformsProps> = React.memo(
       />
     ) : (
       <Ionicons
-        name={platform.accessType === 'INCLUDED_WITH_SUBSCRIPTION' ? 'tv' : 'card'}
+        name={(platform.accessType === 'INCLUDED_WITH_SUBSCRIPTION' || platform.accessType === 'FREE_WITH_ADS') ? 'tv' : 'card'}
         size={32}
         color={sentimentColor}
       />
@@ -172,6 +172,21 @@ export const StreamingPlatforms: React.FC<StreamingPlatformsProps> = React.memo(
       width: 60,
       height: 40,
     },
+    freeBadge: {
+      position: 'absolute',
+      top: -10,
+      right: -10,
+      backgroundColor: '#22c55e',
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      borderRadius: 4,
+      zIndex: 1,
+    },
+    freeBadgeText: {
+      color: '#fff',
+      fontSize: 9,
+      fontWeight: 'bold',
+    },
     noPlatformsContainer: {
       padding: spacing.md,
       backgroundColor: colors.background.primary,
@@ -200,7 +215,7 @@ export const StreamingPlatforms: React.FC<StreamingPlatformsProps> = React.memo(
         {/* Plataformas de Assinatura */}
         {subscriptionPlatforms.length > 0 && (
           <View style={styles.subscriptionPlatforms}>
-            <Text style={styles.platformCategoryTitle}>Assinatura:</Text>
+            <Text style={styles.platformCategoryTitle}>Assinatura e Gratuito:</Text>
             <View style={styles.platformsGrid}>
               {subscriptionPlatforms.map((platform, index) => {
                 const platformData = platform.streamingPlatform || platform;
@@ -211,6 +226,11 @@ export const StreamingPlatforms: React.FC<StreamingPlatformsProps> = React.memo(
                     onPress={() => handlePlatformPress(platformData.baseUrl)}
                   >
                     <View style={styles.platformLogoContainer}>
+                      {platform.accessType === 'FREE_WITH_ADS' && (
+                        <View style={styles.freeBadge}>
+                          <Text style={styles.freeBadgeText}>GRÁTIS</Text>
+                        </View>
+                      )}
                       {renderPlatformLogo(platform)}
                     </View>
                   </TouchableOpacity>

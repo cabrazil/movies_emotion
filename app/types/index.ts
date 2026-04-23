@@ -25,7 +25,7 @@ export interface Sentiment {
 
 export interface MovieStreamingPlatform {
   streamingPlatformId: number;
-  accessType: 'INCLUDED_WITH_SUBSCRIPTION' | 'RENTAL' | 'PURCHASE';
+  accessType: 'INCLUDED_WITH_SUBSCRIPTION' | 'RENTAL' | 'PURCHASE' | 'FREE_WITH_ADS';
   streamingPlatform: {
     id: number;
     name: string;
