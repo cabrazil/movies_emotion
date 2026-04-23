@@ -51,9 +51,9 @@ export default function PlataformasStreamingScreen() {
       }
       const data: StreamingPlatform[] = await response.json();
       
-      // Filtrar apenas plataformas de assinatura
+      // Filtrar apenas plataformas de assinatura e gratuitas
       const subscriptionPlatforms = data.filter(
-        p => p.category === 'SUBSCRIPTION_PRIMARY' || p.category === 'HYBRID'
+        p => p.category === 'SUBSCRIPTION_PRIMARY' || p.category === 'HYBRID' || p.category === 'FREE_PRIMARY'
       );
       
       setPlatforms(subscriptionPlatforms);

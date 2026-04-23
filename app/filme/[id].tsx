@@ -122,9 +122,12 @@ export default function MovieDetailsScreen() {
 
         const data = await res.json();
 
-        // O endpoint /api/movie/{id}/details retorna { movie: {...}, subscriptionPlatforms: [...] }
+        // O endpoint /api/movie/{id}/details retorna { movie: {...}, subscriptionPlatforms: [...], rentalPurchasePlatforms: [...] }
         const movieData = data.movie || data;
-        const platforms = data.subscriptionPlatforms || data.platforms || [];
+        const platforms = [
+          ...(data.subscriptionPlatforms || []),
+          ...(data.rentalPurchasePlatforms || [])
+        ];
 
         if (__DEV__) {
           console.log('✅ Filme carregado:', movieData.title || movieData.original_title);
