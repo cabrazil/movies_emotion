@@ -215,7 +215,7 @@ export const StreamingPlatforms: React.FC<StreamingPlatformsProps> = React.memo(
         {/* Plataformas de Assinatura */}
         {subscriptionPlatforms.length > 0 && (
           <View style={styles.subscriptionPlatforms}>
-            <Text style={styles.platformCategoryTitle}>Assinatura e Gratuito:</Text>
+            <Text style={styles.platformCategoryTitle}>Assinatura ou Gratuito:</Text>
             <View style={styles.platformsGrid}>
               {subscriptionPlatforms.map((platform, index) => {
                 const platformData = platform.streamingPlatform || platform;
