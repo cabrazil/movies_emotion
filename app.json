@@ -2,7 +2,7 @@
   "expo": {
     "name": "Vibesfilm",
     "slug": "movies_emotion",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "scheme": "vibesfilm",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -25,7 +25,7 @@
     },
     "android": {
       "package": "com.vibesfilm.app",
-      "versionCode": 5,
+      "versionCode": 6,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -51,6 +51,12 @@
           }
         }
       ]
-    ]
+    ],
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/6d4cc61a-d879-4504-98a0-01b48bbac289"
+    }
   }
 }
