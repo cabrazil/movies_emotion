@@ -1142,15 +1142,16 @@ export default function JornadaPersonalizadaScreen() {
                           </>
                         )}
 
-                        {ms.movie.vote_average && (
+                        {ms.movie.imdbRating && (
                           <>
                             <Text style={styles.bulletPoint}>•</Text>
                             <View style={styles.ratingContainer}>
+                              <Text style={[styles.ratingText, { fontSize: 10, fontWeight: 'bold', color: colors.text.secondary, marginRight: 2 }]}>IMDb</Text>
                               <Ionicons name="star" size={10} color={colors.yellow} />
-                              <Text style={[styles.ratingText, { fontSize: 11 }]}>
-                                {typeof ms.movie.vote_average === 'number'
-                                  ? ms.movie.vote_average.toFixed(1)
-                                  : ms.movie.vote_average}
+                              <Text style={[styles.ratingText, { fontSize: 11, marginLeft: 2 }]}>
+                                {ms.movie.imdbRating != null && !isNaN(Number(ms.movie.imdbRating))
+                                  ? Number(ms.movie.imdbRating).toFixed(1)
+                                  : 'N/A'}
                               </Text>
                             </View>
                           </>

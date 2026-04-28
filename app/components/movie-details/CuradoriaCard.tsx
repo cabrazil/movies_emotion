@@ -172,14 +172,15 @@ export const CuradoriaCard: React.FC<CuradoriaCardProps> = React.memo(({
 
         <View style={styles.scoreRow}>
           {score !== null && (
-            <View style={styles.scoreBadge}>
+            <View style={[styles.scoreBadge, { alignItems: 'center', justifyContent: 'center' }]}>
+              <Text style={{ fontSize: 9, color: '#fff', fontWeight: 'bold', opacity: 0.9, marginBottom: 2 }}>VIBE</Text>
               <Text style={styles.scoreText}>{score.toFixed(2)}</Text>
             </View>
           )}
           <View style={styles.context}>
             {sentimentName && intentionName && (
               <Text style={styles.contextLabel}>
-                Para quem está{' '}
+                A Vibe para quem está{' '}
                 <Text style={styles.contextHighlight}>{sentimentName}</Text>
                 {' '}e quer{' '}
                 <Text style={styles.contextHighlight}>{intentionName}</Text>:
