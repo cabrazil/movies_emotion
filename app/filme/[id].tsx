@@ -196,7 +196,7 @@ export default function MovieDetailsScreen() {
 
     // Resolver sentimento e intenção — mesma lógica do EmotionalAnalysis
     const sentimentNames: { [key: number]: string } = {
-      13: 'Feliz / Alegre', 14: 'Triste', 15: 'Calmo(a)',
+      13: 'Feliz / Alegre', 14: 'Introspectivo(a)', 15: 'Calmo(a)',
       16: 'Ansioso(a)', 17: 'Animado(a)', 18: 'Cansado(a)'
     };
     const intentionIdToType: { [key: number]: string } = {

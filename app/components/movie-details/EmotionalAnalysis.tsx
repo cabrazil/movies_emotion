@@ -60,7 +60,7 @@ export const EmotionalAnalysis: React.FC<EmotionalAnalysisProps> = React.memo(({
 
     const sentimentNames: { [key: number]: string } = {
       13: "Feliz / Alegre",
-      14: "Triste",
+      14: "Introspectivo(a)",
       15: "Calmo(a)",
       16: "Ansioso(a)",
       17: "Animado(a)",
