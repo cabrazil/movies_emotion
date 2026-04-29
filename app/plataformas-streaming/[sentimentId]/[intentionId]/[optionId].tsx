@@ -549,13 +549,6 @@ export default function PlataformasStreamingScreen() {
             )}
           </View>
 
-          {/* Microcopy educativo */}
-          <View style={{ paddingHorizontal: spacing.md, marginBottom: spacing.md }}>
-            <Text style={{ fontSize: typography.fontSize.small, color: colors.text.secondary, textAlign: 'center' }}>
-              Filtre por streaming ou veja todos os filmes.
-            </Text>
-          </View>
-
           {/* Lista Unificada de Plataformas */}
           <View style={styles.platformsContainer}>
             <View style={styles.platformsGrid}>
@@ -618,24 +611,32 @@ export default function PlataformasStreamingScreen() {
             </View>
           </View>
 
-          {/* Informação sobre seleção */}
-          {selectedPlatforms.length > 0 && (
-            <View style={[styles.infoBox, {
-              backgroundColor: sentimentColor + '10',
-              borderLeftColor: sentimentColor,
-            }]}>
-              <Ionicons name="information-circle" size={20} color={sentimentColor} />
-              <Text style={styles.infoText}>
-                {selectedPlatforms.length} {selectedPlatforms.length === 1 ? 'plataforma selecionada' : 'plataformas selecionadas'}
-              </Text>
-            </View>
-          )}
         </ScrollView>
+
 
         {/* Indicador de scroll removido */}
 
         {/* Footer com botões de ação */}
         <View style={styles.footer}>
+          {/* Contador de seleção — sempre visível no footer */}
+          {selectedPlatforms.length > 0 ? (
+            <View style={[styles.infoBox, {
+              backgroundColor: sentimentColor + '15',
+              borderLeftColor: sentimentColor,
+              marginHorizontal: 0,
+              marginBottom: 0,
+            }]}>
+              <Ionicons name="checkmark-circle" size={20} color={sentimentColor} />
+              <Text style={[styles.infoText, { color: sentimentColor, fontWeight: '600' }]}>
+                {selectedPlatforms.length} {selectedPlatforms.length === 1 ? 'plataforma selecionada' : 'plataformas selecionadas'}
+              </Text>
+            </View>
+          ) : (
+            <Text style={{ fontSize: typography.fontSize.small, color: colors.text.secondary, textAlign: 'center' }}>
+              Selecione plataformas ou veja todos os filmes
+            </Text>
+          )}
+
           <TouchableOpacity
             style={[styles.skipButton, { borderColor: sentimentColor }]}
             onPress={handleSkip}

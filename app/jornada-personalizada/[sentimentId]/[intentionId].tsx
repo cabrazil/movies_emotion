@@ -29,6 +29,7 @@ export default function JornadaPersonalizadaScreen() {
   const [platformsData, setPlatformsData] = useState<Record<number, { name: string, category: string }>>({});
   const [sortType, setSortType] = useState<'smart' | 'rating' | 'year' | 'relevance'>('year');
   const [visibleCount, setVisibleCount] = useState(12);
+  const [hasProcessedResults, setHasProcessedResults] = useState(false);
   const router = useRouter();
 
   // Obter cor do sentimento (memoizada)
@@ -52,7 +53,7 @@ export default function JornadaPersonalizadaScreen() {
         const response = await apiRequest(API_ENDPOINTS.streamingPlatforms.list);
         if (response.ok) {
           const platforms = await response.json();
-          const platformsMap: Record<number, string> = {};
+          const platformsMap: Record<number, { name: string; category: string }> = {};
           platforms.forEach((platform: any) => {
             platformsMap[platform.id] = { name: platform.name, category: platform.category };
           });
@@ -135,6 +136,7 @@ export default function JornadaPersonalizadaScreen() {
   // Processar retorno da tela de plataformas
   useEffect(() => {
     if (showResults === 'true' && optionId && allSteps.length > 0) {
+      setHasProcessedResults(true);
       if (__DEV__) {
         console.log('🔄 Retornando da tela de plataformas:', { optionId });
       }
@@ -1095,7 +1097,7 @@ export default function JornadaPersonalizadaScreen() {
                       sentimentId: sentimentId,
                       intentionId: intentionId.toString(),
                       optionText: optionText ? optionText.toString() : '',
-                      relevanceScore: ms.relevanceScore?.toString() || ((ms as any).relevanceScore)?.toString() || ''
+                      relevanceScore: ((ms as any).relevanceScore)?.toString() || ''
                     }
                   });
                 }}
@@ -1345,7 +1347,9 @@ export default function JornadaPersonalizadaScreen() {
   }
 
   // Exibir mensagem quando não há filmes E o usuário veio de filtros de plataformas
-  if (showResults === 'true' && selectedPlatformIds.length > 0) {
+  // Só exibir DEPOIS que o processamento real aconteceu (hasProcessedResults) para evitar
+  // race condition onde allSteps ainda estava vazio quando os params chegaram.
+  if (showResults === 'true' && selectedPlatformIds.length > 0 && hasProcessedResults && allMovies.length === 0) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <AppHeader showBack={true} showLogo={true} />
