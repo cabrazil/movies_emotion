@@ -25,7 +25,7 @@ const INTENTION_ID_TO_TYPE: { [key: number]: string } = {
 
 const SENTIMENT_NAMES: { [key: number]: string } = {
   13: 'Feliz / Alegre',
-  14: 'Triste',
+  14: 'Introspectivo(a)',
   15: 'Calmo(a)',
   16: 'Ansioso(a)',
   17: 'Animado(a)',
@@ -56,12 +56,12 @@ export const CuradoriaCard: React.FC<CuradoriaCardProps> = React.memo(({
   const { colors } = useTheme();
 
   const rawScore = imdbRating ?? (vote_average != null ? vote_average * 10 : null);
-  
+
   // Priorizar o relevanceScore (igual na web). Se não houver, cai pro fallback (imdb/tmdb)
-  const score = relevanceScore != null && isFinite(Number(relevanceScore)) 
-    ? Number(relevanceScore) 
+  const score = relevanceScore != null && isFinite(Number(relevanceScore))
+    ? Number(relevanceScore)
     : (rawScore != null && isFinite(Number(rawScore)) ? Number(rawScore) : null);
-        
+
   // UX logic para as cores da badge
   let scoreColor = '#EF4444'; // Red default para menor que 6.0
   if (score !== null) {

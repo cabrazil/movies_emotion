@@ -14,13 +14,14 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.vibesfilm.app",
       "buildNumber": "2",
       "infoPlist": {
         "NSCameraUsageDescription": "O Vibesfilm não usa a câmera.",
         "NSPhotoLibraryUsageDescription": "O Vibesfilm não acessa sua galeria de fotos.",
-        "NSMicrophoneUsageDescription": "O Vibesfilm não usa o microfone."
+        "NSMicrophoneUsageDescription": "O Vibesfilm não usa o microfone.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
