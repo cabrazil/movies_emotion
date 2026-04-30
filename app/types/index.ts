@@ -47,6 +47,10 @@ export interface Movie {
   platforms?: MovieStreamingPlatform[];
   imdbRating?: number;
   imdb_rating?: number;
+  movieSentiments?: Array<{
+    relevance: number;
+    subSentiment: { name: string };
+  }>;
 }
 
 export interface MovieSuggestion {

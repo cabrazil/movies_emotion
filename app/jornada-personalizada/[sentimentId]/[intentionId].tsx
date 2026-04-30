@@ -27,7 +27,8 @@ export default function JornadaPersonalizadaScreen() {
   const [allMovies, setAllMovies] = useState<MovieSuggestion[]>([]);
   const [selectedPlatformIds, setSelectedPlatformIds] = useState<number[]>([]);
   const [platformsData, setPlatformsData] = useState<Record<number, { name: string, category: string }>>({});
-  const [sortType, setSortType] = useState<'smart' | 'rating' | 'year' | 'relevance'>('year');
+  const [sortType, setSortType] = useState<'smart' | 'rating' | 'year' | 'relevance'>('relevance');
+  const [relevanceSeed, setRelevanceSeed] = useState(0);
   const [visibleCount, setVisibleCount] = useState(12);
   const [hasProcessedResults, setHasProcessedResults] = useState(false);
   const router = useRouter();
@@ -835,33 +836,92 @@ export default function JornadaPersonalizadaScreen() {
 
   // Ordenar filmes baseado no critério selecionado
   const sortedMovies = useMemo(() => {
-    // Lógica específica para "Recomendado" (Shuffle de Elite)
+    // Lógica específica para "Recomendado" — Round-Robin por SubSentiment com boost de recência
     if (sortType === 'relevance') {
-      let moviesToShuffle = [];
+      const limit = allMovies.length > 12 ? 12 : allMovies.length;
 
-      if (allMovies.length > 12) {
-        // Modo Elite restrito
-        // 1. Filtrar por relevância >= 6.5 (Piso de qualidade de elite)
-        const eliteCandidates = allMovies.filter(s => ((s as any).relevanceScore ?? 0) >= 6.5);
-
-        // 2. Ordenar por relevância (descendente) para pegar os melhores
-        eliteCandidates.sort((a, b) => ((b as any).relevanceScore ?? 0) - ((a as any).relevanceScore ?? 0));
-
-        // 3. Pegar apenas os top 12
-        moviesToShuffle = eliteCandidates.slice(0, 12);
-      } else {
-        // Poucos filmes: mostrar todos disponíveis
-        moviesToShuffle = [...allMovies];
+      // 0. Jitter aleatório pré-calculado por filme (varia a cada clique)
+      const jitterMap = new Map<string, number>();
+      for (const suggestion of allMovies) {
+        jitterMap.set(suggestion.movie.id, Math.random() * 0.5);
       }
 
-      // 4. Embaralhar (Shuffle)
-      const shuffled = [...moviesToShuffle];
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      // 1. Score ajustado = relevanceScore + bônus de recência + jitter
+      const getAdjustedScore = (suggestion: MovieSuggestion): number => {
+        const score = (suggestion as any).relevanceScore ?? 0;
+        const year = suggestion.movie.year ?? 2000;
+        let recencyBonus = 0;
+        if (year >= 2022) recencyBonus = 0.30;
+        else if (year >= 2018) recencyBonus = 0.15;
+        else if (year >= 2013) recencyBonus = 0.05;
+        const jitter = jitterMap.get(suggestion.movie.id) ?? 0;
+        return score + recencyBonus + jitter;
+      };
+
+      // 2. SubSentiment primário do filme (fallback para emotionalEntryType)
+      const getPrimaryGroup = (suggestion: MovieSuggestion): string => {
+        const sentiments = suggestion.movie.movieSentiments;
+        if (sentiments && sentiments.length > 0) {
+          return sentiments[0].subSentiment.name;
+        }
+        return (suggestion.movie as any).emotionalEntryType ?? 'OUTROS';
+      };
+
+      // 3. Agrupar por SubSentiment primário
+      const groups = new Map<string, MovieSuggestion[]>();
+      for (const suggestion of allMovies) {
+        const key = getPrimaryGroup(suggestion);
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key)!.push(suggestion);
       }
 
-      return shuffled;
+      // 4. Ordenar dentro de cada grupo por adjustedScore desc
+      for (const group of groups.values()) {
+        group.sort((a, b) => getAdjustedScore(b) - getAdjustedScore(a));
+      }
+
+      // 5. Ordenar grupos pelo melhor adjustedScore do grupo
+      const sortedGroups = Array.from(groups.values()).sort(
+        (a, b) => getAdjustedScore(b[0]) - getAdjustedScore(a[0])
+      );
+
+      // 6. Round-robin entre grupos até atingir o limite
+      const result: MovieSuggestion[] = [];
+      let round = 0;
+      while (result.length < limit) {
+        let added = 0;
+        for (const group of sortedGroups) {
+          if (result.length >= limit) break;
+          if (round < group.length) {
+            result.push(group[round]);
+            added++;
+          }
+        }
+        if (added === 0) break;
+        round++;
+      }
+
+      // 7. Garantia de frescor: ≥ 2 filmes de 2018+ nos primeiros 5
+      if (result.length >= 5) {
+        const recentThreshold = 2018;
+        const top5Recent = result.slice(0, 5).filter(
+          s => (s.movie.year ?? 0) >= recentThreshold
+        ).length;
+
+        if (top5Recent < 2) {
+          const top5Ids = new Set(result.slice(0, 5).map(s => s.movie.id));
+          const candidate = result.slice(5).find(
+            s => (s.movie.year ?? 0) >= recentThreshold && !top5Ids.has(s.movie.id)
+          );
+          if (candidate) {
+            const candidateIdx = result.indexOf(candidate);
+            result.splice(candidateIdx, 1);
+            result.splice(4, 0, candidate);
+          }
+        }
+      }
+
+      return result;
     }
 
     // Outras ordenações
@@ -910,7 +970,7 @@ export default function JornadaPersonalizadaScreen() {
     });
 
     return sorted;
-  }, [allMovies, sortType, step]);
+  }, [allMovies, sortType, step, relevanceSeed]);
 
   const visibleMovies = useMemo(() => {
     return sortedMovies.slice(0, visibleCount);
@@ -996,7 +1056,7 @@ export default function JornadaPersonalizadaScreen() {
                       borderColor: colors.primary.main
                     }
                   ]}
-                  onPress={() => setSortType('relevance')}
+                  onPress={() => { setSortType('relevance'); setRelevanceSeed(s => s + 1); }}
                   activeOpacity={0.7}
                 >
                   <Text style={styles.sortChipIcon}>🎯</Text>
