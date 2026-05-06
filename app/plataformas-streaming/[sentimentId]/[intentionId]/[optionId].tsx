@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView, Animated, Image } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView, Animated, Image, Platform as RNPlatform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { API_ENDPOINTS, apiRequest } from '../../../config';
@@ -37,6 +37,20 @@ const getPlatformLogoUrl = (logoPath: string | null, platformName: string): stri
 
   // Caso contrário, é um caminho TMDB
   return `https://image.tmdb.org/t/p/w92${logoPath}`;
+};
+
+// Helper para formatar nomes longos no iOS
+const formatPlatformName = (name: string): string => {
+  if (!name) return name;
+  const lowerName = name.toLowerCase();
+  if (lowerName === 'globoplay') return 'Globo\nPlay';
+  if (lowerName === 'paramount+') return 'Para\nmount+';
+  if (lowerName === 'claro video') return 'Claro\nVideo';
+  if (lowerName === 'apple tv+') return 'Apple\nTV+';
+  if (lowerName === 'prime video') return 'Prime\nVideo';
+  if (lowerName === 'mercado play') return 'Mercado\nPlay';
+  if (lowerName === 'hbo max') return 'HBO\nMax';
+  return name;
 };
 
 export default function PlataformasStreamingScreen() {
@@ -573,7 +587,11 @@ export default function PlataformasStreamingScreen() {
                     activeOpacity={0.7}
                     disabled={!hasMovies}
                   >
-                    {logoUrl ? (
+                    {RNPlatform.OS === 'ios' || !logoUrl ? (
+                      <Text style={[styles.platformName, !hasMovies && styles.platformNameEmpty]} numberOfLines={2}>
+                        {formatPlatformName(platform.name)}
+                      </Text>
+                    ) : (
                       <View style={{
                         backgroundColor: 'rgba(255, 255, 255, 0.08)',
                         borderRadius: borderRadius.sm,
@@ -587,10 +605,6 @@ export default function PlataformasStreamingScreen() {
                           resizeMode="contain"
                         />
                       </View>
-                    ) : (
-                      <Text style={[styles.platformName, !hasMovies && styles.platformNameEmpty]} numberOfLines={2}>
-                        {platform.name}
-                      </Text>
                     )}
 
                     {/* Badge de contagem de filmes */}

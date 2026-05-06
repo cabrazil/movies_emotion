@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.vibesfilm.app",
-      "buildNumber": "3",
+      "buildNumber": "4",
       "infoPlist": {
         "NSCameraUsageDescription": "O Vibesfilm não usa a câmera.",
         "NSPhotoLibraryUsageDescription": "O Vibesfilm não acessa sua galeria de fotos.",

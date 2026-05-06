@@ -1,9 +1,23 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Linking, Alert } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Linking, Alert, Platform as RNPlatform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { typography, spacing, borderRadius } from '../../theme';
 import { useTheme } from '../../hooks/useTheme';
 import { getPlatformLogoUrl } from './movieHelpers';
+
+// Helper para formatar nomes longos no iOS
+const formatPlatformName = (name: string): string => {
+  if (!name) return name;
+  const lowerName = name.toLowerCase();
+  if (lowerName === 'globoplay') return 'Globo\nPlay';
+  if (lowerName === 'paramount+') return 'Para\nmount+';
+  if (lowerName === 'claro video') return 'Claro\nVideo';
+  if (lowerName === 'apple tv+') return 'Apple\nTV+';
+  if (lowerName === 'prime video') return 'Prime\nVideo';
+  if (lowerName === 'mercado play') return 'Mercado\nPlay';
+  if (lowerName === 'hbo max') return 'HBO\nMax';
+  return name;
+};
 
 interface Platform {
   accessType: string;
@@ -98,6 +112,20 @@ export const StreamingPlatforms: React.FC<StreamingPlatformsProps> = React.memo(
   const renderPlatformLogo = (platform: Platform) => {
     const platformData = platform.streamingPlatform || platform;
     const logoUrl = getPlatformLogoUrl(platformData.logoPath || null);
+
+    if (RNPlatform.OS === 'ios') {
+      return (
+        <Text style={{
+          color: colors.text.primary,
+          fontSize: 12,
+          fontWeight: 'bold',
+          textAlign: 'center',
+          paddingHorizontal: 4,
+        }} numberOfLines={2}>
+          {formatPlatformName(platformData.name || 'Streaming')}
+        </Text>
+      );
+    }
 
     return logoUrl ? (
       <Image
