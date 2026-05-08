@@ -1,20 +1,28 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { ThemeProvider, useTheme } from './contexts/ThemeContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { ErrorBoundary } from './ErrorBoundary';
+import { StyleSheet, View } from 'react-native';
+
+// GestureHandlerRootView com fallback seguro
+let GestureHandlerRootView: any = View;
+try {
+  GestureHandlerRootView = require('react-native-gesture-handler').GestureHandlerRootView;
+} catch (e) {
+  console.warn('react-native-gesture-handler não disponível, usando View como fallback');
+}
 
 function StackNavigator() {
-  const { colors, isDark } = useTheme();
-
   return (
     <>
-      <StatusBar style={isDark ? 'light' : 'dark'} />
+      <StatusBar style="light" />
       <Stack
         screenOptions={{
-          headerShown: false, // Oculta o header padrão em todas as telas
-          animation: 'slide_from_right',
+          headerShown: false,
+          animation: 'fade',
+          animationDuration: 300,
           contentStyle: {
-            backgroundColor: colors.background.primary,
+            backgroundColor: '#0a0a0f',
           },
         }}
       />
@@ -24,10 +32,18 @@ function StackNavigator() {
 
 export default function RootLayout() {
   return (
-    <ErrorBoundary>
-      <ThemeProvider>
-        <StackNavigator />
-      </ThemeProvider>
-    </ErrorBoundary>
+    <GestureHandlerRootView style={styles.root}>
+      <ErrorBoundary>
+        <ThemeProvider>
+          <StackNavigator />
+        </ThemeProvider>
+      </ErrorBoundary>
+    </GestureHandlerRootView>
   );
 }
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
+});

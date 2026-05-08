@@ -13,9 +13,10 @@ interface AppHeaderProps {
   title?: string;
   showLogo?: boolean;
   onBackPress?: () => void;
+  transparent?: boolean;
 }
 
-export function AppHeader({ showBack = false, title = 'Vibesfilm', showLogo = false, onBackPress }: AppHeaderProps) {
+export function AppHeader({ showBack = false, title = 'Vibesfilm', showLogo = false, onBackPress, transparent = false }: AppHeaderProps) {
   const router = useRouter();
   const { colors, isDark } = useTheme();
 
@@ -32,7 +33,7 @@ export function AppHeader({ showBack = false, title = 'Vibesfilm', showLogo = fa
 
   const styles = StyleSheet.create({
     container: {
-      backgroundColor: colors.background.primary,
+      backgroundColor: transparent ? 'transparent' : colors.background.primary,
       paddingTop: 0,
     },
     content: {
@@ -50,7 +51,7 @@ export function AppHeader({ showBack = false, title = 'Vibesfilm', showLogo = fa
       justifyContent: 'center',
       alignItems: 'center',
       borderRadius: 18,
-      backgroundColor: 'transparent',
+      backgroundColor: transparent ? 'rgba(255,255,255,0.12)' : 'transparent',
     },
     title: {
       fontSize: typography.fontSize.h4,

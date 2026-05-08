@@ -10,6 +10,9 @@ import { PersonalizedJourneyResponse, PersonalizedJourneyStep, JourneyOption, Mo
 import { NavigationFooter } from '../../components/NavigationFooter';
 import { AppHeader } from '../../components/AppHeader';
 import { getCloudflareImageUrl } from '../../components/movie-details/movieHelpers';
+import { GlassCard } from '../../components/premium/GlassCard';
+import { SENTIMENT_GRADIENTS, DEFAULT_GRADIENT } from '../../components/premium/GradientBackground';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_MARGIN = spacing.xs;
@@ -527,21 +530,21 @@ export default function JornadaPersonalizadaScreen() {
     movieTitle: {
       fontSize: typography.fontSize.h4,
       fontWeight: typography.fontWeight.semibold,
-      color: colors.text.primary,
+      color: '#FFFFFF',
       marginBottom: spacing.xs,
     },
     yearText: {
       fontSize: typography.fontSize.small,
       fontWeight: typography.fontWeight.medium,
-      color: isDark ? '#E0E0E0' : colors.text.secondary,
+      color: 'rgba(255,255,255,0.75)',
     },
     movieYear: {
       fontSize: typography.fontSize.small,
-      color: isDark ? '#E0E0E0' : colors.text.secondary,
+      color: 'rgba(255,255,255,0.75)',
     },
     movieDescription: {
       fontSize: typography.fontSize.small,
-      color: colors.text.secondary,
+      color: 'rgba(255,255,255,0.7)',
       lineHeight: typography.fontSize.small * typography.lineHeight.relaxed,
       marginTop: spacing.sm,
     },
@@ -561,23 +564,23 @@ export default function JornadaPersonalizadaScreen() {
     },
     ratingText: {
       fontSize: typography.fontSize.small,
-      color: isDark ? '#E0E0E0' : colors.text.secondary,
+      color: 'rgba(255,255,255,0.75)',
       marginLeft: 4,
     },
     certificationContainer: {
-      backgroundColor: colors.background.primary,
+      backgroundColor: 'rgba(255,255,255,0.12)',
       paddingHorizontal: spacing.xs,
       paddingVertical: 2,
       borderRadius: borderRadius.sm,
     },
     certificationText: {
       fontSize: typography.fontSize.small,
-      color: colors.text.secondary,
+      color: 'rgba(255,255,255,0.75)',
       fontWeight: typography.fontWeight.medium,
     },
     genresText: {
       fontSize: typography.fontSize.small,
-      color: colors.text.secondary,
+      color: 'rgba(255,255,255,0.65)',
     },
     runtimeContainer: {
       flexDirection: 'row',
@@ -586,7 +589,7 @@ export default function JornadaPersonalizadaScreen() {
     },
     runtimeText: {
       fontSize: typography.fontSize.small,
-      color: colors.text.secondary,
+      color: 'rgba(255,255,255,0.65)',
       marginLeft: 4,
     },
     reasonContainer: {
@@ -595,7 +598,7 @@ export default function JornadaPersonalizadaScreen() {
       marginTop: spacing.xs,
       paddingTop: spacing.xs,
       borderTopWidth: 1,
-      borderTopColor: colors.background.secondary,
+      borderTopColor: 'rgba(255,255,255,0.1)',
     },
     reasonContent: {
       flex: 1,
@@ -605,7 +608,7 @@ export default function JornadaPersonalizadaScreen() {
     reasonText: {
       flex: 1,
       fontSize: typography.fontSize.small,
-      color: colors.text.secondary,
+      color: 'rgba(255,255,255,0.8)',
       fontStyle: 'italic',
       marginLeft: spacing.xs,
     },
@@ -768,7 +771,7 @@ export default function JornadaPersonalizadaScreen() {
       fontWeight: typography.fontWeight.semibold,
     },
     bulletPoint: {
-      color: isDark ? colors.gray[400] : colors.text.secondary, // Mais visível no Dark
+      color: 'rgba(255,255,255,0.45)',
       marginHorizontal: 4,
       fontSize: typography.fontSize.small,
     },
@@ -787,26 +790,33 @@ export default function JornadaPersonalizadaScreen() {
       return (
         <View style={styles.genreGrid}>
           {step.options.map(option => (
-            <TouchableOpacity
+            <GlassCard
               key={option.id}
-              style={[
-                styles.genreOption,
-                {
-                  borderColor: sentimentColor,
-                  borderWidth: 1.5,
-                }
-              ]}
-              onPress={() => handleOption(option)}
-              activeOpacity={0.7}
+              style={{ width: CARD_WIDTH, marginBottom: 8 }}
+              intensity={15}
+              borderColor={sentimentColor + '65'}
+              borderWidth={1.5}
+              borderRadius={12}
             >
-              <Text
-                style={styles.genreOptionText}
-                numberOfLines={1}
-                adjustsFontSizeToFit={true}
+              <TouchableOpacity
+                style={{
+                  height: CARD_HEIGHT,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  paddingHorizontal: 8,
+                }}
+                onPress={() => handleOption(option)}
+                activeOpacity={0.7}
               >
-                {option.mobileText || option.text}
-              </Text>
-            </TouchableOpacity>
+                <Text
+                  style={[styles.genreOptionText, { color: '#FFFFFF', fontWeight: '500' }]}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit={true}
+                >
+                  {option.mobileText || option.text}
+                </Text>
+              </TouchableOpacity>
+            </GlassCard>
           ))}
         </View>
       );
@@ -815,24 +825,32 @@ export default function JornadaPersonalizadaScreen() {
     // Layout padrão para outras opções
     return step.options.map(option => {
       return (
-        <TouchableOpacity
+        <GlassCard
           key={option.id}
-          style={[
-            styles.option,
-            {
-              borderLeftWidth: 4,
-              borderLeftColor: sentimentColor,
-              borderColor: colors.border.light,
-            }
-          ]}
-          onPress={() => handleOption(option)}
-          activeOpacity={0.7}
+          style={{ width: '100%', marginBottom: 12 }}
+          intensity={15}
+          borderColor={sentimentColor + '65'}
+          borderWidth={1.5}
+          borderRadius={16}
         >
-          <Text style={styles.optionCardText}>{option.mobileText || option.text}</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              paddingVertical: 18,
+              paddingHorizontal: 20,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+            onPress={() => handleOption(option)}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.optionCardText, { color: '#FFFFFF', fontWeight: '600', fontSize: 16 }]}>
+              {option.mobileText || option.text}
+            </Text>
+          </TouchableOpacity>
+        </GlassCard>
       );
     });
-  }, [step, sentimentColor, handleOption, sentimentId, intentionId]);
+  }, [step, sentimentColor, handleOption, sentimentId, intentionId, colors]);
 
   // Ordenar filmes baseado no critério selecionado
   const sortedMovies = useMemo(() => {
@@ -980,32 +998,38 @@ export default function JornadaPersonalizadaScreen() {
     setVisibleCount(prev => prev + 12);
   };
 
+  const gradient = SENTIMENT_GRADIENTS[Number(sentimentId)] || DEFAULT_GRADIENT;
+
   if (loading) {
     return (
-      <SafeAreaView style={styles.safeArea}>
-        <AppHeader showBack={true} showLogo={true} />
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={colors.primary.main} />
-          <Text style={styles.loadingText}>Carregando jornada personalizada...</Text>
-        </View>
-      </SafeAreaView>
+      <LinearGradient colors={gradient} locations={[0, 0.4, 1]} style={{ flex: 1 }}>
+        <SafeAreaView style={[styles.safeArea, { backgroundColor: 'transparent' }]}>
+          <AppHeader showBack={true} showLogo={false} title="" transparent={true} />
+          <View style={[styles.center, { backgroundColor: 'transparent' }]}>
+            <ActivityIndicator size="large" color="#FFFFFF" />
+            <Text style={[styles.loadingText, { color: 'rgba(255,255,255,0.7)' }]}>Carregando jornada personalizada...</Text>
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
     );
   }
 
   if (error || !step) {
     return (
-      <SafeAreaView style={styles.safeArea}>
-        <AppHeader showBack={true} showLogo={true} />
-        <View style={styles.center}>
-          <Text style={styles.errorText}>{error || 'Jornada personalizada não encontrada'}</Text>
-          <TouchableOpacity
-            style={styles.retryButton}
-            onPress={() => router.back()}
-          >
-            <Text style={styles.retryButtonText}>Voltar</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
+      <LinearGradient colors={gradient} locations={[0, 0.4, 1]} style={{ flex: 1 }}>
+        <SafeAreaView style={[styles.safeArea, { backgroundColor: 'transparent' }]}>
+          <AppHeader showBack={true} showLogo={false} title="" transparent={true} />
+          <View style={[styles.center, { backgroundColor: 'transparent' }]}>
+            <Text style={styles.errorText}>{error || 'Jornada personalizada não encontrada'}</Text>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={() => router.back()}
+            >
+              <Text style={styles.retryButtonText}>Voltar</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
     );
   }
 
@@ -1015,15 +1039,53 @@ export default function JornadaPersonalizadaScreen() {
     .find(o => o.id.toString() === optionId.toString()) : null;
 
   if (allMovies.length > 0) {
+
     return (
-      <SafeAreaView style={styles.safeArea}>
-        <AppHeader showBack={true} showLogo={true} />
-        <View style={styles.container}>
-          <ScrollView
-            contentContainerStyle={styles.movieResultsContainer}
-            onScroll={handleScroll}
-            scrollEventThrottle={16}
-          >
+      <LinearGradient
+        colors={gradient}
+        locations={[0, 0.4, 1]}
+        style={{ flex: 1 }}
+      >
+        <SafeAreaView style={{ flex: 1 }}>
+          {/* Header customizado premium com botão voltar */}
+          <View style={{
+            paddingHorizontal: 20,
+            paddingTop: 8,
+            paddingBottom: 8,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            position: 'relative',
+            height: 56,
+          }}>
+            <TouchableOpacity
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                backgroundColor: 'rgba(255,255,255,0.12)',
+                justifyContent: 'center',
+                alignItems: 'center',
+                position: 'absolute',
+                left: 20,
+              }}
+              onPress={() => router.back()}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+            <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: '800', letterSpacing: -0.3 }}>
+              Sugestões Vibesfilm
+            </Text>
+          </View>
+
+          <View style={{ flex: 1 }}>
+            <ScrollView
+              contentContainerStyle={[styles.movieResultsContainer, { paddingHorizontal: 20, backgroundColor: 'transparent' }]}
+              onScroll={handleScroll}
+              scrollEventThrottle={16}
+              showsVerticalScrollIndicator={false}
+            >
             {/* Header compacto */}
             <View style={styles.resultsHeader}>
               {/* Título com a opção escolhida */}
@@ -1135,13 +1197,20 @@ export default function JornadaPersonalizadaScreen() {
               </View>
             )}
             {visibleMovies.map((ms: MovieSuggestion, idx: number) => (
-              <Pressable
+              <GlassCard
                 key={ms.movie.id + idx}
-                style={({ pressed }) => [
-                  styles.movieCard,
-                  pressed && styles.movieCardPressed,
-                  { borderLeftWidth: 4, borderLeftColor: sentimentColor } // Identidade visual consistente
-                ]}
+                intensity={12}
+                borderColor={sentimentColor + '65'}
+                borderWidth={1.5}
+                borderRadius={16}
+                style={{ marginBottom: 16 }}
+              >
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.movieCard,
+                    pressed && styles.movieCardPressed,
+                    { backgroundColor: 'transparent', borderWidth: 0, shadowOpacity: 0, elevation: 0, marginBottom: 0, padding: 16 }
+                  ]}
                 onPress={() => {
                   if (__DEV__) {
                     console.log('🎬 Navegando para filme:', {
@@ -1192,7 +1261,7 @@ export default function JornadaPersonalizadaScreen() {
                             <Text style={styles.bulletPoint}>•</Text>
                             <View style={{
                               borderWidth: 1,
-                              borderColor: colors.text.secondary,
+                              borderColor: 'rgba(255,255,255,0.3)',
                               borderRadius: 2,
                               paddingHorizontal: 2,
                               justifyContent: 'center'
@@ -1208,7 +1277,7 @@ export default function JornadaPersonalizadaScreen() {
                           <>
                             <Text style={styles.bulletPoint}>•</Text>
                             <View style={styles.ratingContainer}>
-                              <Text style={[styles.ratingText, { fontSize: 10, fontWeight: 'bold', color: colors.text.secondary, marginRight: 2 }]}>IMDb</Text>
+                              <Text style={[styles.ratingText, { fontSize: 10, fontWeight: 'bold', color: 'rgba(255,255,255,0.7)', marginRight: 2 }]}>IMDb</Text>
                               <Ionicons name="star" size={10} color={colors.yellow} />
                               <Text style={[styles.ratingText, { fontSize: 11, marginLeft: 2 }]}>
                                 {ms.movie.imdbRating != null && !isNaN(Number(ms.movie.imdbRating))
@@ -1224,18 +1293,16 @@ export default function JornadaPersonalizadaScreen() {
                     {/* Razão Emocional em destaque */}
                     <View style={[styles.reasonContainer, {
                       backgroundColor: sentimentColor + '10', // Fundo sutil
-                      borderColor: sentimentColor + '30',
-                      borderWidth: 1,
+                      borderColor: sentimentColor + '65',
+                      borderWidth: 1.5,
                       borderRadius: borderRadius.md,
                       padding: spacing.xs,
                       marginTop: spacing.xs,
-                      borderTopWidth: 1, // Reset do estilo anterior
-                      borderTopColor: sentimentColor + '30', // Reset
                     }]}>
                       <View style={styles.reasonContent}>
                         <Ionicons name="heart" size={14} color={sentimentColor} style={{ marginTop: 2 }} />
                         <Text style={[styles.reasonText, {
-                          color: colors.text.primary,
+                          color: '#FFFFFF',
                           fontStyle: 'normal',
                           fontSize: 11
                         }]} numberOfLines={3}>
@@ -1252,8 +1319,8 @@ export default function JornadaPersonalizadaScreen() {
                       if (allPlatforms.length === 0) {
                         return (
                           <View style={styles.platformBadgesContainer}>
-                            <View style={[styles.platformBadge, { backgroundColor: colors.background.secondary, borderColor: 'transparent' }]}>
-                              <Text style={[styles.platformBadgeText, { color: colors.text.secondary, fontSize: 10 }]}>
+                            <View style={[styles.platformBadge, { backgroundColor: 'rgba(255, 255, 255, 0.08)', borderColor: 'transparent' }]}>
+                              <Text style={[styles.platformBadgeText, { color: 'rgba(255,255,255,0.5)', fontSize: 10 }]}>
                                 Não disponível no momento
                               </Text>
                             </View>
@@ -1304,8 +1371,8 @@ export default function JornadaPersonalizadaScreen() {
                       if (platformsToShow.length === 0) {
                         return (
                           <View style={styles.platformBadgesContainer}>
-                            <View style={[styles.platformBadge, { backgroundColor: colors.background.secondary, borderColor: 'transparent' }]}>
-                              <Text style={[styles.platformBadgeText, { color: colors.text.secondary, fontSize: 10 }]}>
+                            <View style={[styles.platformBadge, { backgroundColor: 'rgba(255, 255, 255, 0.08)', borderColor: 'transparent' }]}>
+                              <Text style={[styles.platformBadgeText, { color: 'rgba(255,255,255,0.5)', fontSize: 10 }]}>
                                 Somente aluguel/compra
                               </Text>
                             </View>
@@ -1322,7 +1389,7 @@ export default function JornadaPersonalizadaScreen() {
                             </Text>
                           </View>
                           {platformsToShow.length > 1 && (
-                            <Text style={{ fontSize: 10, color: colors.text.secondary, alignSelf: 'center', marginLeft: 4 }}>
+                            <Text style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', alignSelf: 'center', marginLeft: 4 }}>
                               +{platformsToShow.length - 1}
                             </Text>
                           )}
@@ -1332,7 +1399,8 @@ export default function JornadaPersonalizadaScreen() {
                   </View>
                 </View>
               </Pressable>
-            ))}
+            </GlassCard>
+          ))}
 
             {/* Mensagem educativa para o Shuffle de Elite */}
             {sortType === 'relevance' && (
@@ -1360,8 +1428,8 @@ export default function JornadaPersonalizadaScreen() {
                     paddingHorizontal: spacing.lg,
                     paddingVertical: spacing.md,
                     borderRadius: borderRadius.full,
-                    borderWidth: 1,
-                    borderColor: sentimentColor,
+                    borderWidth: 1.5,
+                    borderColor: sentimentColor + '65',
                     flexDirection: 'row',
                     alignItems: 'center',
                     ...shadows.sm
@@ -1400,11 +1468,13 @@ export default function JornadaPersonalizadaScreen() {
             showHome={true}
             twoLineText={true}
             customBackRoute="/sentimentos"
+            transparent={true}
           />
         </View>
       </SafeAreaView>
-    );
-  }
+    </LinearGradient>
+  );
+}
 
   // Exibir mensagem quando não há filmes E o usuário veio de filtros de plataformas
   // Só exibir DEPOIS que o processamento real aconteceu (hasProcessedResults) para evitar
@@ -1438,56 +1508,82 @@ export default function JornadaPersonalizadaScreen() {
   }
 
   // Renderizar a jornada normal quando não há filmes (estado inicial)
+
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <AppHeader showBack={true} showLogo={true} />
-      <View style={styles.container}>
-        <ScrollView
-          contentContainerStyle={[
-            styles.scrollContainer,
-            step?.id === 38 && styles.genreContainer
-          ]}
-          onScroll={handleScroll}
-          scrollEventThrottle={16}
-        >
-          {/* Header da pergunta */}
-          <View style={styles.questionHeader}>
-            <Text style={styles.question}>{step?.mobileQuestion || step?.question}</Text>
-
-            {/* Badge de contexto melhorado */}
-            {step?.contextualHint && (
-              <View style={[
-                styles.contextHintContainer,
-                {
-                  backgroundColor: sentimentColor + '10',
-                  borderLeftColor: sentimentColor,
-                }
-              ]}>
-                <Ionicons name="information-circle" size={18} color={sentimentColor} />
-                <Text style={styles.contextHintText}>
-                  {step.contextualHint}
-                </Text>
-              </View>
-            )}
-          </View>
-
-          {renderOptions()}
-        </ScrollView>
-
-        {/* Indicador de scroll animado */}
-        {showScrollIndicator && (
-          <Animated.View
-            style={[
-              styles.scrollIndicator,
-              { opacity: scrollIndicatorOpacity }
-            ]}
+    <LinearGradient
+      colors={gradient}
+      locations={[0, 0.4, 1]}
+      style={{ flex: 1 }}
+    >
+      <SafeAreaView style={{ flex: 1 }}>
+        {/* Header customizado premium com botão voltar */}
+        <View style={{
+          paddingHorizontal: 20,
+          paddingTop: 8,
+          paddingBottom: 8,
+          flexDirection: 'row',
+          alignItems: 'center',
+        }}>
+          <TouchableOpacity
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: 'rgba(255,255,255,0.12)',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+            onPress={() => router.back()}
+            activeOpacity={0.7}
           >
-            <Ionicons name="chevron-down" size={24} color={sentimentColor} />
-          </Animated.View>
-        )}
+            <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
 
-        <NavigationFooter backLabel="Trocar Intenção" />
-      </View>
-    </SafeAreaView>
+        <View style={{ flex: 1 }}>
+          <ScrollView
+            contentContainerStyle={[
+              styles.scrollContainer,
+              step?.id === 38 && styles.genreContainer,
+              { paddingHorizontal: 24, paddingTop: 16 }
+            ]}
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Header da pergunta */}
+            <View style={[styles.questionHeader, { marginBottom: 32 }]}>
+              <Text style={[styles.question, { color: '#FFFFFF', fontSize: 32, lineHeight: 38, textAlign: 'left', fontWeight: '800' }]}>
+                {step?.mobileQuestion || step?.question}
+              </Text>
+
+              {/* Badge de contexto melhorado usando GlassCard */}
+              {step?.contextualHint && (
+                <GlassCard
+                  intensity={10}
+                  borderColor={sentimentColor + '65'}
+                  borderRadius={12}
+                  borderWidth={1.5}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'flex-start',
+                    padding: 14,
+                    marginTop: 16,
+                    gap: 8,
+                  }}
+                >
+                  <Ionicons name="information-circle-outline" size={20} color={sentimentColor} />
+                  <Text style={[styles.contextHintText, { color: 'rgba(255, 255, 255, 0.75)', fontSize: 13, fontWeight: '500', lineHeight: 18, marginLeft: 0 }]}>
+                    {step.contextualHint}
+                  </Text>
+                </GlassCard>
+              )}
+            </View>
+
+            {renderOptions()}
+          </ScrollView>
+        </View>
+      </SafeAreaView>
+    </LinearGradient>
   );
 } 

@@ -49,12 +49,12 @@ export const colorsLight = {
 
   // Cores específicas por sentimento (cards) - mantém as mesmas em ambos os modos
   sentimentColors: {
-    13: '#FF8F00', // Laranja/Âmbar para Feliz/Alegre
-    14: '#1A73E8', // Azul para Triste
-    15: '#2E7D32', // Verde escuro para Calmo
-    16: '#BA55D3', // Roxo para Ansioso
-    17: '#FF4444', // Vermelho para Animado
-    18: '#808080', // Cinza para Cansado
+    13: '#dca353', // Laranja/Âmbar suave para Feliz/Alegre
+    14: '#5e97d1', // Azul sutil para Triste/Introspectivo
+    15: '#5bb37d', // Verde suave para Calmo
+    16: '#ae7bc9', // Roxo suave para Ansioso
+    17: '#e06b6b', // Vermelho suave para Animado
+    18: '#8888aa', // Cinza sutil para Cansado
   } as Record<number, string>,
 };
 
@@ -109,12 +109,12 @@ export const colorsDark = {
 
   // Cores específicas por sentimento (cards) - mantém as mesmas em ambos os modos
   sentimentColors: {
-    13: '#FF8F00', // Laranja/Âmbar para Feliz/Alegre
-    14: '#1A73E8', // Azul para Triste
-    15: '#2E7D32', // Verde escuro para Calmo
-    16: '#BA55D3', // Roxo para Ansioso
-    17: '#FF4444', // Vermelho para Animado
-    18: '#808080', // Cinza para Cansado
+    13: '#dca353', // Laranja/Âmbar suave para Feliz/Alegre
+    14: '#5e97d1', // Azul sutil para Triste/Introspectivo
+    15: '#5bb37d', // Verde suave para Calmo
+    16: '#ae7bc9', // Roxo suave para Ansioso
+    17: '#e06b6b', // Vermelho suave para Animado
+    18: '#8888aa', // Cinza sutil para Cansado
   } as Record<number, string>,
 };
 

@@ -1,34 +1,30 @@
-import { useEffect, useState, useRef, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView, Animated } from 'react-native';
+import { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { typography, spacing, borderRadius, shadows } from '../theme';
-import { useTheme } from '../hooks/useTheme';
 import { API_ENDPOINTS, apiRequest } from '../config';
 import { EmotionalIntentionsResponse, EmotionalIntention, Sentiment } from '../types';
-import { IntentionIcon } from '../components/IntentionIcon';
-import { AppHeader } from '../components/AppHeader';
-import { Ionicons } from '@expo/vector-icons';
+import { IntentionCards } from '../components/premium/IntentionCards';
+import { LinearGradient } from 'expo-linear-gradient';
+import { SENTIMENT_GRADIENTS, DEFAULT_GRADIENT } from '../components/premium/GradientBackground';
 
 export default function IntencoesScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  const { colors } = useTheme();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [intentions, setIntentions] = useState<EmotionalIntention[]>([]);
   const [sentiment, setSentiment] = useState<Sentiment | null>(null);
 
-  // Animação do indicador de scroll
-  const scrollIndicatorOpacity = useRef(new Animated.Value(1)).current;
-  const [showScrollIndicator, setShowScrollIndicator] = useState(false);
+  const gradient = SENTIMENT_GRADIENTS[Number(id)] || DEFAULT_GRADIENT;
 
   useEffect(() => {
     fetchIntentions();
-  }, []);
+  }, [id]);
 
   const fetchIntentions = async () => {
     try {
+      setLoading(true);
+      setError(null);
       const response = await apiRequest(API_ENDPOINTS.emotionalIntentions.list(id.toString()));
       if (!response.ok) {
         throw new Error('Erro ao carregar intenções emocionais');
@@ -41,9 +37,6 @@ export default function IntencoesScreen() {
         description: '',
         keywords: []
       });
-
-      // Mostrar indicador se houver mais de 3 intenções
-      setShowScrollIndicator(data.intentions.length > 3);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro desconhecido');
     } finally {
@@ -51,7 +44,7 @@ export default function IntencoesScreen() {
     }
   };
 
-  const handleIntentionPress = (intention: EmotionalIntention) => {
+  const handleIntentionSelect = (intention: EmotionalIntention) => {
     router.push({
       pathname: '/jornada-personalizada/[sentimentId]/[intentionId]',
       params: {
@@ -61,270 +54,75 @@ export default function IntencoesScreen() {
     });
   };
 
-
-
-  const getIntentionLabel = (type: string): string => {
-    const labels = {
-      'PROCESS': 'Processar',
-      'TRANSFORM': 'Transformar',
-      'MAINTAIN': 'Manter',
-      'EXPLORE': 'Explorar'
-    };
-    return labels[type as keyof typeof labels] || type;
+  const handleBack = () => {
+    router.back();
   };
-
-  const handleScroll = (event: any) => {
-    const scrollY = event.nativeEvent.contentOffset.y;
-
-    // Esconder indicador após 50px de scroll
-    if (scrollY > 50 && showScrollIndicator) {
-      Animated.timing(scrollIndicatorOpacity, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }).start(() => setShowScrollIndicator(false));
-    }
-  };
-
-  const sentimentColor = useMemo(() =>
-    sentiment ? (colors.sentimentColors[sentiment.id] || colors.primary.main) : colors.primary.main,
-    [sentiment, colors]
-  );
-
-  const styles = useMemo(() => StyleSheet.create({
-    safeArea: {
-      flex: 1,
-      backgroundColor: colors.background.primary,
-    },
-    container: {
-      flex: 1,
-      backgroundColor: colors.background.primary,
-      paddingHorizontal: spacing.md, // Padding lateral consistente
-    },
-    scrollView: {
-      flex: 1,
-      paddingBottom: spacing.xl,
-    },
-    center: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: colors.background.primary,
-    },
-    // Header atualizado
-    header: {
-      paddingVertical: spacing.md,
-      marginBottom: spacing.md,
-      alignItems: 'flex-start', // Alinhado à esquerda
-    },
-    title: {
-      fontSize: typography.fontSize.h2,
-      fontWeight: typography.fontWeight.bold,
-      color: colors.text.primary,
-      marginBottom: spacing.sm,
-      textAlign: 'left',
-      lineHeight: typography.fontSize.h2 * 1.2,
-    },
-    sentimentContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    sentimentLabel: {
-      fontSize: typography.fontSize.body,
-      color: colors.text.secondary,
-      marginRight: spacing.sm,
-    },
-    sentimentBadge: {
-      borderRadius: borderRadius.full, // Badge arredondado
-      paddingHorizontal: spacing.md,
-      paddingVertical: 4, // Padding vertical menor
-      borderWidth: 1,
-    },
-    sentimentBadgeText: {
-      fontSize: typography.fontSize.small,
-      fontWeight: typography.fontWeight.bold,
-      textTransform: 'uppercase',
-      letterSpacing: 0.5,
-    },
-    // Lista de Intenções
-    intentionsContainer: {
-      paddingBottom: spacing.xl,
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      justifyContent: 'space-between',
-      rowGap: spacing.lg,
-      columnGap: spacing.sm,
-    },
-    intentionCard: {
-      backgroundColor: colors.background.card,
-      borderRadius: borderRadius.lg,
-      padding: spacing.md,
-      ...shadows.md,
-      width: '47%', // Reduzido levemente para garantir 2 colunas
-      // aspectRatio: 0.85, // Removido para permitir crescimento vertical conforme texto
-      minHeight: 180, // Altura mínima garantida
-      flexDirection: 'column', // Vertical
-      alignItems: 'center',
-      justifyContent: 'center',
-
-      // Borda visual envolvendo todo o card
-      borderWidth: 2,
-    },
-    intentionIconContainer: {
-      width: 52,
-      height: 52,
-      borderRadius: 26,
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginRight: 0, // Remover margem direita
-      marginBottom: spacing.sm, // Adicionar margem inferior
-      flexShrink: 0, // Não encolher
-    },
-    intentionContent: {
-      flex: 1,
-      justifyContent: 'flex-start',
-      alignItems: 'center', // Centralizar texto
-    },
-    intentionTitle: {
-      fontSize: typography.fontSize.h3,
-      fontWeight: typography.fontWeight.bold,
-      color: colors.text.primary,
-      marginBottom: 4,
-      textAlign: 'center', // Centralizar
-    },
-    intentionDescription: {
-      fontSize: typography.fontSize.small,
-      color: colors.text.primary,
-      lineHeight: typography.fontSize.small * 1.3,
-      textAlign: 'center',
-    },
-    arrowIcon: {
-      marginLeft: spacing.xs,
-    },
-    // States
-    loadingText: {
-      marginTop: spacing.md,
-      color: colors.primary.main,
-      fontSize: typography.fontSize.body,
-    },
-    errorText: {
-      color: colors.state.error,
-      fontSize: typography.fontSize.body,
-      marginBottom: spacing.md,
-      textAlign: 'center',
-    },
-    retryButton: {
-      backgroundColor: colors.primary.main,
-      paddingHorizontal: spacing.lg,
-      paddingVertical: spacing.sm,
-      borderRadius: borderRadius.md,
-    },
-    retryButtonText: {
-      color: colors.text.inverse,
-      fontWeight: typography.fontWeight.medium,
-    },
-  }), [colors]);
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.safeArea}>
-        <AppHeader showBack={true} showLogo={true} />
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={colors.primary.main} />
-          <Text style={styles.loadingText}>Carregando opções...</Text>
+      <LinearGradient colors={gradient} locations={[0, 0.4, 1]} style={{ flex: 1 }}>
+        <View style={[styles.center, { backgroundColor: 'transparent' }]}>
+          <ActivityIndicator size="large" color="#FFFFFF" />
+          <Text style={styles.loadingText}>Buscando intenções...</Text>
         </View>
-      </SafeAreaView>
+      </LinearGradient>
     );
   }
 
-  if (error) {
+  if (error || !sentiment) {
     return (
-      <SafeAreaView style={styles.safeArea}>
-        <AppHeader showBack={true} showLogo={true} />
-        <View style={styles.center}>
-          <Text style={styles.errorText}>{error}</Text>
+      <LinearGradient colors={gradient} locations={[0, 0.4, 1]} style={{ flex: 1 }}>
+        <View style={[styles.center, { backgroundColor: 'transparent' }]}>
+          <Text style={styles.errorText}>{error || 'Erro desconhecido'}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={fetchIntentions}>
             <Text style={styles.retryButtonText}>Tentar novamente</Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </LinearGradient>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <AppHeader showBack={true} showLogo={true} />
-      <View style={styles.container}>
-        <ScrollView
-          style={styles.scrollView}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: spacing.xl }}
-        >
-          <View style={styles.header}>
-            <Text style={styles.title}>Qual a sua intenção?</Text>
-
-            {sentiment && (
-              <View style={styles.sentimentContainer}>
-                <Text style={styles.sentimentLabel}>Sentindo agora:</Text>
-                <View style={[styles.sentimentBadge, {
-                  backgroundColor: sentimentColor + '10', // Fundo bem suave
-                  borderColor: sentimentColor + '40',
-                }]}>
-                  <Text style={[styles.sentimentBadgeText, { color: sentimentColor }]}>
-                    {sentiment.name}
-                  </Text>
-                </View>
-              </View>
-            )}
-          </View>
-
-          <View style={styles.intentionsContainer}>
-            {intentions
-              .sort((a, b) => {
-                const order = ['MAINTAIN', 'PROCESS', 'TRANSFORM', 'EXPLORE'];
-                const indexA = order.indexOf(a.type);
-                const indexB = order.indexOf(b.type);
-                return indexA - indexB;
-              })
-              .map((intention) => (
-                <TouchableOpacity
-                  key={intention.id}
-                  style={[styles.intentionCard, {
-                    borderColor: sentimentColor,
-                  }]}
-                  onPress={() => handleIntentionPress(intention)}
-                  activeOpacity={0.7}
-                >
-                  <View style={[styles.intentionIconContainer, {
-                    backgroundColor: sentimentColor + '15'
-                  }]}>
-                    <IntentionIcon
-                      intentionType={intention.type}
-                      size={26}
-                      color={sentimentColor}
-                    />
-                  </View>
-
-                  <View style={styles.intentionContent}>
-                    <Text style={styles.intentionTitle}>
-                      {getIntentionLabel(intention.type)}
-                    </Text>
-                    <Text
-                      style={styles.intentionDescription}
-                      numberOfLines={5}
-                      adjustsFontSizeToFit={true}
-                      minimumFontScale={0.8}
-                    >
-                      {intention.description}
-                    </Text>
-                  </View>
-
-
-                </TouchableOpacity>
-              ))}
-          </View>
-        </ScrollView>
-      </View>
-    </SafeAreaView>
+    <IntentionCards
+      intentions={intentions}
+      sentimentId={sentiment.id}
+      sentimentName={sentiment.name}
+      onSelect={handleIntentionSelect}
+      onBack={handleBack}
+    />
   );
-} 
+}
+
+const styles = StyleSheet.create({
+  center: {
+    flex: 1,
+    backgroundColor: '#0a0a0f',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  loadingText: {
+    marginTop: 16,
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 16,
+  },
+  errorText: {
+    color: '#FF6B6B',
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  retryButton: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    paddingHorizontal: 32,
+    paddingVertical: 14,
+    borderRadius: 50,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.25)',
+  },
+  retryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});

@@ -30,22 +30,22 @@ export const MovieSynopsis: React.FC<MovieSynopsisProps> = React.memo(({
       marginHorizontal: spacing.md,
       marginBottom: spacing.md,
       padding: spacing.md,
-      backgroundColor: colors.background.card,
+      backgroundColor: 'rgba(255, 255, 255, 0.08)',
       borderRadius: borderRadius.lg,
-      borderWidth: 1,
-      borderColor: colors.border.light,
+      borderWidth: 1.5,
+      borderColor: sentimentColor ? sentimentColor + '65' : colors.border.light,
     },
     sectionTitle: {
       fontSize: typography.fontSize.small,
       fontWeight: typography.fontWeight.bold,
-      color: colors.text.secondary,
+      color: '#FFFFFF',
       textTransform: 'uppercase',
       letterSpacing: 1.5,
       marginBottom: spacing.sm,
     },
     synopsisText: {
       fontSize: typography.fontSize.small,
-      color: colors.text.primary,
+      color: 'rgba(255, 255, 255, 0.85)',
       lineHeight: typography.fontSize.small * 1.65,
       fontWeight: typography.fontWeight.regular,
     },
@@ -59,7 +59,7 @@ export const MovieSynopsis: React.FC<MovieSynopsisProps> = React.memo(({
     },
     divider: {
       height: 1,
-      backgroundColor: colors.border.light,
+      backgroundColor: 'rgba(255, 255, 255, 0.12)',
       marginTop: spacing.md,
       marginBottom: spacing.sm,
     },
@@ -70,12 +70,12 @@ export const MovieSynopsis: React.FC<MovieSynopsisProps> = React.memo(({
     },
     directorLabel: {
       fontSize: typography.fontSize.small,
-      color: colors.text.secondary,
+      color: 'rgba(255, 255, 255, 0.7)',
     },
     directorName: {
       fontSize: typography.fontSize.small,
       fontWeight: typography.fontWeight.semibold,
-      color: colors.text.primary,
+      color: '#FFFFFF',
     },
   }), [colors]);
 

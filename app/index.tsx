@@ -2,167 +2,168 @@ import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
-import { typography, spacing, borderRadius, shadows } from './theme';
-import { useTheme } from './hooks/useTheme';
+import * as Haptics from 'expo-haptics';
+import { HOME_GRADIENT } from './components/premium/GradientBackground';
 
-// Importar os logos do Vibesfilm para light e dark mode
-const vibesfilmLogoLight = require('../assets/logo_header.png');
-const vibesfilmLogoDark = require('../assets/logo_header_dark.png');
+const vibesfilmLogo = require('../assets/logo_header_dark.png');
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { colors, isDark, toggleTheme } = useTheme();
 
-  // Log para debug - aparecerá no console do dispositivo
   if (__DEV__) {
     console.log('🏠 HomeScreen carregada');
   }
 
-  // Escolher o logo baseado no tema
-  const vibesfilmLogo = isDark ? vibesfilmLogoDark : vibesfilmLogoLight;
-
-  // Gradientes diferentes para light e dark mode
-  const gradientColors = isDark
-    ? ['#121212', '#1E1E1E', '#2A2A2A', '#1E1E1E'] as const
-    : ['#FFFFFF', '#F8F9FA', '#F0F2F5', '#E8EAE6'] as const;
-
-  const styles = StyleSheet.create({
-    safeArea: {
-      flex: 1,
-      backgroundColor: 'transparent',
-    },
-    container: {
-      flex: 1,
-      padding: spacing.md,
-    },
-    // Header superior com Logo e Toggle
-    header: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: spacing.xl,
-      marginTop: spacing.sm,
-    },
-    logo: {
-      height: 40,
-      width: 140,
-    },
-    themeToggle: {
-      padding: spacing.xs,
-      backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-      borderRadius: borderRadius.full,
-    },
-
-    // Área de conteúdo central
-    content: {
-      flex: 1,
-      justifyContent: 'center',
-      paddingHorizontal: spacing.md,
-    },
-    welcomeText: {
-      fontSize: typography.fontSize.h4,
-      fontWeight: typography.fontWeight.medium,
-      color: colors.text.secondary,
-      marginBottom: spacing.xs,
-    },
-    title: {
-      fontSize: typography.fontSize.h1,
-      fontWeight: typography.fontWeight.bold,
-      color: colors.text.primary,
-      marginBottom: spacing.md,
-      lineHeight: typography.fontSize.h1 * 1.2,
-    },
-    description: {
-      fontSize: typography.fontSize.body,
-      fontWeight: typography.fontWeight.regular,
-      color: colors.text.secondary,
-      marginBottom: spacing.xl,
-      lineHeight: typography.fontSize.body * 1.5,
-    },
-
-    // Rodapé com botão fixo
-    footer: {
-      paddingBottom: spacing.lg,
-      paddingHorizontal: spacing.sm,
-    },
-    button: {
-      backgroundColor: colors.primary.main,
-      paddingVertical: spacing.md,
-      borderRadius: borderRadius.lg,
-      alignItems: 'center',
-      shadowColor: colors.primary.main,
-      shadowOffset: {
-        width: 0,
-        height: 4,
-      },
-      shadowOpacity: 0.3,
-      shadowRadius: 8,
-      elevation: 6,
-    },
-    buttonText: {
-      color: colors.text.inverse,
-      fontSize: typography.fontSize.body,
-      fontWeight: typography.fontWeight.bold,
-      letterSpacing: 1,
-      textTransform: 'uppercase',
-    },
-  });
+  const handleStart = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push('/sentimentos');
+  };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <LinearGradient
-        colors={gradientColors}
-        locations={[0, 0.3, 0.7, 1]}
-        style={styles.container}
-      >
-        {/* Header: Logo e Toggle */}
+    <LinearGradient
+      colors={HOME_GRADIENT}
+      locations={[0, 0.3, 0.7, 1]}
+      style={styles.gradient}
+    >
+      <SafeAreaView style={styles.safeArea}>
+        {/* Header com logo */}
         <View style={styles.header}>
           <Image
             source={vibesfilmLogo}
             style={styles.logo}
             resizeMode="contain"
           />
-          <TouchableOpacity
-            style={styles.themeToggle}
-            onPress={toggleTheme}
-            activeOpacity={0.7}
-          >
-            <Ionicons
-              name={isDark ? "sunny-outline" : "moon-outline"}
-              size={24}
-              color={isDark ? colors.yellow : colors.primary.main}
-            />
-          </TouchableOpacity>
         </View>
 
         {/* Conteúdo Central */}
         <View style={styles.content}>
-          <Text style={styles.title}>Cada emoção tem um filme.</Text>
+          <View style={styles.decorativeCircle} />
+          <Text style={styles.tagline}>Cinema & Emoção</Text>
+          <Text style={styles.title}>
+            Cada emoção{'\n'}tem um filme.
+          </Text>
           <Text style={styles.description}>
-            O cinema é a bússola para o que você sente. Encontre a obra certa para o seu momento, seja para{' '}
-            <Text style={{ color: colors.primary.main, fontWeight: typography.fontWeight.bold }}>processar</Text>
-            {' '}uma emoção,{' '}
-            <Text style={{ color: colors.primary.main, fontWeight: typography.fontWeight.bold }}>transformar</Text>
-            {' '}seu humor,{' '}
-            <Text style={{ color: colors.primary.main, fontWeight: typography.fontWeight.bold }}>manter</Text>
-            {' '}sua energia ou{' '}
-            <Text style={{ color: colors.primary.main, fontWeight: typography.fontWeight.bold }}>explorar</Text>
-            {' '}novas sensações.
+            Encontre a obra certa para o seu momento.
+            Deixe o cinema{' '}
+            <Text style={styles.highlightText}>processar</Text>,{' '}
+            <Text style={styles.highlightText}>transformar</Text>
+            {' '}ou{' '}
+            <Text style={styles.highlightText}>amplificar</Text>
+            {' '}o que você sente.
           </Text>
         </View>
 
-        {/* Rodapé: Botão de Ação */}
+        {/* Rodapé: Botão premium */}
         <View style={styles.footer}>
+          {/* Botão atmosférico premium com gradiente e glow */}
           <TouchableOpacity
-            style={styles.button}
-            onPress={() => router.push('/sentimentos')}
-            activeOpacity={0.8}
+            style={styles.buttonOuter}
+            onPress={handleStart}
+            activeOpacity={0.85}
           >
-            <Text style={styles.buttonText}>Começar Jornada</Text>
+            <LinearGradient
+              colors={['rgba(80, 100, 200, 0.55)', 'rgba(60, 80, 180, 0.35)', 'rgba(40, 60, 160, 0.50)']}
+              locations={[0, 0.5, 1]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.buttonGradient}
+            >
+              <Text style={styles.buttonText}>Como você se sente agora?</Text>
+            </LinearGradient>
           </TouchableOpacity>
         </View>
-      </LinearGradient>
-    </SafeAreaView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
+
+const styles = StyleSheet.create({
+  gradient: { flex: 1 },
+  safeArea: { flex: 1 },
+  header: {
+    paddingHorizontal: 32, // Alinhado perfeitamente com o conteúdo
+    paddingTop: 24, // Espaçamento elegante em relação ao status bar
+  },
+  logo: {
+    height: 80,
+    width: 80,
+    borderRadius: 16, // Deixa as bordas do logo suavemente arredondadas e integradas
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+  },
+  decorativeCircle: {
+    position: 'absolute',
+    width: 300,
+    height: 300,
+    borderRadius: 150,
+    backgroundColor: 'rgba(100, 140, 255, 0.08)',
+    top: -60,
+    right: -80,
+  },
+  tagline: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: 'rgba(255,255,255,0.45)',
+    letterSpacing: 3,
+    textTransform: 'uppercase',
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 48,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    lineHeight: 54,
+    letterSpacing: -1.5,
+    marginBottom: 24,
+  },
+  description: {
+    fontSize: 17,
+    color: 'rgba(255,255,255,0.55)',
+    lineHeight: 28,
+    fontWeight: '400',
+  },
+  highlightText: {
+    color: 'rgba(255,255,255,0.95)',
+    fontWeight: '600',
+  },
+  footer: {
+    paddingHorizontal: 32,
+    paddingBottom: 48,
+    gap: 20,
+    alignItems: 'center',
+  },
+  buttonOuter: {
+    width: '100%',
+    borderRadius: 60,
+    borderWidth: 1,
+    borderColor: 'rgba(150, 170, 255, 0.28)',
+    // Glow externo suave
+    shadowColor: '#5566cc',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.45,
+    shadowRadius: 22,
+    elevation: 8,
+    overflow: 'hidden',
+  },
+  buttonGradient: {
+    paddingVertical: 20,
+    paddingHorizontal: 32,
+    borderRadius: 60,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: 'rgba(255, 255, 255, 0.92)',
+    fontSize: 17,
+    fontWeight: '600',
+    letterSpacing: 0.3,
+  },
+  hint: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.85)',
+    fontWeight: '600',
+    letterSpacing: 0.8,
+  },
+});

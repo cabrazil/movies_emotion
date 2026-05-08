@@ -14,6 +14,8 @@ import { CuradoriaCard } from '../components/movie-details/CuradoriaCard';
 import { MovieSynopsis } from '../components/movie-details/MovieSynopsis';
 import { MovieCast } from '../components/movie-details/MovieCast';
 import { MovieAwards } from '../components/movie-details/MovieAwards';
+import { LinearGradient } from 'expo-linear-gradient';
+import { SENTIMENT_GRADIENTS, DEFAULT_GRADIENT } from '../components/premium/GradientBackground';
 
 interface StreamingPlatform {
   id: number;
@@ -329,24 +331,26 @@ export default function MovieDetailsScreen() {
   }, [scrollIndicatorOpacity]);
 
   // Criar estilos dinamicamente com base no tema
+  const gradient = SENTIMENT_GRADIENTS[Number(sentimentId)] || DEFAULT_GRADIENT;
+
   const styles = useMemo(() => StyleSheet.create({
     safeArea: {
       flex: 1,
-      backgroundColor: colors.background.primary,
+      backgroundColor: 'transparent',
     },
     fullContainer: {
       flex: 1,
-      backgroundColor: colors.background.primary,
+      backgroundColor: 'transparent',
     },
     container: {
       flex: 1,
-      backgroundColor: colors.background.primary,
+      backgroundColor: 'transparent',
     },
     center: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: colors.background.primary,
+      backgroundColor: 'transparent',
     },
     loadingText: {
       fontSize: typography.fontSize.body,
@@ -357,23 +361,27 @@ export default function MovieDetailsScreen() {
       color: colors.state.error,
     },
     actionsContainer: {
-      flexDirection: 'row',
-      justifyContent: 'center',
-      marginTop: spacing.lg,
+      marginHorizontal: spacing.md,
+      marginBottom: spacing.xl,
+      marginTop: spacing.md,
     },
     actionButton: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: colors.background.secondary,
+      justifyContent: 'center',
+      backgroundColor: 'rgba(255, 255, 255, 0.08)',
       paddingHorizontal: spacing.lg,
-      paddingVertical: spacing.sm,
+      paddingVertical: spacing.md,
       borderRadius: borderRadius.md,
+      borderWidth: 1.5,
+      borderColor: sentimentColor + '65',
+      width: '100%',
     },
     actionButtonText: {
       fontSize: typography.fontSize.body,
-      color: colors.primary.main,
-      fontWeight: typography.fontWeight.medium,
-      marginLeft: spacing.xs,
+      color: '#FFFFFF',
+      fontWeight: typography.fontWeight.semibold,
+      marginLeft: spacing.sm,
     },
     scrollIndicator: {
       position: 'absolute',
@@ -394,36 +402,41 @@ export default function MovieDetailsScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.safeArea}>
-        <AppHeader showBack={true} showLogo={true} />
-        <View style={styles.center}>
-          <Text style={styles.loadingText}>Carregando filme...</Text>
-        </View>
-      </SafeAreaView>
+      <LinearGradient colors={gradient} locations={[0, 0.4, 1]} style={{ flex: 1 }}>
+        <SafeAreaView style={styles.safeArea}>
+          <AppHeader showBack={true} showLogo={false} title="" transparent={true} />
+          <View style={styles.center}>
+            <Text style={[styles.loadingText, { color: 'rgba(255,255,255,0.7)' }]}>Carregando filme...</Text>
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
     );
   }
 
   if (error || !movie) {
     return (
-      <SafeAreaView style={styles.safeArea}>
-        <AppHeader showBack={true} showLogo={true} />
-        <View style={styles.center}>
-          <Text style={styles.errorText}>{error || 'Filme não encontrado'}</Text>
-        </View>
-      </SafeAreaView>
+      <LinearGradient colors={gradient} locations={[0, 0.4, 1]} style={{ flex: 1 }}>
+        <SafeAreaView style={styles.safeArea}>
+          <AppHeader showBack={true} showLogo={false} title="" transparent={true} />
+          <View style={styles.center}>
+            <Text style={styles.errorText}>{error || 'Filme não encontrado'}</Text>
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <AppHeader showBack={true} showLogo={true} />
-      <View style={styles.fullContainer}>
-        <ScrollView
-          ref={scrollViewRef}
-          style={styles.container}
-          onScroll={handleScroll}
-          scrollEventThrottle={16}
-        >
+    <LinearGradient colors={gradient} locations={[0, 0.4, 1]} style={{ flex: 1 }}>
+      <SafeAreaView style={styles.safeArea}>
+        <AppHeader showBack={true} showLogo={false} title="" transparent={true} />
+        <View style={styles.fullContainer}>
+          <ScrollView
+            ref={scrollViewRef}
+            style={styles.container}
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
+          >
           {/* 1. Hero: Pôster + Título + Título Original + Ano + Duração + Classificação */}
           <MovieHeader
             thumbnail={movie.thumbnail}
@@ -476,14 +489,15 @@ export default function MovieDetailsScreen() {
                   fontWeight: '700',
                   textTransform: 'uppercase',
                   letterSpacing: 1.5,
-                  color: sentimentColor,
+                  color: '#FFFFFF',
+                  opacity: 0.8,
                   marginBottom: 4,
                 }}>A Vibe do Filme</Text>
                 <Text style={{
                   fontSize: 16,
                   fontStyle: 'italic',
                   lineHeight: 24,
-                  color: colors.text.primary,
+                  color: '#FFFFFF',
                 }}>"{hook}"</Text>
               </View>
             ) : null;
@@ -591,7 +605,7 @@ export default function MovieDetailsScreen() {
           {/* Compartilhar */}
           <View style={styles.actionsContainer}>
             <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
-              <Ionicons name="share-outline" size={24} color={colors.primary.main} />
+              <Ionicons name="share-outline" size={24} color="#FFFFFF" />
               <Text style={styles.actionButtonText}>Compartilhar</Text>
             </TouchableOpacity>
           </View>
@@ -608,8 +622,9 @@ export default function MovieDetailsScreen() {
           </Animated.View>
         )}
 
-        <NavigationFooter backLabel="Filmes" showHome={true} />
+        <NavigationFooter backLabel="Filmes" showHome={true} transparent={true} />
       </View>
     </SafeAreaView>
+   </LinearGradient>
   );
 } 

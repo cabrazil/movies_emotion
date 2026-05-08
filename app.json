@@ -2,12 +2,12 @@
   "expo": {
     "name": "Vibesfilm",
     "slug": "movies_emotion",
-    "version": "1.0.6",
+    "version": "2.0.0",
     "scheme": "vibesfilm",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": false,
+    "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.vibesfilm.app",
-      "buildNumber": "4",
+      "buildNumber": "5",
       "infoPlist": {
         "NSCameraUsageDescription": "O Vibesfilm não usa a câmera.",
         "NSPhotoLibraryUsageDescription": "O Vibesfilm não acessa sua galeria de fotos.",
@@ -26,7 +26,7 @@
     },
     "android": {
       "package": "com.vibesfilm.app",
-      "versionCode": 7,
+      "versionCode": 8,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"

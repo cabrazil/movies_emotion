@@ -38,13 +38,13 @@ export const MovieHeader: React.FC<MovieHeaderProps> = React.memo(({
       padding: spacing.md,
       gap: spacing.md,
       alignItems: 'flex-start',
-      backgroundColor: colors.background.primary,
+      backgroundColor: 'transparent',
     },
     poster: {
       width: 110,
       height: 165,
       borderRadius: borderRadius.md,
-      backgroundColor: colors.background.secondary,
+      backgroundColor: 'rgba(255, 255, 255, 0.08)',
     },
     info: {
       flex: 1,
@@ -53,14 +53,14 @@ export const MovieHeader: React.FC<MovieHeaderProps> = React.memo(({
     title: {
       fontSize: typography.fontSize.h3,
       fontWeight: typography.fontWeight.bold,
-      color: colors.text.primary,
+      color: '#FFFFFF',
       lineHeight: typography.fontSize.h3 * 1.25,
       marginBottom: spacing.xs,
     },
     originalTitle: {
       fontSize: typography.fontSize.tiny,
       fontStyle: 'italic',
-      color: colors.text.secondary,
+      color: 'rgba(255,255,255,0.6)',
       marginBottom: spacing.sm,
     },
     metaRow: {
@@ -71,28 +71,28 @@ export const MovieHeader: React.FC<MovieHeaderProps> = React.memo(({
     },
     metaText: {
       fontSize: typography.fontSize.small,
-      color: colors.text.secondary,
+      color: 'rgba(255,255,255,0.7)',
     },
     metaDot: {
       fontSize: typography.fontSize.tiny,
-      color: colors.text.secondary,
-      opacity: 0.4,
+      color: 'rgba(255,255,255,0.45)',
     },
     certBadge: {
       paddingHorizontal: 6,
       paddingVertical: 2,
       borderRadius: 4,
       borderWidth: 1,
-      borderColor: colors.border.medium,
+      borderColor: 'rgba(255,255,255,0.22)',
     },
     certText: {
       fontSize: typography.fontSize.tiny,
       fontWeight: typography.fontWeight.semibold,
-      color: colors.text.secondary,
+      color: 'rgba(255,255,255,0.7)',
     },
     yearText: {
       fontSize: typography.fontSize.small,
       fontWeight: typography.fontWeight.semibold,
+      color: 'rgba(255,255,255,0.8)',
     },
   }), [colors]);
 

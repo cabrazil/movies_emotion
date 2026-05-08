@@ -13,6 +13,7 @@ const formatPlatformName = (name: string): string => {
   if (lowerName === 'paramount+') return 'Para\nmount+';
   if (lowerName === 'claro video') return 'Claro\nVideo';
   if (lowerName === 'apple tv+') return 'Apple\nTV+';
+  if (lowerName.includes('apple tv') && lowerName.includes('loja')) return 'Apple TV';
   if (lowerName === 'prime video') return 'Prime\nVideo';
   if (lowerName === 'mercado play') return 'Mercado\nPlay';
   if (lowerName === 'hbo max') return 'HBO\nMax';
@@ -149,10 +150,10 @@ export const StreamingPlatforms: React.FC<StreamingPlatformsProps> = React.memo(
       marginHorizontal: spacing.md,
       marginBottom: spacing.md,
       padding: spacing.md,
-      backgroundColor: colors.background.card,
+      backgroundColor: 'rgba(255, 255, 255, 0.08)',
       borderRadius: 12,
-      borderWidth: 1,
-      borderColor: colors.border.light,
+      borderWidth: 1.5,
+      borderColor: sentimentColor ? sentimentColor + '65' : colors.border.light,
     },
     sectionTitle: {
       fontSize: typography.fontSize.tiny,
@@ -184,9 +185,10 @@ export const StreamingPlatforms: React.FC<StreamingPlatformsProps> = React.memo(
     },
     platformLogoItem: {
       borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.15)',
       borderRadius: borderRadius.md,
       padding: spacing.sm,
-      backgroundColor: colors.background.primary,
+      backgroundColor: '#16161a', // Sólido escuro de alto contraste para destacar logos e textos
       alignItems: 'center',
       justifyContent: 'center',
       minWidth: 80,

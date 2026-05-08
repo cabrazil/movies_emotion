@@ -16,6 +16,7 @@ interface NavigationFooterProps {
   loadMoreDisabled?: boolean;
   twoLineText?: boolean;
   customBackRoute?: string;
+  transparent?: boolean;
 }
 
 export function NavigationFooter({ 
@@ -28,7 +29,8 @@ export function NavigationFooter({
   loadMoreLabel = "Ver Mais",
   loadMoreDisabled = false,
   twoLineText = false,
-  customBackRoute
+  customBackRoute,
+  transparent = false
 }: NavigationFooterProps) {
   const router = useRouter();
   const { colors } = useTheme();
@@ -54,15 +56,15 @@ export function NavigationFooter({
       alignItems: 'center',
       paddingHorizontal: spacing.md,
       paddingVertical: spacing.md,
-      backgroundColor: colors.background.card,
-      borderTopWidth: 1,
+      backgroundColor: transparent ? 'transparent' : colors.background.card,
+      borderTopWidth: transparent ? 0 : 1,
       borderTopColor: colors.border.light,
       ...shadows.sm,
     },
     backButton: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: colors.background.secondary,
+      backgroundColor: transparent ? 'rgba(255, 255, 255, 0.08)' : colors.background.secondary,
       paddingVertical: spacing.sm,
       paddingHorizontal: spacing.md,
       borderRadius: borderRadius.md,
@@ -70,8 +72,8 @@ export function NavigationFooter({
       justifyContent: 'center',
       marginRight: spacing.sm,
       minHeight: 50,
-      borderWidth: 1,
-      borderColor: colors.border.medium,
+      borderWidth: transparent ? 1.5 : 1,
+      borderColor: transparent ? 'rgba(255, 255, 255, 0.25)' : colors.border.medium,
     },
     buttonWithSiblings: {
       flex: 0.5,
@@ -94,20 +96,20 @@ export function NavigationFooter({
       marginLeft: spacing.xs,
     },
     backButtonText: {
-      color: colors.text.primary,
+      color: transparent ? '#FFFFFF' : colors.text.primary,
       fontSize: typography.fontSize.small,
-      fontWeight: typography.fontWeight.medium,
+      fontWeight: transparent ? '600' : typography.fontWeight.medium,
       lineHeight: typography.fontSize.small * 1.2,
     },
     homeButton: {
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: colors.background.secondary,
+      backgroundColor: transparent ? 'rgba(255, 255, 255, 0.08)' : colors.background.secondary,
       paddingVertical: spacing.sm,
       paddingHorizontal: spacing.sm,
       borderRadius: borderRadius.md,
-      borderWidth: 1,
-      borderColor: colors.border.medium,
+      borderWidth: transparent ? 1.5 : 1,
+      borderColor: transparent ? 'rgba(255, 255, 255, 0.25)' : colors.border.medium,
       width: 48,
       height: 48,
     },
@@ -126,7 +128,7 @@ export function NavigationFooter({
     disabledText: {
       color: colors.text.secondary,
     },
-  }), [colors]);
+  }), [colors, transparent]);
 
   return (
     <View style={styles.footer}>
@@ -135,7 +137,7 @@ export function NavigationFooter({
           style={styles.homeButton}
           onPress={handleHomePress}
         >
-          <Ionicons name="home-outline" size={20} color={colors.text.primary} />
+          <Ionicons name="home-outline" size={20} color={transparent ? '#FFFFFF' : colors.text.primary} />
         </TouchableOpacity>
       )}
 
@@ -151,7 +153,7 @@ export function NavigationFooter({
         <Ionicons 
           name="arrow-back" 
           size={20} 
-          color={disabled ? colors.text.secondary : colors.text.primary} 
+          color={disabled ? colors.text.secondary : (transparent ? '#FFFFFF' : colors.text.primary)} 
         />
         <View style={styles.textContainer}>
           {twoLineText ? (

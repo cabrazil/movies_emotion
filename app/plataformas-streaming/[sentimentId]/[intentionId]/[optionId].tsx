@@ -1,14 +1,15 @@
-import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView, Animated, Image, Platform as RNPlatform } from 'react-native';
+import { useEffect, useState, useMemo } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView, Image, Platform as RNPlatform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import { API_ENDPOINTS, apiRequest } from '../../../config';
 import { typography, spacing, borderRadius, shadows } from '../../../theme';
 import { useTheme } from '../../../hooks/useTheme';
 import { Ionicons } from '@expo/vector-icons';
 import { StreamingPlatform } from '../../../types';
-import { AppHeader } from '../../../components/AppHeader';
-import { NavigationFooter } from '../../../components/NavigationFooter';
+import { GlassCard } from '../../../components/premium/GlassCard';
+import { SENTIMENT_GRADIENTS, DEFAULT_GRADIENT } from '../../../components/premium/GradientBackground';
 
 // Helper para construir URL do logo
 const getPlatformLogoUrl = (logoPath: string | null, platformName: string): string => {
@@ -265,14 +266,16 @@ export default function PlataformasStreamingScreen() {
   };
 
   // Criar estilos dinamicamente com base no tema
+  const gradient = SENTIMENT_GRADIENTS[Number(sentimentId)] || DEFAULT_GRADIENT;
+
   const styles = useMemo(() => StyleSheet.create({
     safeArea: {
       flex: 1,
-      backgroundColor: colors.background.primary,
+      backgroundColor: 'transparent',
     },
     container: {
       flex: 1,
-      backgroundColor: colors.background.primary,
+      backgroundColor: 'transparent',
     },
     scrollView: {
       flex: 1,
@@ -281,8 +284,9 @@ export default function PlataformasStreamingScreen() {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: colors.background.primary,
+      backgroundColor: 'transparent',
     },
+
     header: {
       padding: spacing.md,
       paddingBottom: spacing.lg, // Aumentado de 'sm' para 'lg' para dar mais respiro
@@ -324,6 +328,7 @@ export default function PlataformasStreamingScreen() {
     },
     platformsContainer: {
       paddingHorizontal: spacing.md,
+      marginTop: spacing.xl + 8, // Aumentado um pouco para dar mais respiro abaixo do texto do topo
       marginBottom: spacing.md, // Menor
     },
     sectionTitle: { // Caso ainda seja usado em outro lugar
@@ -341,10 +346,10 @@ export default function PlataformasStreamingScreen() {
     platformCard: {
       width: 70,
       height: 70,
-      backgroundColor: colors.background.secondary,
+      backgroundColor: 'rgba(255,255,255,0.08)',
       borderRadius: borderRadius.md,
-      borderWidth: 2,
-      borderColor: colors.border.medium,
+      borderWidth: 1.5,
+      borderColor: 'rgba(255,255,255,0.15)',
       justifyContent: 'center',
       alignItems: 'center',
       position: 'relative',
@@ -404,15 +409,15 @@ export default function PlataformasStreamingScreen() {
       textAlign: 'center',
     },
     platformCardEmpty: {
-      opacity: 0.5,
-      borderColor: colors.border.light,
-      backgroundColor: colors.background.secondary,
+      opacity: 0.38,
+      borderColor: 'rgba(255, 255, 255, 0.08)',
+      backgroundColor: 'rgba(0, 0, 0, 0.25)',
     },
     platformLogoEmpty: {
-      opacity: 0.6,
+      opacity: 0.28,
     },
     platformNameEmpty: {
-      color: colors.text.secondary,
+      color: 'rgba(255, 255, 255, 0.45)',
     },
     infoBox: {
       flexDirection: 'row',
@@ -432,19 +437,17 @@ export default function PlataformasStreamingScreen() {
     footer: {
       padding: spacing.md,
       paddingBottom: spacing.lg,
-      backgroundColor: colors.background.card,
-      borderTopWidth: 1,
-      borderTopColor: colors.border.light,
+      backgroundColor: 'transparent',
+      borderTopWidth: 0,
       gap: spacing.sm,
     },
     skipButton: {
-      backgroundColor: colors.background.secondary,
+      backgroundColor: 'rgba(255,255,255,0.08)',
       paddingVertical: spacing.md,
       paddingHorizontal: spacing.lg,
       borderRadius: borderRadius.md,
       alignItems: 'center',
-      borderWidth: 2,
-      ...shadows.sm,
+      borderWidth: 1.5,
     },
     skipButtonText: {
       fontSize: typography.fontSize.body,
@@ -459,6 +462,7 @@ export default function PlataformasStreamingScreen() {
       paddingHorizontal: spacing.lg,
       borderRadius: borderRadius.md,
       gap: spacing.xs,
+      width: '100%',
     },
     continueButtonDisabled: {
       opacity: 0.5,
@@ -503,180 +507,238 @@ export default function PlataformasStreamingScreen() {
       alignItems: 'center',
       ...shadows.lg,
     },
+    // === Novos estilos premium ===
+    floatingHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 20,
+      paddingTop: 8,
+      paddingBottom: 8,
+      height: 56,
+      position: 'relative',
+    },
+    backCircle: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: 'rgba(255,255,255,0.12)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      position: 'absolute',
+      left: 20,
+    },
+    headerTitle: {
+      color: '#FFFFFF',
+      fontSize: 18,
+      fontWeight: '800',
+      letterSpacing: -0.3,
+    },
+    platformTouchable: {
+      width: '100%',
+      height: '100%',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 8,
+    },
+    logoWrapper: {
+      backgroundColor: 'rgba(255, 255, 255, 0.08)',
+      borderRadius: borderRadius.sm,
+      padding: 4,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    selectionInfo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xs,
+    },
+    selectionText: {
+      fontSize: typography.fontSize.small,
+      fontWeight: '600',
+    },
+    hintText: {
+      fontSize: typography.fontSize.small,
+      fontWeight: typography.fontWeight.medium, // Destaque extra
+      color: 'rgba(255,255,255,0.85)', // Elevada opacidade para maior clareza
+      textAlign: 'center',
+    },
+    continueButtonOuter: {
+      width: '100%',
+      borderRadius: borderRadius.md,
+      overflow: 'hidden',
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.2)',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      elevation: 6,
+    },
+    continueButtonGradient: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.lg,
+      gap: spacing.xs,
+    },
   }), [colors]);
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.safeArea}>
-        <AppHeader showBack={true} showLogo={true} />
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={colors.primary.main} />
-          <Text style={styles.loadingText}>Carregando plataformas...</Text>
-        </View>
-      </SafeAreaView>
+      <LinearGradient colors={gradient} locations={[0, 0.4, 1]} style={{ flex: 1 }}>
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.center}>
+            <ActivityIndicator size="large" color={sentimentColor} />
+            <Text style={[styles.loadingText, { color: 'rgba(255,255,255,0.7)' }]}>Carregando plataformas...</Text>
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
     );
   }
 
   if (error) {
     return (
-      <SafeAreaView style={styles.safeArea}>
-        <AppHeader showBack={true} showLogo={true} />
-        <View style={styles.center}>
-          <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity
-            style={styles.retryButton}
-            onPress={fetchPlatforms}
-          >
-            <Text style={styles.retryButtonText}>Tentar novamente</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
+      <LinearGradient colors={gradient} locations={[0, 0.4, 1]} style={{ flex: 1 }}>
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.center}>
+            <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity style={styles.retryButton} onPress={fetchPlatforms}>
+              <Text style={styles.retryButtonText}>Tentar novamente</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
     );
   }
 
-  // Renderização unificada de todas as plataformas
-
+  // Renderização premium com gradiente atmosférico
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <AppHeader showBack={true} showLogo={true} />
-      <View style={styles.container}>
-        <ScrollView
-          style={styles.scrollView}
-        >
-          {/* Header Compacto */}
-          <View style={styles.header}>
-            <Text style={styles.title}>Onde você assiste?</Text>
+    <LinearGradient colors={gradient} locations={[0, 0.4, 1]} style={{ flex: 1 }}>
+      <SafeAreaView style={styles.safeArea}>
+        {/* Header flutuante minimalista */}
+        <View style={styles.floatingHeader}>
+          <TouchableOpacity
+            style={styles.backCircle}
+            onPress={() => router.back()}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Onde você assiste?</Text>
+        </View>
+
+        <View style={styles.container}>
+          <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+            {/* Contexto da opção escolhida */}
             {selectedOptionText ? (
               <View style={styles.optionContext}>
-                <Text
-                  style={styles.optionText}
-                  adjustsFontSizeToFit={true}
-                  numberOfLines={2}
-                >
-                  Sugestões para: <Text style={{ color: sentimentColor, fontWeight: 'bold' }}>"{selectedOptionText}"</Text>
+                <Text style={styles.optionText} adjustsFontSizeToFit numberOfLines={2}>
+                  Sugestões para:{' '}
+                  <Text style={{ color: sentimentColor, fontWeight: '700' }}>"{selectedOptionText}"</Text>
+                </Text>
+              </View>
+            ) : null}
+
+            {/* Grade de plataformas — sólido e legível */}
+            <View style={styles.platformsContainer}>
+              <View style={styles.platformsGrid}>
+                {platforms.map((platform) => {
+                  const logoUrl = getPlatformLogoUrl(platform.logoPath, platform.name);
+                  const movieCount = platformMovieCounts[platform.id] || 0;
+                  const hasMovies = movieCount > 0;
+                  const isSelected = selectedPlatforms.includes(platform.id);
+
+                  return (
+                    <TouchableOpacity
+                      key={platform.id}
+                      style={[
+                        styles.platformCard,
+                        isSelected && {
+                          borderColor: sentimentColor + '65',
+                          borderWidth: 1.5,
+                          backgroundColor: sentimentColor + '18',
+                        },
+                        !hasMovies && styles.platformCardEmpty
+                      ]}
+                      onPress={() => togglePlatform(platform.id)}
+                      activeOpacity={0.7}
+                      disabled={!hasMovies}
+                    >
+                      {RNPlatform.OS === 'ios' || !logoUrl ? (
+                        <Text style={[styles.platformName, !hasMovies && styles.platformNameEmpty]} numberOfLines={2}>
+                          {formatPlatformName(platform.name)}
+                        </Text>
+                      ) : (
+                        <View style={styles.logoWrapper}>
+                          <Image
+                            source={{ uri: logoUrl }}
+                            style={[styles.platformLogo, !hasMovies && styles.platformLogoEmpty]}
+                            resizeMode="contain"
+                          />
+                        </View>
+                      )}
+
+                      {/* Badge de contagem */}
+                      {hasMovies && (
+                        <View style={[styles.movieCountBadge, { backgroundColor: sentimentColor }]}>
+                          <Text style={styles.movieCountText}>{movieCount}</Text>
+                        </View>
+                      )}
+
+                      {/* Checkmark selecionado */}
+                      {isSelected && (
+                        <View style={[styles.checkmark, { backgroundColor: sentimentColor }]}>
+                          <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+                        </View>
+                      )}
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+          </ScrollView>
+
+          {/* Footer transparente — integrado ao gradiente */}
+          <View style={styles.footer}>
+            {/* Status de seleção */}
+            {selectedPlatforms.length > 0 ? (
+              <View style={styles.selectionInfo}>
+                <Ionicons name="checkmark-circle" size={18} color={sentimentColor} />
+                <Text style={[styles.selectionText, { color: sentimentColor }]}>
+                  {selectedPlatforms.length} {selectedPlatforms.length === 1 ? 'plataforma selecionada' : 'plataformas selecionadas'}
                 </Text>
               </View>
             ) : (
-              <Text style={styles.subtitle}>
-                Selecione suas preferências
-              </Text>
+              <Text style={styles.hintText}>Selecione plataformas ou veja todos os filmes</Text>
             )}
+
+            {/* Botão "Ver todos" — borda translúcida, texto branco */}
+            <TouchableOpacity
+              style={[styles.skipButton, { borderColor: 'rgba(255,255,255,0.3)' }]}
+              onPress={handleSkip}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.skipButtonText, { color: '#FFFFFF' }]}>Ver todos os filmes</Text>
+            </TouchableOpacity>
+
+            {/* Botão "Ver Sugestões" — sólido na cor do sentimento */}
+            <TouchableOpacity
+              style={[
+                styles.continueButton,
+                { backgroundColor: sentimentColor },
+                selectedPlatforms.length === 0 && styles.continueButtonDisabled
+              ]}
+              onPress={handleContinue}
+              activeOpacity={0.8}
+              disabled={selectedPlatforms.length === 0}
+            >
+              <Text style={styles.continueButtonText}>Ver Sugestões</Text>
+            </TouchableOpacity>
           </View>
-
-          {/* Lista Unificada de Plataformas */}
-          <View style={styles.platformsContainer}>
-            <View style={styles.platformsGrid}>
-              {platforms.map((platform) => {
-                const logoUrl = getPlatformLogoUrl(platform.logoPath, platform.name);
-                const movieCount = platformMovieCounts[platform.id] || 0;
-                const hasMovies = movieCount > 0;
-
-                return (
-                  <TouchableOpacity
-                    key={platform.id}
-                    style={[
-                      styles.platformCard,
-                      selectedPlatforms.includes(platform.id) && {
-                        borderColor: sentimentColor,
-                        borderWidth: 2,
-                        backgroundColor: sentimentColor + '10',
-                      },
-                      !hasMovies && styles.platformCardEmpty
-                    ]}
-                    onPress={() => togglePlatform(platform.id)}
-                    activeOpacity={0.7}
-                    disabled={!hasMovies}
-                  >
-                    {RNPlatform.OS === 'ios' || !logoUrl ? (
-                      <Text style={[styles.platformName, !hasMovies && styles.platformNameEmpty]} numberOfLines={2}>
-                        {formatPlatformName(platform.name)}
-                      </Text>
-                    ) : (
-                      <View style={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                        borderRadius: borderRadius.sm,
-                        padding: 4,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                      }}>
-                        <Image
-                          source={{ uri: logoUrl }}
-                          style={[styles.platformLogo, !hasMovies && styles.platformLogoEmpty]}
-                          resizeMode="contain"
-                        />
-                      </View>
-                    )}
-
-                    {/* Badge de contagem de filmes */}
-                    {hasMovies && (
-                      <View style={[styles.movieCountBadge, { backgroundColor: sentimentColor }]}>
-                        <Text style={styles.movieCountText}>{movieCount}</Text>
-                      </View>
-                    )}
-
-                    {selectedPlatforms.includes(platform.id) && (
-                      <View style={[styles.checkmark, { backgroundColor: sentimentColor }]}>
-                        <Ionicons name="checkmark" size={16} color={colors.white} />
-                      </View>
-                    )}
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </View>
-
-        </ScrollView>
-
-
-        {/* Indicador de scroll removido */}
-
-        {/* Footer com botões de ação */}
-        <View style={styles.footer}>
-          {/* Contador de seleção — sempre visível no footer */}
-          {selectedPlatforms.length > 0 ? (
-            <View style={[styles.infoBox, {
-              backgroundColor: sentimentColor + '15',
-              borderLeftColor: sentimentColor,
-              marginHorizontal: 0,
-              marginBottom: 0,
-            }]}>
-              <Ionicons name="checkmark-circle" size={20} color={sentimentColor} />
-              <Text style={[styles.infoText, { color: sentimentColor, fontWeight: '600' }]}>
-                {selectedPlatforms.length} {selectedPlatforms.length === 1 ? 'plataforma selecionada' : 'plataformas selecionadas'}
-              </Text>
-            </View>
-          ) : (
-            <Text style={{ fontSize: typography.fontSize.small, color: colors.text.secondary, textAlign: 'center' }}>
-              Selecione plataformas ou veja todos os filmes
-            </Text>
-          )}
-
-          <TouchableOpacity
-            style={[styles.skipButton, { borderColor: sentimentColor }]}
-            onPress={handleSkip}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.skipButtonText, { color: sentimentColor }]}>Ver todos os filmes</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.continueButton,
-              { backgroundColor: sentimentColor },
-              selectedPlatforms.length === 0 && styles.continueButtonDisabled
-            ]}
-            onPress={handleContinue}
-            activeOpacity={0.7}
-            disabled={selectedPlatforms.length === 0}
-          >
-            <Text style={styles.continueButtonText}>
-              Ver Sugestões
-            </Text>
-          </TouchableOpacity>
         </View>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
-
-

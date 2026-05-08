@@ -92,8 +92,8 @@ export const CuradoriaCard: React.FC<CuradoriaCardProps> = React.memo(({
       marginBottom: spacing.md,
       borderRadius: borderRadius.lg,
       overflow: 'hidden',
-      borderWidth: 1,
-      borderColor: colors.primary.main + '30',
+      borderWidth: 1.5,
+      borderColor: sentimentColor ? sentimentColor + '65' : colors.primary.main + '30',
     },
     topBar: {
       height: 3,
@@ -101,12 +101,12 @@ export const CuradoriaCard: React.FC<CuradoriaCardProps> = React.memo(({
     },
     inner: {
       padding: spacing.md,
-      backgroundColor: colors.background.card,
+      backgroundColor: 'rgba(255, 255, 255, 0.08)',
     },
     header: {
       fontSize: typography.fontSize.tiny,
       fontWeight: typography.fontWeight.bold,
-      color: colors.primary.light,
+      color: '#FFFFFF',
       textTransform: 'uppercase',
       letterSpacing: 1.5,
       marginBottom: spacing.md,
@@ -134,16 +134,16 @@ export const CuradoriaCard: React.FC<CuradoriaCardProps> = React.memo(({
     },
     contextLabel: {
       fontSize: typography.fontSize.small,
-      color: colors.text.secondary,
+      color: '#FFFFFF',
     },
     contextHighlight: {
       fontWeight: typography.fontWeight.semibold,
-      color: colors.text.primary,
+      color: '#FFFFFF',
     },
     // Texto da opção da jornada em itálico azul (igual à página premium web)
     optionText: {
       fontSize: typography.fontSize.small,
-      color: colors.primary.light,
+      color: '#FFFFFF',
       fontStyle: 'italic',
       lineHeight: typography.fontSize.small * 1.5,
       marginTop: 6,
@@ -151,13 +151,13 @@ export const CuradoriaCard: React.FC<CuradoriaCardProps> = React.memo(({
     },
     divider: {
       height: 1,
-      backgroundColor: colors.border.light,
+      backgroundColor: 'rgba(255, 255, 255, 0.12)',
       marginTop: spacing.sm,
       marginBottom: spacing.sm,
     },
     reasonText: {
       fontSize: typography.fontSize.small,
-      color: colors.text.secondary,
+      color: '#FFFFFF',
       lineHeight: typography.fontSize.small * 1.6,
     },
   }), [colors, scoreColor]);
@@ -166,7 +166,6 @@ export const CuradoriaCard: React.FC<CuradoriaCardProps> = React.memo(({
 
   return (
     <View style={styles.container}>
-      <View style={styles.topBar} />
       <View style={styles.inner}>
         <Text style={styles.header}>Curadoria VibesFilm: Por que recomendamos?</Text>
 

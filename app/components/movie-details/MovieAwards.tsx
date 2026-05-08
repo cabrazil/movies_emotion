@@ -51,15 +51,15 @@ export const MovieAwards: React.FC<MovieAwardsProps> = React.memo(({
       marginHorizontal: spacing.md,
       marginBottom: spacing.md,
       padding: spacing.md,
-      backgroundColor: colors.background.card,
+      backgroundColor: 'rgba(255, 255, 255, 0.08)',
       borderRadius: 12,
-      borderWidth: 1,
-      borderColor: colors.border.light,
+      borderWidth: 1.5,
+      borderColor: sentimentColor ? sentimentColor + '65' : colors.border.light,
     },
     sectionTitle: {
       fontSize: typography.fontSize.tiny,
       fontWeight: typography.fontWeight.bold,
-      color: colors.text.secondary,
+      color: '#FFFFFF',
       textTransform: 'uppercase',
       letterSpacing: 1.5,
       marginBottom: spacing.md,
@@ -73,7 +73,7 @@ export const MovieAwards: React.FC<MovieAwardsProps> = React.memo(({
     },
     nominationsText: {
       fontSize: typography.fontSize.small,
-      color: colors.text.secondary,
+      color: 'rgba(255,255,255,0.7)',
       fontStyle: 'italic',
     },
   }), [colors]);
