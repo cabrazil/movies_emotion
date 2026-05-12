@@ -117,7 +117,7 @@ export const StreamingPlatforms: React.FC<StreamingPlatformsProps> = React.memo(
     if (RNPlatform.OS === 'ios') {
       return (
         <Text style={{
-          color: colors.text.primary,
+          color: '#FFFFFF',
           fontSize: 12,
           fontWeight: 'bold',
           textAlign: 'center',

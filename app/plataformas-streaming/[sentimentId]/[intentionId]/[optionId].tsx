@@ -362,7 +362,7 @@ export default function PlataformasStreamingScreen() {
     platformName: {
       fontSize: typography.fontSize.small,
       fontWeight: typography.fontWeight.medium,
-      color: colors.text.primary,
+      color: '#FFFFFF',
       textAlign: 'center',
     },
     checkmark: {

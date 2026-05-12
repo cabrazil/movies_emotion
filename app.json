@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.vibesfilm.app",
-      "buildNumber": "5",
+      "buildNumber": "6",
       "infoPlist": {
         "NSCameraUsageDescription": "O Vibesfilm não usa a câmera.",
         "NSPhotoLibraryUsageDescription": "O Vibesfilm não acessa sua galeria de fotos.",
@@ -26,7 +26,7 @@
     },
     "android": {
       "package": "com.vibesfilm.app",
-      "versionCode": 8,
+      "versionCode": 9,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
