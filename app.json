@@ -26,7 +26,7 @@
     },
     "android": {
       "package": "com.vibesfilm.app",
-      "versionCode": 9,
+      "versionCode": 10,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -47,8 +47,7 @@
         "expo-build-properties",
         {
           "android": {
-            "newArchEnabled": true,
-            "jsEngine": "jsc"
+            "newArchEnabled": true
           }
         }
       ]
