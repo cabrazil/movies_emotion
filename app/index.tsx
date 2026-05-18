@@ -71,6 +71,18 @@ export default function HomeScreen() {
               <Text style={styles.buttonText}>Como você se sente agora?</Text>
             </LinearGradient>
           </TouchableOpacity>
+
+          {/* Botão Secundário: Vibe do Dia */}
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={() => router.push('/curadoria-diaria')}
+            activeOpacity={0.7}
+          >
+            <View style={styles.secondaryButtonContent}>
+              <Text style={styles.secondaryButtonTitle}>✨ Perfeito para hoje</Text>
+              <Text style={styles.secondaryButtonSubtitle}>Uma pequena curadoria para o seu momento.</Text>
+            </View>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     </LinearGradient>
@@ -165,5 +177,29 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.85)',
     fontWeight: '600',
     letterSpacing: 0.8,
+  },
+  secondaryButton: {
+    width: '100%',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    marginTop: 8,
+  },
+  secondaryButtonContent: {
+    alignItems: 'center',
+  },
+  secondaryButtonTitle: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  secondaryButtonSubtitle: {
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontSize: 13,
+    fontWeight: '400',
   },
 });

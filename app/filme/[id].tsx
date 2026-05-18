@@ -100,7 +100,7 @@ export default function MovieDetailsScreen() {
 
   // Obter cor do sentimento (memoizada)
   const sentimentColor = useMemo(() =>
-    sentimentId ? (colors.sentimentColors[Number(sentimentId)] || colors.primary.main) : colors.primary.main,
+    sentimentId ? (colors.sentimentColors[Number(sentimentId)] || '#96AAFF') : '#96AAFF',
     [sentimentId, colors]
   );
 

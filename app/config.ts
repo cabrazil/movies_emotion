@@ -10,7 +10,7 @@ const getApiBaseUrl = () => {
   if (__DEV__) {
     // Desenvolvimento: usar backend local via Ngrok (Recomendado para evitar timeouts)
     // Rode 'ngrok http 3333' e cole a URL gerada abaixo
-    return 'https://b64a-187-255-43-93.ngrok-free.app';
+    return 'https://5b35-187-255-43-93.ngrok-free.app';
   }
 
   // Produção: usar URL de produção
@@ -185,5 +185,8 @@ export const API_ENDPOINTS = {
   },
   streamingPlatforms: {
     list: `${API_BASE_URL}/api/streaming-platforms`,
+  },
+  dailyCuration: {
+    today: `${API_BASE_URL}/api/daily-curation/today`,
   },
 }; 

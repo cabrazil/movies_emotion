@@ -10,7 +10,7 @@ import {
   StatusBar,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { SentimentIcon } from '../SentimentIcon';
@@ -18,6 +18,7 @@ import { GlassCard } from './GlassCard';
 import { PaginationDots } from './PaginationDots';
 import { SENTIMENT_GRADIENTS, DEFAULT_GRADIENT } from './GradientBackground';
 import { Sentiment } from '../../types';
+import { Ionicons } from '@expo/vector-icons';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -119,6 +120,13 @@ export const SentimentCarousel: React.FC<SentimentCarouselProps> = ({
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
+
+  const handleClose = useCallback(async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.replace('/');
+  }, [router]);
 
   const onViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: ViewToken[] }) => {
@@ -142,6 +150,14 @@ export const SentimentCarousel: React.FC<SentimentCarouselProps> = ({
 
   return (
     <View style={styles.container}>
+      {/* Botão Fechar (Voltar para Home) */}
+      <TouchableOpacity
+        style={[styles.closeButton, { top: Math.max(insets.top + 8, 16) }]}
+        onPress={handleClose}
+        activeOpacity={0.7}
+      >
+        <Ionicons name="close" size={24} color="rgba(255,255,255,0.8)" />
+      </TouchableOpacity>
       <FlatList
         ref={flatListRef}
         data={sentiments}
@@ -250,5 +266,18 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.4)',
     fontSize: 20,
     fontWeight: '300',
+  },
+  closeButton: {
+    position: 'absolute',
+    left: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 100,
   },
 });

@@ -83,7 +83,7 @@ export function AppHeader({ showBack = false, title = 'Vibesfilm', showLogo = fa
             onPress={handleBackPress}
             activeOpacity={0.6}
           >
-            <Ionicons name="chevron-back" size={24} color={colors.text.primary} />
+            <Ionicons name="chevron-back" size={24} color={transparent ? '#FFFFFF' : colors.text.primary} />
           </TouchableOpacity>
         ) : (
           <View style={styles.placeholder} />
