@@ -173,7 +173,7 @@ export const CuradoriaCard: React.FC<CuradoriaCardProps> = React.memo(({
           {score !== null && (
             <View style={[styles.scoreBadge, { alignItems: 'center', justifyContent: 'center' }]}>
               <Text style={{ fontSize: 9, color: '#fff', fontWeight: 'bold', opacity: 0.9, marginBottom: 2 }}>VIBE</Text>
-              <Text style={styles.scoreText}>{score.toFixed(2)}</Text>
+              <Text style={styles.scoreText}>{(Math.floor(Number(score) * 100) / 100).toFixed(2)}</Text>
             </View>
           )}
           <View style={styles.context}>

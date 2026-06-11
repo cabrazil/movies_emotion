@@ -559,7 +559,7 @@ export default function MovieDetailsScreen() {
                   }}>
                     {hasWarning ? 'Alerta de Conteúdo' : 'Verificação de Conteúdo'}
                   </Text>
-                  <Text style={{ fontSize: 13, color: colors.text.secondary, lineHeight: 19 }}>
+                  <Text style={{ fontSize: 13, fontWeight: '400', color: 'rgba(255, 255, 255, 0.85)', lineHeight: 19 }}>
                     {hasWarning
                       ? (() => { const t = movie.contentWarnings!.replace('Atenção: ', '').replace('atenção: ', ''); return t.charAt(0).toUpperCase() + t.slice(1); })()
                       : 'Nenhum alerta de conteúdo significativo identificado.'}
