@@ -145,8 +145,8 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingHorizontal: 32,
-    paddingBottom: 28,
-    gap: 14,
+    paddingBottom: 56,
+    gap: 12,
     alignItems: 'center',
   },
   buttonOuter: {
