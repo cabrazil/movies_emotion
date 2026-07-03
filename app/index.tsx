@@ -44,10 +44,10 @@ export default function HomeScreen() {
           </Text>
           <Text style={styles.description}>
             Deixe o cinema{' '}
-            <Text style={styles.highlightText}>processar</Text>,{' '}
+            <Text style={styles.highlightText}>acolher</Text>,{' '}
             <Text style={styles.highlightText}>transformar</Text>
             {' '}ou{' '}
-            <Text style={styles.highlightText}>amplificar</Text>
+            <Text style={styles.highlightText}>ampliar</Text>
             {' '}o que você sente.
           </Text>
         </View>
