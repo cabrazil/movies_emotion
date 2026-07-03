@@ -40,10 +40,9 @@ export default function HomeScreen() {
           <View style={styles.decorativeCircle} />
           <Text style={styles.tagline}>Cinema & Emoção</Text>
           <Text style={styles.title}>
-            Cada emoção{'\n'}tem um filme.
+            Encontre o filme certo para o seu momento.
           </Text>
           <Text style={styles.description}>
-            Encontre a obra certa para o seu momento.
             Deixe o cinema{' '}
             <Text style={styles.highlightText}>processar</Text>,{' '}
             <Text style={styles.highlightText}>transformar</Text>
@@ -53,7 +52,7 @@ export default function HomeScreen() {
           </Text>
         </View>
 
-        {/* Rodapé: Botão premium */}
+        {/* Rodapé: Botões + Assinatura de Marca */}
         <View style={styles.footer}>
           {/* Botão atmosférico premium com gradiente e glow */}
           <TouchableOpacity
@@ -83,6 +82,9 @@ export default function HomeScreen() {
               <Text style={styles.secondaryButtonSubtitle}>Uma pequena curadoria para o seu momento.</Text>
             </View>
           </TouchableOpacity>
+
+          {/* Assinatura de Marca VibesFilm */}
+          <Text style={styles.brandSignature}>Cada emoção tem um filme.</Text>
         </View>
       </SafeAreaView>
     </LinearGradient>
@@ -93,13 +95,13 @@ const styles = StyleSheet.create({
   gradient: { flex: 1 },
   safeArea: { flex: 1 },
   header: {
-    paddingHorizontal: 32, // Alinhado perfeitamente com o conteúdo
-    paddingTop: 24, // Espaçamento elegante em relação ao status bar
+    paddingHorizontal: 32,
+    paddingTop: 24,
   },
   logo: {
     height: 80,
     width: 80,
-    borderRadius: 16, // Deixa as bordas do logo suavemente arredondadas e integradas
+    borderRadius: 16,
   },
   content: {
     flex: 1,
@@ -124,17 +126,17 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   title: {
-    fontSize: 48,
+    fontSize: 38,
     fontWeight: '800',
     color: '#FFFFFF',
-    lineHeight: 54,
-    letterSpacing: -1.5,
-    marginBottom: 24,
+    lineHeight: 46,
+    letterSpacing: -1,
+    marginBottom: 20,
   },
   description: {
-    fontSize: 17,
-    color: 'rgba(255,255,255,0.55)',
-    lineHeight: 28,
+    fontSize: 16,
+    color: 'rgba(255,255,255,0.6)',
+    lineHeight: 26,
     fontWeight: '400',
   },
   highlightText: {
@@ -143,8 +145,8 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingHorizontal: 32,
-    paddingBottom: 48,
-    gap: 20,
+    paddingBottom: 28,
+    gap: 14,
     alignItems: 'center',
   },
   buttonOuter: {
@@ -152,7 +154,6 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     borderWidth: 1,
     borderColor: 'rgba(150, 170, 255, 0.28)',
-    // Glow externo suave
     shadowColor: '#5566cc',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.45,
@@ -161,14 +162,14 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   buttonGradient: {
-    paddingVertical: 20,
+    paddingVertical: 18,
     paddingHorizontal: 32,
     borderRadius: 60,
     alignItems: 'center',
   },
   buttonText: {
     color: 'rgba(255, 255, 255, 0.92)',
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '600',
     letterSpacing: 0.3,
   },
@@ -180,26 +181,34 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     width: '100%',
-    paddingVertical: 14,
+    paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 24,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
-    marginTop: 8,
   },
   secondaryButtonContent: {
     alignItems: 'center',
   },
   secondaryButtonTitle: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   secondaryButtonSubtitle: {
     color: 'rgba(255, 255, 255, 0.5)',
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '400',
+  },
+  brandSignature: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: 'rgba(255, 255, 255, 0.45)',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+    textAlign: 'center',
+    marginTop: 6,
   },
 });

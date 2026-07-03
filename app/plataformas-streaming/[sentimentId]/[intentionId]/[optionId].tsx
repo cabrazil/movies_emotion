@@ -613,7 +613,19 @@ export default function PlataformasStreamingScreen() {
     );
   }
 
-  // Renderização premium com gradiente atmosférico
+  // Filtrar e ordenar plataformas: APENAS plataformas com filmes disponíveis (count > 0), ordenadas por quantidade decrescente
+  const sortedPlatforms = useMemo(() => {
+    return platforms
+      .filter(p => (platformMovieCounts[p.id] || 0) > 0)
+      .sort((a, b) => {
+        const countA = platformMovieCounts[a.id] || 0;
+        const countB = platformMovieCounts[b.id] || 0;
+        if (countA !== countB) return countB - countA;
+        return a.name.localeCompare(b.name, 'pt-BR');
+      });
+  }, [platforms, platformMovieCounts]);
+
+  // Contexto da opção escolhida
   return (
     <LinearGradient colors={gradient} locations={[0, 0.4, 1]} style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeArea}>
@@ -644,7 +656,7 @@ export default function PlataformasStreamingScreen() {
             {/* Grade de plataformas — sólido e legível */}
             <View style={styles.platformsContainer}>
               <View style={styles.platformsGrid}>
-                {platforms.map((platform) => {
+                {sortedPlatforms.map((platform) => {
                   const logoUrl = getPlatformLogoUrl(platform.logoPath, platform.name);
                   const movieCount = platformMovieCounts[platform.id] || 0;
                   const hasMovies = movieCount > 0;
