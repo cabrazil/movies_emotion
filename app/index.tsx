@@ -48,7 +48,8 @@ export default function HomeScreen() {
             <Text style={styles.highlightText}>transformar</Text>
             {' '}ou{' '}
             <Text style={styles.highlightText}>ampliar</Text>
-            {' '}o que você sente.
+            {' '}o que você sente.{' '}
+            <Text style={styles.highlightText}>Em apenas 4 escolhas.</Text>
           </Text>
         </View>
 
