@@ -114,20 +114,6 @@ export const StreamingPlatforms: React.FC<StreamingPlatformsProps> = React.memo(
     const platformData = platform.streamingPlatform || platform;
     const logoUrl = getPlatformLogoUrl(platformData.logoPath || null);
 
-    if (RNPlatform.OS === 'ios') {
-      return (
-        <Text style={{
-          color: '#FFFFFF',
-          fontSize: 12,
-          fontWeight: 'bold',
-          textAlign: 'center',
-          paddingHorizontal: 4,
-        }} numberOfLines={2}>
-          {formatPlatformName(platformData.name || 'Streaming')}
-        </Text>
-      );
-    }
-
     return logoUrl ? (
       <Image
         source={{ uri: logoUrl }}
@@ -135,11 +121,15 @@ export const StreamingPlatforms: React.FC<StreamingPlatformsProps> = React.memo(
         resizeMode="contain"
       />
     ) : (
-      <Ionicons
-        name={(platform.accessType === 'INCLUDED_WITH_SUBSCRIPTION' || platform.accessType === 'FREE_WITH_ADS') ? 'tv' : 'card'}
-        size={32}
-        color={sentimentColor}
-      />
+      <Text style={{
+        color: '#FFFFFF',
+        fontSize: 12,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        paddingHorizontal: 4,
+      }} numberOfLines={2}>
+        {formatPlatformName(platformData.name || 'Streaming')}
+      </Text>
     );
   };
 

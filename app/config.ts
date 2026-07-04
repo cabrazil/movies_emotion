@@ -10,7 +10,7 @@ const getApiBaseUrl = () => {
   if (__DEV__) {
     // Desenvolvimento: usar backend local via Ngrok (Recomendado para evitar timeouts)
     // Rode 'ngrok http 3333' e cole a URL gerada abaixo
-    return 'https://57cb-187-255-43-93.ngrok-free.app';
+    return 'https://4f71-187-255-43-93.ngrok-free.app';
   }
 
   // Produção: usar URL de produção
@@ -27,6 +27,8 @@ if (__DEV__) {
   }, 0);
 }
 
+import { Platform } from 'react-native';
+
 // Cache simples para requisições GET (apenas em memória)
 const requestCache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutos
@@ -36,6 +38,7 @@ export const apiRequest = async (url: string, options: RequestInit = {}, retries
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
+    'X-Platform': Platform.OS,
     ...(options.headers as Record<string, string> || {}),
   };
 

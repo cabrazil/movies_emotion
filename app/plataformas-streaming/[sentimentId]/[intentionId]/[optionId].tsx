@@ -678,7 +678,7 @@ export default function PlataformasStreamingScreen() {
                       activeOpacity={0.7}
                       disabled={!hasMovies}
                     >
-                      {RNPlatform.OS === 'ios' || !logoUrl ? (
+                      {!logoUrl ? (
                         <Text style={[styles.platformName, !hasMovies && styles.platformNameEmpty]} numberOfLines={2}>
                           {formatPlatformName(platform.name)}
                         </Text>
