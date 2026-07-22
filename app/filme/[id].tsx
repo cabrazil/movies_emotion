@@ -192,67 +192,30 @@ export default function MovieDetailsScreen() {
   const handleShare = useCallback(async () => {
     if (!movie) return;
 
-    const vibe = movie.landingPageHook
-      ? `\n\n\uD83C\uDFAD A Vibe do Filme:\n${movie.landingPageHook}`
+    const hook = movie.landingPageHook
+      ? movie.landingPageHook.replace(/<[^>]*>/g, '').trim()
       : '';
 
-    // Resolver sentimento e intenção — mesma lógica do EmotionalAnalysis
-    const sentimentNames: { [key: number]: string } = {
-      13: 'Feliz / Alegre', 14: 'Introspectivo(a)', 15: 'Calmo(a)',
-      16: 'Ansioso(a)', 17: 'Animado(a)', 18: 'Cansado(a)'
-    };
-    const intentionIdToType: { [key: number]: string } = {
-      6: 'PROCESS', 7: 'TRANSFORM', 8: 'MAINTAIN', 9: 'EXPLORE',
-      10: 'MAINTAIN', 11: 'EXPLORE', 12: 'PROCESS', 13: 'TRANSFORM',
-      14: 'MAINTAIN', 15: 'EXPLORE', 16: 'PROCESS', 17: 'TRANSFORM',
-      18: 'MAINTAIN', 19: 'EXPLORE', 20: 'TRANSFORM', 21: 'PROCESS',
-      22: 'MAINTAIN', 23: 'EXPLORE', 24: 'PROCESS', 25: 'TRANSFORM',
-      26: 'MAINTAIN', 27: 'EXPLORE'
-    };
-    const intentionNames: { [key: string]: string } = {
-      'PROCESS': 'Processar', 'MAINTAIN': 'Manter',
-      'TRANSFORM': 'Transformar', 'EXPLORE': 'Explorar'
-    };
-    const sentimentName = sentimentNames[Number(sentimentId)] || '';
-    const intentionType = intentionIdToType[Number(intentionId)];
-    const intentionName = intentionType ? intentionNames[intentionType] : '';
-
-    // "Para quem está Animado(a) e quer Processar — …optionText"
-    const journeyContext = optionText
-      ? (() => {
-          const prefix = sentimentName && intentionName
-            ? `Para quem está ${sentimentName} e quer ${intentionName} \u2014 `
-            : '';
-          return `\n\n\uD83E\uDDED Sua jornada até este filme:\n${prefix}${optionText.toString()}`;
-        })()
-      : '';
-
-    // Tags emocionais do filme
-    const tags = movie.emotionalTags && movie.emotionalTags.length > 0
-      ? `\n\n\uD83D\uDCA1 Este filme ressoa com quem busca:\n${movie.emotionalTags
-          .slice(0, 4)
-          .map(t => `\u2022 ${t.subSentiment}`)
-          .join('\n')}`
-      : '';
+    const hookText = hook ? `\n\n${hook}` : '';
 
     const message =
-      `\uD83C\uDFAC ${movie.title} (${movie.year})` +
-      vibe +
-      journeyContext +
-      tags +
-      `\n\n\u2728 Cada emo\u00e7\u00e3o tem um filme.\nDescubra o seu no Vibesfilm \uD83D\uDC49 https://vibesfilm.com`;
+      `🎬 ${movie.title}${movie.year ? ` (${movie.year})` : ''}` +
+      hookText +
+      `\n\nEncontre o filme certo para o seu momento.` +
+      `\n\n✨ Cada emoção tem um filme.` +
+      `\n\nhttps://vibesfilm.com`;
 
     try {
       await Share.share({
         message,
-        title: `${movie.title} \u2014 Vibesfilm`,
+        title: `${movie.title} — Vibesfilm`,
       });
     } catch (error) {
       if (__DEV__) {
         console.error('Erro ao compartilhar:', error);
       }
     }
-  }, [movie, optionText, sentimentId, intentionId]);
+  }, [movie]);
 
   const handleTrailer = useCallback(async () => {
     if (!movie?.mainTrailer) {
