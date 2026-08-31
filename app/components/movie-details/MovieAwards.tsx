@@ -1,8 +1,7 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useMemo } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import { typography, spacing } from '../../theme';
 import { useTheme } from '../../hooks/useTheme';
-import { translateOscarCategory } from './movieHelpers';
 
 interface OscarAward {
   categoryName?: string;
@@ -12,15 +11,18 @@ interface OscarAward {
 }
 
 interface OscarAwards {
-  wins: OscarAward[];
-  nominations: OscarAward[];
+  wins?: OscarAward[];
+  nominations?: OscarAward[];
+  totalWins?: number;
+  totalNominations?: number;
+  summaryText?: string | null;
 }
 
 interface MovieAwardsProps {
   title: string;
   oscarAwards?: OscarAwards;
   awardsSummary?: string | null;
-  sentimentColor: string;
+  sentimentColor?: string;
 }
 
 export const MovieAwards: React.FC<MovieAwardsProps> = React.memo(({
@@ -30,21 +32,31 @@ export const MovieAwards: React.FC<MovieAwardsProps> = React.memo(({
   sentimentColor
 }) => {
   const { colors } = useTheme();
-  const [showFullNominations, setShowFullNominations] = useState(false);
 
-  const hasOscarAwards = oscarAwards && 
-    (oscarAwards.wins.length > 0 || oscarAwards.nominations.length > 0);
+  // Determinar o texto principal a ser exibido (priorizando awardsSummary)
+  const displayText = useMemo(() => {
+    if (awardsSummary && awardsSummary.trim() !== '') {
+      return awardsSummary;
+    }
+    if (oscarAwards?.summaryText && oscarAwards.summaryText.trim() !== '') {
+      return oscarAwards.summaryText;
+    }
 
-  const introText = useMemo(() => {
-    if (!oscarAwards) return '';
-    const totalAwards = oscarAwards.wins.length + oscarAwards.nominations.length;
-    const year = oscarAwards.wins.length > 0 
-      ? oscarAwards.wins[0].year 
-      : oscarAwards.nominations[0]?.year;
-    const hasWins = oscarAwards.wins.length > 0;
-    
-    return `${title} foi indicado a ${totalAwards} Oscar${totalAwards > 1 ? 's' : ''} em ${year}${hasWins ? ', conquistou' : ''}:`;
-  }, [title, oscarAwards]);
+    const wins = oscarAwards?.wins?.length || oscarAwards?.totalWins || 0;
+    const nominations = oscarAwards?.nominations?.length || oscarAwards?.totalNominations || 0;
+
+    if (wins > 0 && nominations > 0) {
+      return `Vencedor de ${wins} Oscar${wins > 1 ? 's' : ''} (e ${nominations} indicaç${nominations > 1 ? 'ões' : 'ão'})`;
+    }
+    if (wins > 0) {
+      return `Vencedor de ${wins} Oscar${wins > 1 ? 's' : ''}`;
+    }
+    if (nominations > 0) {
+      return `Indicado a ${nominations} Oscar${nominations > 1 ? 's' : ''}`;
+    }
+
+    return null;
+  }, [awardsSummary, oscarAwards]);
 
   const styles = useMemo(() => StyleSheet.create({
     awardsSection: {
@@ -62,49 +74,26 @@ export const MovieAwards: React.FC<MovieAwardsProps> = React.memo(({
       color: '#FFFFFF',
       textTransform: 'uppercase',
       letterSpacing: 1.5,
-      marginBottom: spacing.md,
+      marginBottom: spacing.xs,
     },
     summaryText: {
       fontSize: typography.fontSize.body,
       fontWeight: typography.fontWeight.semibold,
       color: '#FFD700',
-      lineHeight: typography.fontSize.body * 1.5,
-      marginBottom: spacing.xs,
+      lineHeight: typography.fontSize.body * 1.4,
     },
-    nominationsText: {
-      fontSize: typography.fontSize.small,
-      color: 'rgba(255,255,255,0.7)',
-      fontStyle: 'italic',
-    },
-  }), [colors]);
+  }), [colors, sentimentColor]);
 
-  // Sem Oscar: verifica awardsSummary genérico
-  if (!hasOscarAwards) {
-    if (!awardsSummary) return null;
-    return (
-      <View style={styles.awardsSection}>
-        <Text style={styles.sectionTitle}>Reconhecimento</Text>
-        <Text style={styles.nominationsText}>{awardsSummary}</Text>
-      </View>
-    );
+  if (!displayText) {
+    return null;
   }
-
-  const wins = oscarAwards!.wins.length;
-  const nominations = oscarAwards!.nominations.length;
-  const year = wins > 0 ? oscarAwards!.wins[0].year : oscarAwards!.nominations[0]?.year;
-
-  const summaryLine = wins > 0
-    ? `Vencedor de ${wins} Oscar${wins > 1 ? 's' : ''}${nominations > 0 ? ` (e ${nominations} indicaç${nominations > 1 ? 'ões' : 'ão'})` : ''}`
-    : `Indicado a ${nominations} Oscar${nominations > 1 ? 's' : ''}`;
 
   return (
     <View style={styles.awardsSection}>
       <Text style={styles.sectionTitle}>Reconhecimento</Text>
-      <Text style={styles.summaryText}>🏆 {summaryLine}</Text>
-      {year && <Text style={styles.nominationsText}>Cerimônia de {year}</Text>}
+      <Text style={styles.summaryText}>🏆 {displayText}</Text>
     </View>
   );
 });
 
 MovieAwards.displayName = 'MovieAwards';
-
