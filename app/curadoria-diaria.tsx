@@ -113,7 +113,11 @@ export default function DailyCurationScreen() {
           <TouchableOpacity style={styles.backCircle} onPress={() => router.back()} activeOpacity={0.7}>
             <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>{curationData.buttonTitle || 'Vibe do Dia'}</Text>
+          <Text style={styles.headerTitle}>
+            {curationData.buttonTitle
+              ? (curationData.buttonTitle.endsWith('?') ? curationData.buttonTitle : `${curationData.buttonTitle}?`)
+              : '✨ Perfeito para hoje?'}
+          </Text>
         </View>
 
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>

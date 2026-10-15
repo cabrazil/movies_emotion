@@ -40,7 +40,7 @@ export default function HomeScreen() {
           <View style={styles.decorativeCircle} />
           <Text style={styles.tagline}>Cinema & Emoção</Text>
           <Text style={styles.title}>
-            Encontre o filme certo para o seu momento.
+            Descubra filmes que combinam com o seu momento.
           </Text>
           <Text style={styles.description}>
             Deixe o cinema{' '}
@@ -79,7 +79,7 @@ export default function HomeScreen() {
             activeOpacity={0.7}
           >
             <View style={styles.secondaryButtonContent}>
-              <Text style={styles.secondaryButtonTitle}>✨ Perfeito para hoje</Text>
+              <Text style={styles.secondaryButtonTitle}>✨ Perfeito para hoje?</Text>
               <Text style={styles.secondaryButtonSubtitle}>Uma pequena curadoria para o seu momento.</Text>
             </View>
           </TouchableOpacity>
