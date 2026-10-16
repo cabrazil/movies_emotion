@@ -130,10 +130,10 @@ export const RatingIcon: React.FC<RatingIconProps> = ({
 // Componente para exibir múltiplos ratings
 interface RatingRowProps {
   ratings: {
-    tmdb?: string | number;
-    imdb?: string | number;
-    rotten?: string | number;
-    metacritic?: string | number;
+    tmdb?: string | number | null;
+    imdb?: string | number | null;
+    rotten?: string | number | null;
+    metacritic?: string | number | null;
   };
 }
 
@@ -151,10 +151,10 @@ export const RatingRow: React.FC<RatingRowProps> = ({ ratings }) => {
 
   return (
     <View style={styles.rowContainer}>
-      {ratings.tmdb && <RatingIcon type="tmdb" rating={ratings.tmdb} />}
-      {ratings.imdb && <RatingIcon type="imdb" rating={ratings.imdb} />}
-      {ratings.rotten && <RatingIcon type="rotten" rating={ratings.rotten} />}
-      {ratings.metacritic && <RatingIcon type="metacritic" rating={ratings.metacritic} />}
+      {Boolean(ratings.tmdb) && <RatingIcon type="tmdb" rating={ratings.tmdb!} />}
+      {Boolean(ratings.imdb) && <RatingIcon type="imdb" rating={ratings.imdb!} />}
+      {Boolean(ratings.rotten) && <RatingIcon type="rotten" rating={ratings.rotten!} />}
+      {Boolean(ratings.metacritic) && <RatingIcon type="metacritic" rating={ratings.metacritic!} />}
     </View>
   );
 };

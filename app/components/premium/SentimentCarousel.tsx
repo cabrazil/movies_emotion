@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -46,6 +46,16 @@ const getDisplayName = (name: string): string => {
     'Triste': 'Triste',
   };
   return map[name] || name;
+};
+
+// Embaralhamento aleatório (Fisher-Yates)
+const shuffleArray = <T,>(array: T[]): T[] => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
 };
 
 interface SentimentSlideProps {
@@ -118,6 +128,7 @@ export const SentimentCarousel: React.FC<SentimentCarouselProps> = ({
   sentiments,
   onSelect,
 }) => {
+  const displaySentiments = useMemo(() => shuffleArray(sentiments), [sentiments]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const insets = useSafeAreaInsets();
@@ -144,8 +155,8 @@ export const SentimentCarousel: React.FC<SentimentCarouselProps> = ({
   });
 
   const currentAccent =
-    sentiments[currentIndex]
-      ? SENTIMENT_ACCENT[sentiments[currentIndex].id] || '#FFFFFF'
+    displaySentiments[currentIndex]
+      ? SENTIMENT_ACCENT[displaySentiments[currentIndex].id] || '#FFFFFF'
       : '#FFFFFF';
 
   return (
@@ -160,7 +171,7 @@ export const SentimentCarousel: React.FC<SentimentCarouselProps> = ({
       </TouchableOpacity>
       <FlatList
         ref={flatListRef}
-        data={sentiments}
+        data={displaySentiments}
         keyExtractor={(item) => item.id.toString()}
         horizontal
         pagingEnabled
@@ -179,7 +190,7 @@ export const SentimentCarousel: React.FC<SentimentCarouselProps> = ({
       <View style={styles.swipeIndicator}>
         <Text style={styles.swipeArrow}>←</Text>
         <PaginationDots
-          total={sentiments.length}
+          total={displaySentiments.length}
           current={currentIndex}
           activeColor={currentAccent}
           inactiveColor="rgba(255,255,255,0.25)"

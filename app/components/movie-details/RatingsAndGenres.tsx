@@ -82,10 +82,10 @@ export const RatingsAndGenres: React.FC<RatingsAndGenresProps> = React.memo(({
         <Text style={styles.ratingsTitle}>Notas da Crítica:</Text>
         <RatingRow 
           ratings={{
-            tmdb: vote_average,
-            imdb: imdbRating || imdb_rating,
-            rotten: rottenTomatoesRating,
-            metacritic: metacriticRating,
+            tmdb: vote_average ?? undefined,
+            imdb: imdbRating || imdb_rating || undefined,
+            rotten: rottenTomatoesRating ?? undefined,
+            metacritic: metacriticRating ?? undefined,
           }}
         />
       </View>
